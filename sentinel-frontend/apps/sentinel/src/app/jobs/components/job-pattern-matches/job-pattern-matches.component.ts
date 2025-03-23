@@ -18,80 +18,140 @@ import {
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div class="pattern-matches">
-      <h2>Pattern Matches for Analysis Job</h2>
+    <div class="px-4 py-6 sm:px-6 lg:px-8">
+      <div class="sm:flex sm:items-center mb-6">
+        <div class="sm:flex-auto">
+          <h1 class="text-xl font-semibold text-gray-900">Pattern Matches</h1>
+          <p class="mt-2 text-sm text-gray-700">
+            Viewing pattern matches for analysis job
+          </p>
+        </div>
+      </div>
 
-      <div class="filters">
-        <div class="filter-item">
-          <label for="rule-filter">Rule Name:</label>
+      <div class="flex flex-col sm:flex-row gap-4 mb-6">
+        <div class="w-full sm:w-1/2">
+          <label
+            for="rule-filter"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Rule Name</label
+          >
           <input
             id="rule-filter"
             type="text"
             [(ngModel)]="ruleNameFilter"
             (change)="onFilterChange()"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
 
-        <div class="filter-item">
-          <label for="file-filter">File Path:</label>
+        <div class="w-full sm:w-1/2">
+          <label
+            for="file-filter"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >File Path</label
+          >
           <input
             id="file-filter"
             type="text"
             [(ngModel)]="filePathFilter"
             (change)="onFilterChange()"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
       </div>
 
-      <div *ngIf="isLoading" class="loading">Loading pattern matches...</div>
+      <div *ngIf="isLoading" class="flex justify-center py-8">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"
+        ></div>
+      </div>
 
-      <div *ngIf="error" class="error">
-        {{ error }}
+      <div *ngIf="error" class="bg-red-50 p-4 rounded-md mt-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+          </div>
+        </div>
       </div>
 
       @if (patternMatches$ | async; as result) {
       <div>
-        <div *ngIf="result?.matches?.length === 0" class="no-results">
+        <div
+          *ngIf="result?.matches?.length === 0"
+          class="text-center py-8 text-gray-500"
+        >
           No pattern matches found.
         </div>
 
-        <div>
-          <div class="matches-list">
-            <div *ngFor="let match of result.matches" class="match-item">
-              <div class="match-header">
-                <strong>{{ match.rule_name }}</strong>
-                <span class="file-path">{{
-                  match.analysis_file.file_path
+        <div *ngIf="result?.matches?.length > 0">
+          <div class="space-y-4">
+            <div
+              *ngFor="let match of result.matches"
+              class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <div
+                class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between"
+              >
+                <span class="font-medium text-gray-800">{{
+                  match.rule_name
                 }}</span>
+                <span
+                  class="mt-1 sm:mt-0 text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded break-all"
+                >
+                  {{ match.analysis_file.file_path }}
+                </span>
               </div>
-              <div class="match-description">
-                {{ match.description }}
-              </div>
-              <div class="match-location">
-                Line {{ match.start_line }}:{{ match.start_col }} -
-                {{ match.end_line }}:{{ match.end_col }}
-              </div>
-              <div *ngIf="match.metadata" class="match-metadata">
-                <div *ngIf="match.metadata.suggestion" class="suggestion">
-                  <pre>{{ match.metadata.suggestion }}</pre>
+              <div class="p-4">
+                <div class="text-gray-700 mb-3">
+                  {{ match.description }}
+                </div>
+                <div
+                  class="font-mono text-sm bg-gray-100 px-2 py-1 rounded inline-block mb-3"
+                >
+                  Line {{ match.start_line }}:{{ match.start_col }} -
+                  {{ match.end_line }}:{{ match.end_col }}
+                </div>
+                <div
+                  *ngIf="match.metadata?.suggestion"
+                  class="mt-3 bg-blue-50 p-3 border-l-4 border-blue-500 rounded-r-md"
+                >
+                  <pre class="whitespace-pre-wrap text-sm text-gray-700">{{
+                    match.metadata.suggestion
+                  }}</pre>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="pagination">
+          <div class="mt-6 flex items-center justify-center gap-3">
             <button
               [disabled]="currentPage <= 1"
               (click)="onPageChange(currentPage - 1)"
+              class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
-            <span
-              >Page {{ result.current_page }} of {{ result.total_pages }}</span
-            >
+            <span class="text-sm text-gray-700">
+              Page {{ result.current_page }} of {{ result.total_pages }}
+            </span>
             <button
               [disabled]="currentPage >= result.total_pages"
               (click)="onPageChange(currentPage + 1)"
+              class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
@@ -101,123 +161,7 @@ import {
       }
     </div>
   `,
-  styles: [
-    `
-      .pattern-matches {
-        padding: 20px;
-      }
-
-      .filters {
-        display: flex;
-        gap: 15px;
-        margin-bottom: 20px;
-      }
-
-      .filter-item {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-
-      .filter-item input {
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-
-      .loading,
-      .error,
-      .no-results {
-        padding: 20px;
-        text-align: center;
-      }
-
-      .error {
-        color: red;
-      }
-
-      .matches-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .match-item {
-        padding: 15px;
-        border: 1px solid #eee;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      }
-
-      .match-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-      }
-
-      .file-path {
-        color: #666;
-        font-size: 0.9em;
-        word-break: break-all;
-        background-color: #f7f7f7;
-        padding: 3px 6px;
-        border-radius: 3px;
-        margin-left: 10px;
-      }
-
-      .match-description {
-        margin-bottom: 10px;
-      }
-
-      .match-location {
-        font-family: monospace;
-        background-color: #f5f5f5;
-        padding: 3px 6px;
-        border-radius: 3px;
-        display: inline-block;
-        margin-bottom: 10px;
-      }
-
-      .match-metadata {
-        margin-top: 10px;
-      }
-
-      .suggestion {
-        background-color: #f8f8f8;
-        padding: 10px;
-        border-left: 3px solid #007bff;
-        font-size: 0.9em;
-        white-space: pre-wrap;
-      }
-
-      .suggestion pre {
-        margin: 0;
-        white-space: pre-wrap;
-      }
-
-      .pagination {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-      }
-
-      .pagination button {
-        padding: 8px 15px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-
-      .pagination button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-      }
-    `,
-  ],
+  styles: [],
 })
 export class JobPatternMatchesComponent implements OnInit {
   jobId = input<string>('');
