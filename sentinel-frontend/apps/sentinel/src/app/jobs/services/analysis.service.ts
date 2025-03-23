@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   AnalysisResults,
@@ -122,5 +122,55 @@ export class AnalysisService {
           };
         })
       );
+  }
+
+  /**
+   * Get pattern matches for a specific analysis job
+   * @param jobId The ID of the job to get pattern matches for
+   * @param options Optional filtering options
+   * @returns Observable with paginated pattern matches
+   */
+  getPatternMatches(
+    jobId: string,
+    options: {
+      page?: number;
+      per_page?: number;
+      rule_id?: string;
+      rule_name?: string;
+      file_path?: string;
+    } = {}
+  ): Observable<{
+    matches: any[];
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    analysis_job_id: string;
+  }> {
+    let params = new HttpParams();
+
+    if (options.page) {
+      params = params.set('page', options.page.toString());
+    }
+
+    if (options.per_page) {
+      params = params.set('per_page', options.per_page.toString());
+    }
+
+    if (options.rule_id) {
+      params = params.set('rule_id', options.rule_id);
+    }
+
+    if (options.rule_name) {
+      params = params.set('rule_name', options.rule_name);
+    }
+
+    if (options.file_path) {
+      params = params.set('file_path', options.file_path);
+    }
+
+    return this.http.get<any>(
+      `${this.apiUrl}/analysis_jobs/${jobId}/pattern_matches`,
+      { params }
+    );
   }
 }

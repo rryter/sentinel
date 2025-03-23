@@ -14,6 +14,9 @@ Rails.application.routes.draw do
           get :fetch_results
           post :process_results
         end
+
+        resources :pattern_matches, only: [:index]
+
       end
       
       resources :pattern_matches, only: [:index]

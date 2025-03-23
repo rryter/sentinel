@@ -8,6 +8,7 @@ import { ProjectListComponent } from './projects/components/project-list/project
 import { ProjectDetailComponent } from './projects/components/project-detail/project-detail.component';
 import { AnalysisJobListComponent } from './jobs/components/analysis-job-list/analysis-job-list.component';
 import { AnalysisResultsComponent } from './jobs/components/analysis-results/analysis-results.component';
+import { JobPatternMatchesComponent } from './jobs/components/job-pattern-matches/job-pattern-matches.component';
 
 export const appRoutes: Route[] = [
   {
@@ -38,6 +39,10 @@ export const appRoutes: Route[] = [
   {
     path: 'analysis/jobs/:jobId/results',
     component: AnalysisResultsComponent,
+  },
+  {
+    path: 'analysis/jobs/:jobId/pattern-matches',
+    component: JobPatternMatchesComponent,
   },
   {
     path: 'projects',
