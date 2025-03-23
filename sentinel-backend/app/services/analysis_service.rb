@@ -100,10 +100,42 @@ class AnalysisService
       # Update job with metadata
       analysis_job.update!(
         total_files: data['totalFiles'] || 0,
-        processed_files: data['processedFiles'] || 0,
+        processed_files: data['totalFiles'] || 0, # Use totalFiles since processedFiles isn't available
         status: 'completed',
         completed_at: Time.current
       )
+      
+      # Transform the groupedMatches format to fileResults if needed
+      if data['fileResults'].nil? && data['groupedMatches'].present?
+        # Create fileResults directly from groupedMatches
+        file_results = {}
+        
+        data['groupedMatches'].each do |_rule_id, matches|
+          matches.each do |match|
+            file_path = match['filePath']
+            file_results[file_path] ||= { 'filePath' => file_path, 'patternMatches' => [] }
+            
+            # Transform location data
+            location = match['location'] || {}
+            match_data = {
+              'ruleId' => match['ruleId'],
+              'ruleName' => match['ruleName'],
+              'description' => match['description'],
+              'location' => {
+                'startLine' => location['line'],
+                'endLine' => location['line'],
+                'startCol' => location['column'],
+                'endCol' => location['column']
+              },
+              'metadata' => match['metadata']
+            }
+            
+            file_results[file_path]['patternMatches'] << match_data
+          end
+        end
+        
+        data['fileResults'] = file_results.values
+      end
       
       # Safety check before processing file results
       if data['fileResults'].nil?
