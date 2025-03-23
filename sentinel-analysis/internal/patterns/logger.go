@@ -47,7 +47,7 @@ func GetLogLevelFromEnv() LogLevel {
 	case "ERROR":
 		return ERROR
 	default:
-		return INFO
+		return DEBUG
 	}
 }
 

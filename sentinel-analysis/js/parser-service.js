@@ -16,6 +16,7 @@ process.stdin.on("end", () => {
     // Parse the input JSON
     const input = JSON.parse(inputData);
     const { filename, code } = input;
+
     fileCount++;
 
     // Parse the code using oxc-parser

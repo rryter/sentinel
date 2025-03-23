@@ -369,7 +369,7 @@ func (s *Server) runAnalysis(jobID string) {
 
 	// Prepare the command to run the indexer with correct arguments
 	cmd := exec.Command(s.indexerPath,
-		"-dir", "/Users/rryter/myCSS/packages/mycss-app/src/app/features",
+		"-dir", "/home/rryter/projects/rai/apps/angular-ai-gen-backend/src/app",
 		"-outdir", jobDir,
 		"-rules", s.rulesDir,
 		"-cache", filepath.Join(s.resultsDir, "ast-cache.json"))

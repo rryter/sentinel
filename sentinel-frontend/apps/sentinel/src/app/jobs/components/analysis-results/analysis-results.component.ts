@@ -2,7 +2,7 @@ import { Component, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
-import { catchError, map, Observable, of, switchMap } from 'rxjs';
+import { catchError, map, NEVER, Observable, of, switchMap } from 'rxjs';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 
 interface RuleEntry {
@@ -78,18 +78,20 @@ export class AnalysisResultsComponent implements OnInit {
             })
           );
         }
+
+        return NEVER;
       }),
-      map(({ results, job }) => {
+      map((w) => {
         this.isLoading = false;
-        if (!results) {
+        if (!w?.results) {
           return null;
         }
 
         return {
-          job,
-          results,
-          rulesCount: Object.keys(results?.matchesByRule).length,
-          ruleEntries: Object.entries(results?.matchesByRule).map(
+          job: w.job,
+          results: w.results,
+          rulesCount: Object.keys(w.results?.matchesByRule).length,
+          ruleEntries: Object.entries(w.results?.matchesByRule).map(
             ([name, count]) => ({
               name,
               count: count as number,

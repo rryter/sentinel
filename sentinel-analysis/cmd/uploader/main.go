@@ -16,9 +16,9 @@ type RouteInfo struct {
 
 func main() {
 	// Use absolute paths for directories
-	uploadDir := "/Users/rryter/Projects/sentinel/sentinel-analysis/uploads"
-	rulesDir := "/Users/rryter/Projects/sentinel/sentinel-analysis/bin/rules"
-	resultsDir := "/Users/rryter/Projects/sentinel/sentinel-analysis/results"
+	uploadDir := "/home/rryter/projects/sentinel/sentinel-analysis/uploads"
+	rulesDir := "/home/rryter/projects/sentinel/sentinel-analysis/bin/rules"
+	resultsDir := "/home/rryter/projects/sentinel/sentinel-analysis/results"
 
 	// Ensure directories exist
 	for _, dir := range []string{uploadDir, rulesDir, resultsDir} {
@@ -36,10 +36,7 @@ func main() {
 
 	// Try to find the indexer binary in several locations
 	possibleLocations := []string{
-		"../indexer/indexer", // relative to uploader directory
-		"../indexer",         // relative to uploader directory (just the binary)
-		"/Users/rryter/Projects/sentinel/sentinel-analysis/cmd/indexer/indexer", // absolute path
-		"/Users/rryter/Projects/sentinel/sentinel-analysis/bin/indexer",         // absolute path in bin
+		"/home/rryter/projects/sentinel/sentinel-analysis/bin/indexer",         // absolute path in bin
 	}
 
 	var indexerPath string

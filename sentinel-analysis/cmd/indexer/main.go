@@ -111,7 +111,24 @@ func main() {
 	// Write ASTs to separate files
 	for _, file := range files {
 		astPath := filepath.Join(astsDir, filepath.Base(file.RelativePath)+".ast.json")
-		if err := writeJSON(astPath, file.AST); err != nil {
+		
+		// Create AST object with filePath added
+		var astMap map[string]interface{}
+		astBytes, err := json.Marshal(file.AST)
+		if err != nil {
+			patterns.PrintWarning("Failed to marshal AST for %s: %v", file.RelativePath, err)
+			continue
+		}
+		
+		if err := json.Unmarshal(astBytes, &astMap); err != nil {
+			patterns.PrintWarning("Failed to unmarshal AST for %s: %v", file.RelativePath, err)
+			continue
+		}
+		
+		// Add filePath to AST map
+		astMap["filePath"] = file.Path
+		
+		if err := writeJSON(astPath, astMap); err != nil {
 			patterns.PrintWarning("Failed to write AST for %s: %v", file.RelativePath, err)
 		}
 	}
