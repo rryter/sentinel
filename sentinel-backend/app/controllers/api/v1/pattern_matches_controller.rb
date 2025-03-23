@@ -1,7 +1,7 @@
 module Api
   module V1
     class PatternMatchesController < ApplicationController
-      before_action :set_analysis_job, only: [:index], if: -> { params[:analysis_job_id].present? }
+      before_action :set_analysis_job, only: [:index, :time_series], if: -> { params[:analysis_job_id].present? }
       
       def index
         # Support filtering by various attributes
@@ -44,6 +44,56 @@ module Api
           total_pages: @matches.total_pages,
           analysis_job_id: @analysis_job&.id
         }
+      end
+
+      def time_series
+        # Parse date range parameters with defaults
+        start_date = params[:start_date] ? Date.parse(params[:start_date]) : 30.days.ago.to_date
+        end_date = params[:end_date] ? Date.parse(params[:end_date]) : Date.today
+        
+        # Get base query scope
+        scope = PatternMatch.joins(analysis_file: :analysis_job)
+        
+        # Filter by analysis_job_id if we're in the nested route or if explicitly provided
+        if @analysis_job
+          scope = scope.where(analysis_files: { analysis_job_id: @analysis_job.id })
+        elsif params[:analysis_job_id].present?
+          scope = scope.where(analysis_files: { analysis_job_id: params[:analysis_job_id] })
+        end
+        
+        # Filter by rule_id if provided
+        if params[:rule_id].present?
+          scope = scope.where(rule_id: params[:rule_id])
+        end
+        
+        # Filter by rule_name if provided
+        if params[:rule_name].present?
+          scope = scope.where(rule_name: params[:rule_name])
+        end
+        
+        # Create date range query between the start and end dates based on when the jobs were created
+        scope = scope.where(analysis_jobs: { created_at: start_date.beginning_of_day..end_date.end_of_day })
+        
+        # Group by date and count
+        counts_by_date = scope.group("DATE(analysis_jobs.created_at)").count
+        
+        # Format the data for the frontend, ensuring all dates in range are included
+        time_series_data = []
+        current_date = start_date
+        
+        while current_date <= end_date
+          date_str = current_date.to_s
+          count = counts_by_date[date_str] || 0
+          
+          time_series_data << {
+            date: date_str,
+            count: count
+          }
+          
+          current_date = current_date + 1.day
+        end
+        
+        render json: time_series_data
       end
       
       private

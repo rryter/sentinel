@@ -173,4 +173,45 @@ export class AnalysisService {
       { params }
     );
   }
+
+  /**
+   * Get pattern matches time series data (counts over time)
+   * @param options Options to filter the time series data
+   * @returns Observable with pattern match counts by date
+   */
+  getPatternMatchesTimeSeries(
+    options: {
+      job_id?: string;
+      start_date?: string;
+      end_date?: string;
+      rule_id?: string;
+      rule_name?: string;
+    } = {}
+  ): Observable<{ date: string; count: number }[]> {
+    let url = `${this.apiUrl}/pattern_matches/time_series`;
+    let params = new HttpParams();
+
+    // If job_id is provided, use the nested route
+    if (options.job_id) {
+      url = `${this.apiUrl}/analysis_jobs/${options.job_id}/pattern_matches/time_series`;
+    }
+
+    if (options.start_date) {
+      params = params.set('start_date', options.start_date);
+    }
+
+    if (options.end_date) {
+      params = params.set('end_date', options.end_date);
+    }
+
+    if (options.rule_id) {
+      params = params.set('rule_id', options.rule_id);
+    }
+
+    if (options.rule_name) {
+      params = params.set('rule_name', options.rule_name);
+    }
+
+    return this.http.get<{ date: string; count: number }[]>(url, { params });
+  }
 }

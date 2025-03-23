@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
 import { catchError, map, NEVER, Observable, of, switchMap } from 'rxjs';
 import { AnalysisResults } from '../model/analysis/analysis.model';
+import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-matches-chart.component';
 
 interface RuleEntry {
   name: string;
@@ -13,7 +14,7 @@ interface RuleEntry {
 @Component({
   selector: 'app-analysis-results',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PatternMatchesChartComponent],
   templateUrl: './analysis-results.component.html',
   styleUrl: './analysis-results.component.scss',
 })
@@ -94,7 +95,7 @@ export class AnalysisResultsComponent implements OnInit {
           ruleEntries: Object.entries(w.results?.matchesByRule).map(
             ([name, count]) => ({
               name,
-              count: count as number,
+              count,
             })
           ),
         };

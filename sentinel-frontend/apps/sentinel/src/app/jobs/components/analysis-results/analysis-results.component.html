@@ -91,6 +91,14 @@
           </span>
         </div>
       </div>
+
+      <!-- Pattern Matches Over Time Chart -->
+      <div class="p-4 border-b border-gray-200">
+        <app-pattern-matches-chart
+          [jobId]="jobId()"
+        ></app-pattern-matches-chart>
+      </div>
+
       <!-- Summary Card -->
       <div
         class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200"

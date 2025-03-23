@@ -15,11 +15,18 @@ Rails.application.routes.draw do
           post :process_results
         end
 
-        resources :pattern_matches, only: [:index]
-
+        resources :pattern_matches, only: [:index] do
+          collection do
+            get :time_series
+          end
+        end
       end
       
-      resources :pattern_matches, only: [:index]
+      resources :pattern_matches, only: [:index] do
+        collection do
+          get :time_series
+        end
+      end
     end
   end
 end
