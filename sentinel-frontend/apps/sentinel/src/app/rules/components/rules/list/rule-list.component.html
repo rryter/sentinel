@@ -1,0 +1,121 @@
+<div class="px-4 sm:px-6 lg:px-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-base font-semibold text-gray-900">Rules</h1>
+      <p class="mt-2 text-sm text-gray-700">
+        A list of all the code analysis rules. Toggle rules to include them in
+        your analysis.
+      </p>
+    </div>
+    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+      <button
+        routerLink="/rules/upload"
+        type="button"
+        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        Add rule
+      </button>
+    </div>
+  </div>
+  <div class="mt-8 flow-root">
+    <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black/5 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                >
+                  Name
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Category
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Severity
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Active
+                </th>
+                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              @for (rule of rules; track rule.id) {
+              <tr class="even:bg-gray-50">
+                <td
+                  class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
+                >
+                  <a [routerLink]="['/rules', rule.id]">
+                    {{ rule.name }}
+                  </a>
+                </td>
+                <td class="px-3 py-4 text-sm text-gray-500 max-w-md truncate">
+                  {{ rule.category }}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                  <span
+                    class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
+                    [ngClass]="{
+                      'bg-red-100 text-red-800': rule.severity === 'high',
+                      'bg-yellow-100 text-yellow-800':
+                        rule.severity === 'medium',
+                      'bg-blue-100 text-blue-800': rule.severity === 'low'
+                    }"
+                  >
+                    {{ rule.severity }}
+                  </span>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <!-- Toggle Switch -->
+                  <div class="flex items-center">
+                    <button
+                      type="button"
+                      class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+                      [ngClass]="
+                        rule.isEnabled ? 'bg-indigo-600' : 'bg-gray-200'
+                      "
+                      (click)="toggleRuleActive(rule)"
+                      role="switch"
+                      [attr.aria-checked]="rule.isEnabled"
+                    >
+                      <span class="sr-only">Toggle rule activation</span>
+                      <span
+                        aria-hidden="true"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                        [ngClass]="
+                          rule.isEnabled ? 'translate-x-5' : 'translate-x-0'
+                        "
+                      ></span>
+                    </button>
+                  </div>
+                </td>
+                <td
+                  class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+                >
+                  <a href="#" class="text-indigo-600 hover:text-indigo-900">
+                    Edit<span class="sr-only">, {{ rule.name }}</span>
+                  </a>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

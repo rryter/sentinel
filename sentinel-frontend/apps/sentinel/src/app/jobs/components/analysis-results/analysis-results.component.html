@@ -1,0 +1,166 @@
+<div class="px-4 sm:px-6 lg:px-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-base font-semibold text-gray-900">Analysis Results</h1>
+      <p class="mt-2 text-sm text-gray-700">
+        Viewing results for job ID: {{ jobId() }}
+      </p>
+    </div>
+    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+      <button
+        routerLink="/analysis"
+        type="button"
+        class="block rounded-md bg-gray-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+      >
+        Back to Jobs
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading) {
+  <div class="flex justify-center py-8">
+    <div
+      class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"
+    ></div>
+  </div>
+  } @else if (error) {
+  <div class="bg-red-50 p-4 rounded-md mt-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg
+          class="h-5 w-5 text-red-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+      </div>
+    </div>
+  </div>
+  } @else if (!analysisJob) {
+  <div class="text-center py-8">
+    <p class="text-sm text-gray-500">No job found with ID: {{ jobId() }}</p>
+  </div>
+  } @else if (analysisJob.status !== 'completed') {
+  <div class="bg-yellow-50 p-4 rounded-md mt-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg
+          class="h-5 w-5 text-yellow-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-yellow-800">
+          This job is still {{ analysisJob.status }}. Results will be available
+          once completed.
+        </h3>
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="mt-6" *ngIf="vm$ | async as vm">
+    <div
+      class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden"
+    >
+      <!-- Duration and Summary -->
+      <div class="bg-gray-50 p-3 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-gray-900">
+            Total Duration:
+            <span class="text-blue-700">{{
+              formatTime(executionTimeSeconds)
+            }}</span>
+          </span>
+        </div>
+      </div>
+      <!-- Summary Card -->
+      <div
+        class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200"
+      >
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="bg-white rounded-lg p-3 shadow-sm">
+            <p class="text-sm text-gray-500">Total Files Analyzed</p>
+            <p class="text-2xl font-semibold text-blue-700">
+              {{ vm.results.totalFiles }}
+            </p>
+          </div>
+          <div class="bg-white rounded-lg p-3 shadow-sm">
+            <p class="text-sm text-gray-500">Total Violations Found</p>
+            <p class="text-2xl font-semibold text-indigo-700">
+              {{ vm.results.totalMatches }}
+            </p>
+          </div>
+          <div
+            class="bg-white rounded-lg p-3 shadow-sm md:col-span-1 col-span-2"
+          >
+            <p class="text-sm text-gray-500">Rules Violated</p>
+            <p class="text-2xl font-semibold text-purple-700">
+              {{ vm.rulesCount }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules Breakdown -->
+      <div class="p-4">
+        <h4 class="text-md font-medium text-gray-800 mb-3">Matches by Rule</h4>
+        <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
+          @for (ruleEntry of vm.ruleEntries; track ruleEntry.name) {
+          <div
+            class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <div>
+              <p class="font-medium text-gray-800">{{ ruleEntry.name }}</p>
+              <p class="text-xs text-gray-500">Pattern match</p>
+            </div>
+            <div class="flex items-center">
+              <span
+                class="px-2.5 py-1 text-xs font-medium rounded-full"
+                [ngClass]="{
+                  'bg-red-100 text-red-800': ruleEntry.count > 100,
+                  'bg-yellow-100 text-yellow-800':
+                    ruleEntry.count > 20 && ruleEntry.count <= 100,
+                  'bg-green-100 text-green-800': ruleEntry.count <= 20
+                }"
+              >
+                {{ ruleEntry.count }} matches
+              </span>
+            </div>
+          </div>
+          } @empty {
+          <div class="text-center py-4 text-gray-500">
+            No rule matches found
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-end">
+        <button
+          class="px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+        >
+          Export Results
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

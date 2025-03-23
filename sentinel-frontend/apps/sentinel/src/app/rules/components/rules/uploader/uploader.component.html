@@ -1,0 +1,123 @@
+<div class="px-4 sm:px-6 lg:px-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-base font-semibold text-gray-900">Upload Rule</h1>
+      <p class="mt-2 text-sm text-gray-700">
+        Upload a new rule file to add to your code analysis rules.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-8 max-w-3xl mx-auto">
+    <div
+      class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
+      [ngClass]="{ 'bg-indigo-50 border-indigo-300': isDragging }"
+      (dragover)="handleDragOver($event)"
+      (dragleave)="handleDragLeave($event)"
+      (drop)="handleDrop($event)"
+    >
+      <div class="text-center">
+        <svg
+          class="mx-auto size-12 text-gray-300"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M11.47 2.47a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06l-3.22-3.22V16.5a.75.75 0 0 1-1.5 0V4.81L8.03 8.03a.75.75 0 0 1-1.06-1.06l4.5-4.5ZM3 15.75a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Zm0 3a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <div class="mt-4 flex text-sm/6 text-gray-600 justify-center">
+          <label
+            for="file-upload"
+            class="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+          >
+            <span>Upload a file</span>
+            <input
+              id="file-upload"
+              name="file-upload"
+              type="file"
+              class="sr-only"
+              (change)="handleFileChange($event)"
+            />
+          </label>
+          <p class="pl-1">or drag and drop</p>
+        </div>
+        <p class="text-xs/5 text-gray-600 mt-2">
+          JSON, YAML, or text files up to 10MB
+        </p>
+
+        <div
+          *ngIf="selectedFiles && selectedFiles.length > 0"
+          class="mt-4 text-sm text-gray-700"
+        >
+          <div
+            *ngFor="let file of selectedFiles; let i = index"
+            class="flex justify-between items-center mb-2"
+          >
+            <div>
+              <p>
+                <span class="font-medium">{{ file.name }}</span>
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ (file.size / 1024).toFixed(2) }} KB
+              </p>
+            </div>
+            <button
+              type="button"
+              class="text-red-500 hover:text-red-700"
+              (click)="removeFile(i)"
+            >
+              <svg
+                class="size-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="mt-4 text-sm text-red-600">
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="mt-4 text-sm text-green-600">
+          {{ successMessage }}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button
+        type="button"
+        class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 mr-3"
+        routerLink="/rules"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        [disabled]="!selectedFiles"
+        [ngClass]="{
+          'opacity-50 cursor-not-allowed': !selectedFiles,
+          'hover:bg-indigo-500': selectedFiles
+        }"
+        class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        (click)="uploadFile()"
+      >
+        Upload
+      </button>
+    </div>
+  </div>
+</div>

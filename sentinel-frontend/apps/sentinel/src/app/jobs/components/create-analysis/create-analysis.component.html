@@ -1,0 +1,187 @@
+<div class="flex flex-col gap-4 p-6">
+  <!-- Project selection -->
+  <div class="mb-4">
+    <label
+      for="project-select"
+      class="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Select Project to Analyze
+    </label>
+    <div class="relative">
+      @if (isLoadingProjects()) {
+      <div class="flex items-center">
+        <div
+          class="mr-2 w-5 h-5 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"
+        ></div>
+        <span class="text-sm text-gray-500">Loading projects...</span>
+      </div>
+      } @else if (projects().length === 0) {
+      <div class="p-3 border border-gray-300 rounded-md bg-gray-50">
+        <p class="text-sm text-gray-500">
+          No projects available. Please create a project first.
+        </p>
+      </div>
+      } @else {
+      <select
+        id="project-select"
+        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:max-w-xs sm:text-sm sm:leading-6"
+        [ngModel]="selectedProjectId()"
+        (ngModelChange)="selectedProjectId.set($event)"
+        [disabled]="isJobRunning() || isLoading()"
+      >
+        <option [ngValue]="null" disabled>Select a project</option>
+        @for (project of projects(); track project.id) {
+        <option [ngValue]="project.id">{{ project.name }}</option>
+        }
+      </select>
+      }
+    </div>
+  </div>
+
+  <div class="flex gap-2">
+    <button
+      class="px-4 py-2 text-white font-medium rounded-md bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      (click)="createAnalysis()"
+      [disabled]="!canStartAnalysis()"
+    >
+      @if (!isLoading()) {
+      <span>Start New Analysis</span>
+      } @else {
+      <span>Running...</span>
+      }
+    </button>
+  </div>
+
+  <!-- Error message -->
+  @if (errorMessage()) {
+  <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+    <p>{{ errorMessage() }}</p>
+  </div>
+  }
+
+  <!-- Job status -->
+  @if (job()) {
+  <div class="mb-4 rounded-md bg-gray-50 p-4">
+    <h3 class="text-lg font-medium text-gray-900">Job Status</h3>
+    <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <div class="text-gray-500">ID:</div>
+      <div class="text-gray-900">{{ job()!.id }}</div>
+
+      <div class="text-gray-500">Status:</div>
+      <div class="text-gray-900">
+        @switch (job()!.status) { @case ('pending') {
+        <span class="text-yellow-600">Pending</span>
+        } @case ('running') {
+        <span class="text-blue-600"
+          >Running ({{ formatTime(runningTimeSeconds()) }})</span
+        >
+        } @case ('completed') {
+        <span class="text-green-600">Completed</span>
+        } @case ('failed') {
+        <span class="text-red-600">Failed</span>
+        } }
+      </div>
+
+      <div class="text-gray-500">Started:</div>
+      <div class="text-gray-900">{{ job()!.startTime | date : 'medium' }}</div>
+
+      @if (job()!.completedTime) {
+      <div class="text-gray-500">Completed:</div>
+      <div class="text-gray-900">
+        {{ job()!.completedTime | date : 'medium' }}
+      </div>
+      } @if (job()!.error) {
+      <div class="text-gray-500">Error:</div>
+      <div class="text-gray-900 text-red-600">
+        {{ job()!.error }}
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Analysis results -->
+  @if (analysisResults()) {
+  <div class="mt-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Analysis Results</h3>
+    <div
+      class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden"
+    >
+      <!-- Duration and Summary -->
+      <div class="bg-gray-50 p-3 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-gray-900">
+            Total Duration:
+            <span class="text-blue-700">{{
+              formatTime(totalExecutionTimeSeconds())
+            }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Summary Card -->
+      <div
+        class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200"
+      >
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="bg-white rounded-lg p-3 shadow-sm">
+            <p class="text-sm text-gray-500">Total Files Analyzed</p>
+            <p class="text-2xl font-semibold text-blue-700">
+              {{ analysisResults()!.totalFiles }}
+            </p>
+          </div>
+          <div class="bg-white rounded-lg p-3 shadow-sm">
+            <p class="text-sm text-gray-500">Total Matches Found</p>
+            <p class="text-2xl font-semibold text-indigo-700">
+              {{ analysisResults()!.totalMatches }}
+            </p>
+          </div>
+          <div
+            class="bg-white rounded-lg p-3 shadow-sm md:col-span-1 col-span-2"
+          >
+            <p class="text-sm text-gray-500">Rules Matched</p>
+            <p class="text-2xl font-semibold text-purple-700">
+              {{ getObjectKeys(analysisResults()!.matchesByRule).length }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules Breakdown -->
+      <div class="p-4">
+        <h4 class="text-md font-medium text-gray-800 mb-3">Matches by Rule</h4>
+        <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
+          @for (rule of getObjectEntries(analysisResults()!.matchesByRule);
+          track $index) {
+          <div
+            class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <div>
+              <p class="font-medium text-gray-800">{{ rule[0] }}</p>
+              <p class="text-xs text-gray-500">Pattern match</p>
+            </div>
+            <div class="flex items-center">
+              <span
+                class="px-2.5 py-1 text-xs font-medium rounded-full"
+                [ngClass]="{
+                  'bg-red-100 text-red-800': rule[1] > 100,
+                  'bg-yellow-100 text-yellow-800':
+                    rule[1] > 20 && rule[1] <= 100,
+                  'bg-green-100 text-green-800': rule[1] <= 20
+                }"
+              >
+                {{ rule[1] }} matches
+              </span>
+            </div>
+          </div>
+          } @empty {
+          <div class="text-center py-4 text-gray-500">
+            No rule matches found
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>
