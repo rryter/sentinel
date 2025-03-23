@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Project, ProjectsService } from '../../services/projects.service';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [ProjectsService],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.scss'],

@@ -39,11 +39,7 @@
   </div>
 
   <div class="flex gap-2">
-    <button
-      class="px-4 py-2 text-white font-medium rounded-md bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-      (click)="createAnalysis()"
-      [disabled]="!canStartAnalysis()"
-    >
+    <button hlmBtn (click)="createAnalysis()" [disabled]="!canStartAnalysis()">
       @if (!isLoading()) {
       <span>Start New Analysis</span>
       } @else {

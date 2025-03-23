@@ -13,6 +13,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-matches-chart.component';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-job-pattern-matches',
@@ -22,6 +23,7 @@ import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-m
     RouterModule,
     FormsModule,
     PatternMatchesChartComponent,
+    HlmButtonDirective,
   ],
   templateUrl: './job-pattern-matches.component.html',
   styleUrl: './job-pattern-matches.component.scss',

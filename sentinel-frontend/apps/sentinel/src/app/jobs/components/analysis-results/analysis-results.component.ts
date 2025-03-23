@@ -5,6 +5,7 @@ import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
 import { catchError, map, NEVER, Observable, of, switchMap } from 'rxjs';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-matches-chart.component';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 interface RuleEntry {
   name: string;
@@ -14,7 +15,12 @@ interface RuleEntry {
 @Component({
   selector: 'app-analysis-results',
   standalone: true,
-  imports: [CommonModule, RouterModule, PatternMatchesChartComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    PatternMatchesChartComponent,
+    HlmButtonDirective,
+  ],
   templateUrl: './analysis-results.component.html',
   styleUrl: './analysis-results.component.scss',
 })

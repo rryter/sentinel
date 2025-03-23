@@ -14,6 +14,7 @@ import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { AnalysisResults } from '../model/analysis/analysis.model';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 interface Project {
   id: string;
@@ -23,7 +24,7 @@ interface Project {
 @Component({
   selector: 'app-create-analysis',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HlmButtonDirective],
   templateUrl: './create-analysis.component.html',
   styleUrl: './create-analysis.component.scss',
 })

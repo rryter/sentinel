@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
 import { ProjectsService } from '../../../projects/services/projects.service';
-import { catchError, map, forkJoin, of } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import { DatePipe } from '@angular/common';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 // Interface combining AnalysisJob with project name for display
 interface JobWithProject extends AnalysisJob {
@@ -14,7 +15,7 @@ interface JobWithProject extends AnalysisJob {
 @Component({
   selector: 'app-analysis-job-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [DatePipe],
   templateUrl: './analysis-job-list.component.html',
   styleUrls: ['./analysis-job-list.component.scss'],

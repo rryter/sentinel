@@ -2,11 +2,11 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Project, ProjectsService } from '../../services/projects.service';
-
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [ProjectsService],
   template: `
     <div class="px-4 sm:px-6 lg:px-8">
@@ -20,11 +20,7 @@ import { Project, ProjectsService } from '../../services/projects.service';
           </p>
         </div>
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button
-            routerLink="/projects"
-            type="button"
-            class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
+          <button routerLink="/projects" type="button" hlmBtn>
             Back to Projects
           </button>
         </div>

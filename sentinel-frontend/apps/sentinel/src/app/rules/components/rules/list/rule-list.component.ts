@@ -2,10 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Rule, RulesService } from '../../../services/rules.service';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-rule-list',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [RulesService],
   templateUrl: './rule-list.component.html',
   styleUrl: './rule-list.component.scss',

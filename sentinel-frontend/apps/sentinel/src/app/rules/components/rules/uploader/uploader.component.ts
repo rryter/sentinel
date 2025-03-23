@@ -7,10 +7,12 @@ import {
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-uploader',
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, RouterModule, HlmButtonDirective],
   templateUrl: './uploader.component.html',
   styleUrl: './uploader.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
