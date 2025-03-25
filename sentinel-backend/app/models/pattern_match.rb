@@ -1,5 +1,5 @@
 class PatternMatch < ActiveRecord::Base
-  belongs_to :analysis_file
+  belongs_to :file_with_violations, class_name: "FileWithViolations"
   
   validates :rule_name, presence: true
   validates :start_line, presence: true

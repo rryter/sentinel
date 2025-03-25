@@ -16,6 +16,9 @@ module SentinelBackend
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Add serializers directory to autoload paths
+    config.autoload_paths += %W[#{config.root}/app/serializers]
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

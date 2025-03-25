@@ -4,12 +4,32 @@ module Api
       before_action :set_job, only: [:show]
       
       def index
-        @jobs = AnalysisJob.all
-        render json: @jobs
+        @jobs = AnalysisJob.includes(:files_with_violations, :pattern_matches)
+          .order(created_at: :desc)
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 10)
+        
+        meta = { 
+          total_count: AnalysisJob.count,
+          page: params[:page] || 1,
+          per_page: params[:per_page] || 10
+        }
+        
+        # Using AMS with includes
+        render_serialized @jobs, 
+                        include: [:files_with_violations, :pattern_matches], 
+                        meta: meta
       end
       
       def show
-        render json: @job
+        # Preload associations to avoid N+1 queries
+        @job = AnalysisJob.includes(
+          files_with_violations: {},
+          pattern_matches: { file_with_violations: {} }
+        ).find(params[:id])
+        
+        # Using AMS with includes
+        render_serialized @job, include: [:files_with_violations, :pattern_matches]
       end
       
       def create
@@ -26,7 +46,7 @@ module Api
           
           Rails.logger.info("Queued AnalysisWorker and AnalysisStatusPollerWorker for job_id: #{@job.id}")
           
-          render json: @job, status: :created
+          render_serialized @job, status: :created
         else
           render json: { errors: @job.errors }, status: :unprocessable_entity
         end
@@ -35,15 +55,28 @@ module Api
       # Add the fetch_results action
       def fetch_results
         @job = AnalysisJob.find(params[:id])
-        service = AnalysisService.new(@job.id)
         
-        # Try to get cached data first
-        data = service.fetch_patterns
-        
-        if data
-          render json: data
+        # If using service, convert its output to use serializers
+        if params[:use_service] == 'true'
+          service = AnalysisService.new(@job.id)
+          data = service.fetch_patterns
+          
+          if data
+            render json: data
+          else
+            render json: { error: 'Failed to fetch analysis results' }, status: :service_unavailable
+          end
         else
-          render json: { error: 'Failed to fetch analysis results' }, status: :service_unavailable
+          # Preload associations
+          @job = AnalysisJob.includes(
+            files_with_violations: {},
+            pattern_matches: { file_with_violations: {} }
+          ).find(params[:id])
+          
+          # Using AMS with includes
+          render_serialized @job, 
+                          include: [:files_with_violations, :pattern_matches],
+                          meta: { detailed: true }
         end
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Analysis job not found' }, status: :not_found

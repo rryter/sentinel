@@ -10,25 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_22_135716) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_24_181456) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-
-  create_table "analysis_files", force: :cascade do |t|
-    t.bigint "analysis_job_id", null: false
-    t.string "file_path", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["analysis_job_id", "file_path"], name: "index_analysis_files_on_analysis_job_id_and_file_path", unique: true
-    t.index ["analysis_job_id"], name: "index_analysis_files_on_analysis_job_id"
-  end
 
   create_table "analysis_jobs", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
     t.integer "total_files"
     t.integer "processed_files"
-    t.datetime "started_at"
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -37,8 +27,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_22_135716) do
     t.index ["status"], name: "index_analysis_jobs_on_status"
   end
 
+  create_table "files_with_violations", force: :cascade do |t|
+    t.bigint "analysis_job_id", null: false
+    t.string "file_path", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["analysis_job_id", "file_path"], name: "index_files_with_violations_on_analysis_job_id_and_file_path", unique: true
+    t.index ["analysis_job_id"], name: "index_files_with_violations_on_analysis_job_id"
+  end
+
   create_table "pattern_matches", force: :cascade do |t|
-    t.bigint "analysis_file_id", null: false
+    t.bigint "file_with_violations_id", null: false
     t.string "rule_id"
     t.string "rule_name", null: false
     t.text "description"
@@ -49,7 +48,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_22_135716) do
     t.jsonb "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["analysis_file_id"], name: "index_pattern_matches_on_analysis_file_id"
+    t.index ["file_with_violations_id"], name: "index_pattern_matches_on_file_with_violations_id"
     t.index ["rule_id"], name: "index_pattern_matches_on_rule_id"
     t.index ["rule_name"], name: "index_pattern_matches_on_rule_name"
   end
@@ -62,7 +61,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_22_135716) do
     t.index ["name"], name: "index_projects_on_name", unique: true
   end
 
-  add_foreign_key "analysis_files", "analysis_jobs"
   add_foreign_key "analysis_jobs", "projects"
-  add_foreign_key "pattern_matches", "analysis_files"
+  add_foreign_key "files_with_violations", "analysis_jobs"
+  add_foreign_key "pattern_matches", "files_with_violations", column: "file_with_violations_id"
 end

@@ -10,6 +10,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 // Interface combining AnalysisJob with project name for display
 interface JobWithProject extends AnalysisJob {
   projectName?: string;
+  statusClass?: string;
 }
 
 @Component({
@@ -60,16 +61,17 @@ export class AnalysisJobListComponent implements OnInit {
           .loadAnalysisJobs()
           .pipe(
             map((jobs) => {
-              // Add project names to jobs
-              return jobs.map(
-                (job) =>
-                  ({
-                    ...job,
-                    projectName: job.projectId
-                      ? projectMap.get(job.projectId)
-                      : 'Unknown',
-                  } as JobWithProject)
-              );
+              // Add project names and status classes to jobs
+              return jobs.map((job) => {
+                const enrichedJob: JobWithProject = {
+                  ...job,
+                  projectName: job.projectId
+                    ? projectMap.get(job.projectId)
+                    : 'Unknown',
+                  statusClass: this.getStatusClass(job.status),
+                };
+                return enrichedJob;
+              });
             }),
             catchError((error) => {
               console.error('Error loading analysis jobs:', error);
