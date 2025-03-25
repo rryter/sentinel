@@ -3,9 +3,423 @@
   "info": {
     "title": "Sentinel API",
     "version": "v1",
-    "description": "Sentinel API endpoints"
+    "description": "API for the Sentinel code security analysis platform"
   },
   "paths": {
+    "/api/v1/analysis_jobs": {
+      "get": {
+        "summary": "Lists all analysis jobs",
+        "tags": [
+          "Analysis Jobs"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Items per page",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "analysis jobs found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "running",
+                              "completed",
+                              "failed"
+                            ]
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "files_with_violations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "file_path": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "pattern_matches": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "rule_id": {
+                                  "type": "string"
+                                },
+                                "rule_name": {
+                                  "type": "string"
+                                },
+                                "line_number": {
+                                  "type": "integer"
+                                },
+                                "column": {
+                                  "type": "integer"
+                                },
+                                "match_text": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total_count": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "per_page": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates an analysis job",
+        "tags": [
+          "Analysis Jobs"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "analysis job created"
+          },
+          "422": {
+            "description": "invalid request"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "project_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves an analysis job",
+        "tags": [
+          "Analysis Jobs"
+        ],
+        "responses": {
+          "200": {
+            "description": "analysis job found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "running",
+                            "completed",
+                            "failed"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "files_with_violations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "file_path": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "pattern_matches": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "rule_id": {
+                                "type": "string"
+                              },
+                              "rule_name": {
+                                "type": "string"
+                              },
+                              "line_number": {
+                                "type": "integer"
+                              },
+                              "column": {
+                                "type": "integer"
+                              },
+                              "match_text": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{id}/fetch_results": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "use_service",
+          "in": "query",
+          "required": false,
+          "description": "Whether to use the analysis service",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Fetches analysis job results",
+        "tags": [
+          "Analysis Jobs"
+        ],
+        "responses": {
+          "200": {
+            "description": "analysis job results fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "running",
+                            "completed",
+                            "failed"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "files_with_violations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "file_path": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "pattern_matches": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "rule_id": {
+                                "type": "string"
+                              },
+                              "rule_name": {
+                                "type": "string"
+                              },
+                              "line_number": {
+                                "type": "integer"
+                              },
+                              "column": {
+                                "type": "integer"
+                              },
+                              "match_text": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "detailed": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          },
+          "503": {
+            "description": "service unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{id}/process_results": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Processes analysis job results",
+        "tags": [
+          "Analysis Jobs"
+        ],
+        "responses": {
+          "200": {
+            "description": "processing scheduled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          }
+        }
+      }
+    },
     "/api/v1/examples": {
       "get": {
         "summary": "Lists all examples",
@@ -182,6 +596,567 @@
           }
         }
       }
+    },
+    "/api/v1/pattern_matches": {
+      "get": {
+        "summary": "Lists all pattern matches",
+        "tags": [
+          "Pattern Matches"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Items per page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "rule_name",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "analysis_job_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by analysis job ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": false,
+            "description": "Filter by file path pattern",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pattern matches found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "matches": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "rule_id": {
+                            "type": "string"
+                          },
+                          "rule_name": {
+                            "type": "string"
+                          },
+                          "line_number": {
+                            "type": "integer"
+                          },
+                          "column": {
+                            "type": "integer"
+                          },
+                          "match_text": {
+                            "type": "string"
+                          },
+                          "analysis_file": {
+                            "type": "object",
+                            "properties": {
+                              "file_path": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "total_count": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    },
+                    "analysis_job_id": {
+                      "type": "integer",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pattern_matches/time_series": {
+      "get": {
+        "summary": "Gets time series data for pattern matches",
+        "tags": [
+          "Pattern Matches"
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "Start date for the time series (default: 30 days ago)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "End date for the time series (default: today)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_name",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "analysis_job_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by analysis job ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "time series data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string"
+                      },
+                      "count": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "count"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{analysis_job_id}/pattern_matches": {
+      "parameters": [
+        {
+          "name": "analysis_job_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "description": "Page number",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "description": "Items per page",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "rule_name",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "rule_id",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule ID",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "file_path",
+          "in": "query",
+          "required": false,
+          "description": "Filter by file path pattern",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Lists pattern matches for an analysis job",
+        "tags": [
+          "Pattern Matches"
+        ],
+        "responses": {
+          "200": {
+            "description": "pattern matches found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "matches": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "rule_id": {
+                            "type": "string"
+                          },
+                          "rule_name": {
+                            "type": "string"
+                          },
+                          "line_number": {
+                            "type": "integer"
+                          },
+                          "column": {
+                            "type": "integer"
+                          },
+                          "match_text": {
+                            "type": "string"
+                          },
+                          "analysis_file": {
+                            "type": "object",
+                            "properties": {
+                              "file_path": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "total_count": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    },
+                    "analysis_job_id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{analysis_job_id}/pattern_matches/time_series": {
+      "parameters": [
+        {
+          "name": "analysis_job_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "description": "Start date for the time series (default: 30 days ago)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "description": "End date for the time series (default: today)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "rule_id",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule ID",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "rule_name",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule name",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Gets time series data for pattern matches in an analysis job",
+        "tags": [
+          "Pattern Matches"
+        ],
+        "responses": {
+          "200": {
+            "description": "time series data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string"
+                      },
+                      "count": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "count"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "summary": "Lists all projects",
+        "tags": [
+          "Projects"
+        ],
+        "responses": {
+          "200": {
+            "description": "projects found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "repository_url": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "repository_url"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a project",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "project created"
+          },
+          "422": {
+            "description": "invalid request"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "repository_url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "repository_url"
+                    ]
+                  }
+                },
+                "required": [
+                  "project"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a project",
+        "tags": [
+          "Projects"
+        ],
+        "responses": {
+          "200": {
+            "description": "project found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "repository_url": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "repository_url"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "project not found"
+          }
+        }
+      }
     }
   },
   "servers": [
@@ -196,6 +1171,134 @@
   ],
   "components": {
     "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "repository_url": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "repository_url"
+        ]
+      },
+      "AnalysisJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "project_id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "completed",
+              "failed"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "status"
+        ]
+      },
+      "FileWithViolations": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "analysis_job_id": {
+            "type": "integer"
+          },
+          "file_path": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "analysis_job_id",
+          "file_path"
+        ]
+      },
+      "PatternMatch": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "analysis_file_id": {
+            "type": "integer"
+          },
+          "rule_id": {
+            "type": "string"
+          },
+          "rule_name": {
+            "type": "string"
+          },
+          "line_number": {
+            "type": "integer"
+          },
+          "column": {
+            "type": "integer"
+          },
+          "match_text": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "analysis_file_id",
+          "rule_id",
+          "rule_name",
+          "line_number"
+        ]
+      },
       "Example": {
         "type": "object",
         "properties": {
@@ -215,6 +1318,7 @@
           "description"
         ]
       }
-    }
+    },
+    "securitySchemes": {}
   }
 }

@@ -11,9 +11,11 @@
  */
 
 
-export interface Example { 
+export interface ApiV1ProjectsGet200ResponseInner { 
     id: number;
     name: string;
-    description: string;
+    repository_url: string;
+    created_at?: string;
+    updated_at?: string;
 }
 

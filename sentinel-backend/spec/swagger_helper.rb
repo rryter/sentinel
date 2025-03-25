@@ -20,7 +20,7 @@ RSpec.configure do |config|
       info: {
         title: 'Sentinel API',
         version: 'v1',
-        description: 'Sentinel API endpoints'
+        description: 'API for the Sentinel code security analysis platform'
       },
       paths: {},
       servers: [
@@ -35,6 +35,63 @@ RSpec.configure do |config|
       ],
       components: {
         schemas: {
+          # Project schema
+          Project: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              name: { type: :string },
+              repository_url: { type: :string },
+              created_at: { type: :string, format: 'date-time' },
+              updated_at: { type: :string, format: 'date-time' }
+            },
+            required: ['id', 'name', 'repository_url']
+          },
+          
+          # Analysis Job schema
+          AnalysisJob: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              project_id: { type: :integer },
+              status: { type: :string, enum: ['pending', 'running', 'completed', 'failed'] },
+              created_at: { type: :string, format: 'date-time' },
+              updated_at: { type: :string, format: 'date-time' }
+            },
+            required: ['id', 'project_id', 'status']
+          },
+          
+          # File with violations schema
+          FileWithViolations: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              analysis_job_id: { type: :integer },
+              file_path: { type: :string },
+              created_at: { type: :string, format: 'date-time' },
+              updated_at: { type: :string, format: 'date-time' }
+            },
+            required: ['id', 'analysis_job_id', 'file_path']
+          },
+          
+          # Pattern match schema
+          PatternMatch: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              analysis_file_id: { type: :integer },
+              rule_id: { type: :string },
+              rule_name: { type: :string },
+              line_number: { type: :integer },
+              column: { type: :integer },
+              match_text: { type: :string },
+              created_at: { type: :string, format: 'date-time' },
+              updated_at: { type: :string, format: 'date-time' }
+            },
+            required: ['id', 'analysis_file_id', 'rule_id', 'rule_name', 'line_number']
+          },
+          
+          # Example schema (for demonstration purposes)
           Example: {
             type: :object,
             properties: {
@@ -44,6 +101,14 @@ RSpec.configure do |config|
             },
             required: ['id', 'name', 'description']
           }
+        },
+        securitySchemes: {
+          # Add security scheme if you implement authentication
+          # bearerAuth: {
+          #   type: :http,
+          #   scheme: :bearer,
+          #   bearerFormat: 'JWT'
+          # }
         }
       }
     }

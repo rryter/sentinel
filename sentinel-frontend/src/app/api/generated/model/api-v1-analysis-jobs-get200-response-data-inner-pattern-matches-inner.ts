@@ -11,9 +11,12 @@
  */
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner { 
+    id?: number;
+    rule_id?: string;
+    rule_name?: string;
+    line_number?: number;
+    column?: number;
+    match_text?: string;
 }
 

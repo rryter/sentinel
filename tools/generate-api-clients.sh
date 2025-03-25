@@ -21,5 +21,9 @@ fi
 echo "Generating Angular API clients from OpenAPI spec..."
 (cd $FRONTEND_DIR && npm run generate:api)
 
+# Fix any ESLint issues in the generated code
+echo "Fixing ESLint issues in generated code..."
+(cd $FRONTEND_DIR && npx eslint --fix src/app/api/generated/**/*.ts || true)
+
 echo "API client generation completed!"
 echo "Generated TypeScript clients can be found at: $FRONTEND_DIR/src/app/api/generated" 

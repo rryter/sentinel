@@ -11,7 +11,7 @@
  */
 
 
-export interface Example { 
+export interface ApiV1ExamplesGet200ResponseInner { 
     id: number;
     name: string;
     description: string;

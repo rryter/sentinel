@@ -11,9 +11,15 @@
  */
 
 
-export interface Example { 
+export interface PatternMatch { 
     id: number;
-    name: string;
-    description: string;
+    analysis_file_id: number;
+    rule_id: string;
+    rule_name: string;
+    line_number: number;
+    column?: number;
+    match_text?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 

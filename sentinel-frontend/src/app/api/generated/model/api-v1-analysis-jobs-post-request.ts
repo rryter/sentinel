@@ -11,9 +11,7 @@
  */
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1AnalysisJobsPostRequest { 
+    project_id: number;
 }
 

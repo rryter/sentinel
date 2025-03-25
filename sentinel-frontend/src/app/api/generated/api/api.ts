@@ -1,3 +1,13 @@
+export * from './analysis-jobs.service';
+import { AnalysisJobsService } from './analysis-jobs.service';
+export * from './analysis-jobs.serviceInterface';
 export * from './examples.service';
 import { ExamplesService } from './examples.service';
-export const APIS = [ExamplesService];
+export * from './examples.serviceInterface';
+export * from './pattern-matches.service';
+import { PatternMatchesService } from './pattern-matches.service';
+export * from './pattern-matches.serviceInterface';
+export * from './projects.service';
+import { ProjectsService } from './projects.service';
+export * from './projects.serviceInterface';
+export const APIS = [AnalysisJobsService, ExamplesService, PatternMatchesService, ProjectsService];

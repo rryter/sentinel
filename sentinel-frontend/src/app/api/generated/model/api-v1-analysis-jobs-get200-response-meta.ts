@@ -11,9 +11,9 @@
  */
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1AnalysisJobsGet200ResponseMeta { 
+    total_count?: number;
+    page?: number;
+    per_page?: number;
 }
 

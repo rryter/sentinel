@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "generate:api": "openapi-generator-cli generate -i ../sentinel-backend/swagger/v1/swagger.json -g typescript-angular -o src/app/api/generated --additional-properties=providedIn=root,ngVersion=19.0.0"
+    "generate:api": "openapi-generator-cli generate --generator-key sentinel-api"
   },
   "private": true,
   "dependencies": {

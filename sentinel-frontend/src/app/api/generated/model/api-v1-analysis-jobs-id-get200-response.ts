@@ -9,11 +9,10 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ApiV1AnalysisJobsGet200ResponseDataInner } from './api-v1-analysis-jobs-get200-response-data-inner';
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1AnalysisJobsIdGet200Response { 
+    data?: ApiV1AnalysisJobsGet200ResponseDataInner;
 }
 

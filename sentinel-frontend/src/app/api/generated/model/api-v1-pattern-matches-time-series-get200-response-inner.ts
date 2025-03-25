@@ -11,9 +11,8 @@
  */
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1PatternMatchesTimeSeriesGet200ResponseInner { 
+    date: string;
+    count: number;
 }
 

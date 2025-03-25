@@ -11,9 +11,8 @@
  */
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner { 
+    id?: number;
+    file_path?: string;
 }
 

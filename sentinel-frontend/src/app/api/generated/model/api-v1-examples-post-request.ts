@@ -11,8 +11,7 @@
  */
 
 
-export interface Example { 
-    id: number;
+export interface ApiV1ExamplesPostRequest { 
     name: string;
     description: string;
 }

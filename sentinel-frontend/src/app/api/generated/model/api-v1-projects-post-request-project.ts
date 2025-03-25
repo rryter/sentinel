@@ -11,9 +11,8 @@
  */
 
 
-export interface Example { 
-    id: number;
+export interface ApiV1ProjectsPostRequestProject { 
     name: string;
-    description: string;
+    repository_url: string;
 }
 

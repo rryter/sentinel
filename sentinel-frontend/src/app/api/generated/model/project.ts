@@ -11,9 +11,11 @@
  */
 
 
-export interface Example { 
+export interface Project { 
     id: number;
     name: string;
-    description: string;
+    repository_url: string;
+    created_at?: string;
+    updated_at?: string;
 }
 

@@ -9,11 +9,10 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ApiV1ProjectsPostRequestProject } from './api-v1-projects-post-request-project';
 
 
-export interface Example { 
-    id: number;
-    name: string;
-    description: string;
+export interface ApiV1ProjectsPostRequest { 
+    project: ApiV1ProjectsPostRequestProject;
 }
 

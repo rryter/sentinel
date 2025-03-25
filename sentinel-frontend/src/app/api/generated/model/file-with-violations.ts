@@ -11,9 +11,11 @@
  */
 
 
-export interface Example { 
+export interface FileWithViolations { 
     id: number;
-    name: string;
-    description: string;
+    analysis_job_id: number;
+    file_path: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
