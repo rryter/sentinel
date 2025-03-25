@@ -8,27 +8,33 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AnalysisService } from '../../services/analysis.service';
-import { ProjectsService } from '../../../projects/services/projects.service';
 import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { AnalysisResults } from '../model/analysis/analysis.model';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import {
-  AnalysisJob,
-  AnalysisJobListItem,
-  AnalysisJobStatus,
-} from '../model/analysis/analysisJob.model';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
-import { ApiV1AnalysisJobsIdGet200Response } from 'src/app/api/generated/model/api-v1-analysis-jobs-id-get200-response';
+import { ProjectsService } from 'src/app/api/generated/api/projects.service';
+import { ApiV1ProjectsGet200Response } from 'src/app/api/generated/model/api-v1-projects-get200-response';
+import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-projects-get200-response-data-inner';
+import { JobStatusComponent } from '../job-status/job-status.component';
+import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
+import { AnalysisResultsComponent } from '../analysis-results/analysis-results.component';
+import { AnalysisResults } from '../model/analysis/analysis.model';
 
-interface Project {
-  id: string;
-  name: string;
+enum AnalysisJobStatus {
+  PENDING = 'pending',
+  RUNNING = 'running',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
 }
 
-// Interface to handle API job response shape vs our internal model
+interface AnalysisJob {
+  id: number;
+  status: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
 interface JobResponse {
   jobId: number;
   status: string;
@@ -37,9 +43,55 @@ interface JobResponse {
 @Component({
   selector: 'app-create-analysis',
   standalone: true,
-  imports: [CommonModule, FormsModule, HlmButtonDirective],
-  templateUrl: './create-analysis.component.html',
-  styleUrl: './create-analysis.component.scss',
+  imports: [
+    CommonModule,
+    FormsModule,
+    HlmButtonDirective,
+    JobStatusComponent,
+    ProjectSelectorComponent,
+    AnalysisResultsComponent,
+  ],
+  template: `
+    <div class="flex flex-col gap-4 p-6">
+      <app-project-selector
+        [projects]="projects()"
+        [isLoading]="isLoadingProjects()"
+        [disabled]="isJobRunning()"
+        [selectedId]="selectedProjectId()"
+        (selectionChange)="selectedProjectId.set($event)"
+      />
+
+      <div class="flex gap-2">
+        <button
+          hlmBtn
+          (click)="createAnalysis()"
+          [disabled]="!canStartAnalysis()"
+        >
+          @if (!isLoading()) {
+          <span>Start New Analysis</span>
+          } @else {
+          <span>Running...</span>
+          }
+        </button>
+      </div>
+
+      @if (errorMessage()) {
+      <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+        <p>{{ errorMessage() }}</p>
+      </div>
+      } @if (job()) {
+      <app-job-status
+        [job]="job()"
+        [runningTimeSeconds]="runningTimeSeconds()"
+      />
+      } @if (analysisResults()) {
+      <app-analysis-results
+        [results]="analysisResults()"
+        [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"
+      />
+      }
+    </div>
+  `,
 })
 export class CreateAnalysisComponent implements OnInit {
   private analysisService = inject(AnalysisJobsService);
@@ -51,8 +103,8 @@ export class CreateAnalysisComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   job = signal<AnalysisJob | null>(null);
   analysisResults = signal<AnalysisResults | null>(null);
-  projects = signal<Project[]>([]);
-  selectedProjectId = signal<string | null>(null);
+  projects = signal<ApiV1ProjectsGet200ResponseDataInner[]>([]);
+  selectedProjectId = signal<number | null>(null);
   isLoadingProjects = signal(false);
 
   // Internal state signals
@@ -126,7 +178,10 @@ export class CreateAnalysisComponent implements OnInit {
 
       // Fetch results when needed
       if (this.shouldFetchResults()) {
-        this.fetchAnalysisResults(this.currentJobId()!);
+        const jobId = this.currentJobId();
+        if (jobId) {
+          this.fetchAnalysisResults(jobId);
+        }
       }
     });
 
@@ -196,7 +251,7 @@ export class CreateAnalysisComponent implements OnInit {
     this.errorMessage.set(null);
 
     this.projectsService
-      .getProjects()
+      .apiV1ProjectsGet()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError((err) => {
@@ -204,13 +259,14 @@ export class CreateAnalysisComponent implements OnInit {
             `Failed to load projects: ${err.message || 'Unknown error'}`
           );
           this.isLoadingProjects.set(false);
-          return of([]);
+          return of({ projects: [] });
         })
       )
       .subscribe({
-        next: (projects) => {
-          this.projects.set(projects);
+        next: (response: any) => {
           this.isLoadingProjects.set(false);
+          const projects = response.projects || [];
+          this.projects.set(projects);
 
           // Auto-select the first project if available
           if (projects.length > 0 && !this.selectedProjectId()) {
@@ -250,7 +306,7 @@ export class CreateAnalysisComponent implements OnInit {
     this.analysisService
       .apiV1AnalysisJobsPost({
         apiV1AnalysisJobsPostRequest: {
-          project_id: parseInt(projectId),
+          project_id: projectId,
         },
       })
       .pipe(
@@ -350,27 +406,15 @@ export class CreateAnalysisComponent implements OnInit {
   }
 
   // Helper to map API response to our model
-  private mapToAnalysisJob(
-    apiJob: ApiV1AnalysisJobsIdGet200Response
-  ): any | null {
+  private mapToAnalysisJob(apiJob: any): AnalysisJob | null {
     if (!apiJob.data) {
       return null;
     }
     return {
       id: apiJob.data.id,
-      status: apiJob.data?.status,
-      // totalFiles: null,
-      // processedFiles: null,
-      // completedAt: apiJob.completedTime,
-      // createdAt: apiJob.startTime,
-      // updatedAt: apiJob.startTime,
-      // goJobId: null,
-      // processingStatus: this.getProcessingStatusFromJobStatus(apiJob.status),
-      // meta: {
-      //   isComplete: apiJob.status === AnalysisJobStatus.COMPLETED,
-      //   processingTime: null,
-      //   createdOn: new Date(apiJob.startTime).toISOString().split('T')[0],
-      // },
+      status: apiJob.data.status,
+      created_at: apiJob.data.created_at,
+      completed_at: apiJob.data.completed_at,
     };
   }
 

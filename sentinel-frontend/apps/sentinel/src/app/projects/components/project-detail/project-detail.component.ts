@@ -1,8 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { Project, ProjectsService } from '../../services/projects.service';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { ProjectsService } from 'src/app/api/generated/api/projects.service';
+import { Project } from 'src/app/api/generated/model/project';
+import { ApiV1ProjectsPost201Response } from 'src/app/api/generated/model/api-v1-projects-post201-response';
 @Component({
   selector: 'app-project-detail',
   standalone: true,
@@ -141,16 +143,18 @@ export class ProjectDetailComponent implements OnInit {
       return;
     }
 
-    this.projectsService.getProject(projectId).subscribe({
-      next: (project) => {
-        this.project.set(project);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        this.errorMessage.set('Failed to fetch project details');
-        this.isLoading.set(false);
-        console.error('Error fetching project details:', error);
-      },
-    });
+    this.projectsService
+      .apiV1ProjectsIdGet({ id: parseInt(projectId) })
+      .subscribe({
+        next: (response: ApiV1ProjectsPost201Response) => {
+          this.project.set(response.data || null);
+          this.isLoading.set(false);
+        },
+        error: (error: Error) => {
+          this.errorMessage.set('Failed to fetch project details');
+          this.isLoading.set(false);
+          console.error('Error fetching project details:', error);
+        },
+      });
   }
 }

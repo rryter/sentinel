@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Project, ProjectsService } from '../../services/projects.service';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { ProjectsService } from 'src/app/api/generated/api/projects.service';
+import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-projects-get200-response-data-inner';
 
 @Component({
   selector: 'app-project-list',
@@ -13,20 +14,31 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
   styleUrls: ['./project-list.component.scss'],
 })
 export class ProjectListComponent implements OnInit {
-  projects: Project[] = [];
   isLoading = true;
   errorMessage = '';
+  projects: ApiV1ProjectsGet200ResponseDataInner[] = [];
 
   constructor(private projectsService: ProjectsService) {}
 
-  ngOnInit(): void {
-    this.projectsService.getProjects().subscribe({
-      next: (projects) => {
-        this.projects = projects;
+  ngOnInit() {
+    this.loadProjects();
+  }
+
+  private loadProjects() {
+    this.projectsService.apiV1ProjectsGet().subscribe({
+      next: (response: any) => {
+        this.projects = (response.projects || []).map((project: any) => ({
+          id: project.id,
+          name: project.name,
+          repository_url: project.repositoryUrl,
+          created_at: project.createdAt,
+          updated_at: project.updatedAt,
+        }));
         this.isLoading = false;
       },
       error: (error) => {
-        this.errorMessage = 'Failed to fetch projects';
+        console.error('Error loading projects:', error);
+        this.errorMessage = 'Failed to load projects. Please try again later.';
         this.isLoading = false;
       },
     });

@@ -9,9 +9,9 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AnalysisService } from '../../services/analysis.service';
-import { Observable, catchError, map, of, switchMap, tap } from 'rxjs';
+import { Observable, catchError, of, tap, map } from 'rxjs';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { PatternMatchesService } from 'src/app/api/generated/api/pattern-matches.service';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -44,7 +44,7 @@ export class PatternMatchesChartComponent
   chartData$: Observable<TimeSeriesDataPoint[]> | null = null;
   private chart?: Chart;
 
-  constructor(private analysisService: AnalysisService) {}
+  constructor(private patternMatchesService: PatternMatchesService) {}
 
   ngOnInit(): void {
     this.loadChartData();
@@ -75,21 +75,22 @@ export class PatternMatchesChartComponent
   }
 
   private loadChartData(): void {
+    if (!this.jobId) return;
+
     this.isLoading = true;
 
-    this.chartData$ = this.analysisService
-      .getPatternMatchesTimeSeries({
-        job_id: this.jobId,
-        start_date: this.startDate,
-        end_date: this.endDate,
-        rule_id: this.ruleId,
-        rule_name: this.ruleName,
+    this.chartData$ = this.patternMatchesService
+      .apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet({
+        analysisJobId: this.jobId,
+        startDate: this.startDate,
+        endDate: this.endDate,
+        ruleId: this.ruleId,
+        ruleName: this.ruleName,
       })
       .pipe(
-        tap((data) => {
+        map((response) => response.data || []),
+        tap((_) => {
           this.isLoading = false;
-          // Initialize or update chart after data loads
-          setTimeout(() => this.initializeChart(data), 0);
         }),
         catchError((error) => {
           console.error('Error loading time series data:', error);
