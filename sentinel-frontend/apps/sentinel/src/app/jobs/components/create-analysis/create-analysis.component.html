@@ -61,11 +61,11 @@
     <h3 class="text-lg font-medium text-gray-900">Job Status</h3>
     <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
       <div class="text-gray-500">ID:</div>
-      <div class="text-gray-900">{{ job()!.id }}</div>
+      <div class="text-gray-900">{{ job()?.id }}</div>
 
       <div class="text-gray-500">Status:</div>
       <div class="text-gray-900">
-        @switch (job()!.status) { @case ('pending') {
+        @switch (job()?.status) { @case ('pending') {
         <span class="text-yellow-600">Pending</span>
         } @case ('running') {
         <span class="text-blue-600"
@@ -75,22 +75,22 @@
         <span class="text-green-600">Completed</span>
         } @case ('failed') {
         <span class="text-red-600">Failed</span>
+        } @default {
+        <span class="text-gray-600">Unknown</span>
         } }
       </div>
 
       <div class="text-gray-500">Started:</div>
-      <div class="text-gray-900">{{ job()!.startTime | date : 'medium' }}</div>
+      <div class="text-gray-900">{{ job()?.createdAt | date : 'medium' }}</div>
 
-      @if (job()!.completedTime) {
+      @if (job()?.completedAt) {
       <div class="text-gray-500">Completed:</div>
       <div class="text-gray-900">
-        {{ job()!.completedTime | date : 'medium' }}
+        {{ job()?.completedAt | date : 'medium' }}
       </div>
-      } @if (job()!.error) {
+      } @if (job()?.processingStatus === 'Failed') {
       <div class="text-gray-500">Error:</div>
-      <div class="text-gray-900 text-red-600">
-        {{ job()!.error }}
-      </div>
+      <div class="text-gray-900 text-red-600">Error processing job</div>
       }
     </div>
   </div>
@@ -123,13 +123,13 @@
           <div class="bg-white rounded-lg p-3 shadow-sm">
             <p class="text-sm text-gray-500">Total Files Analyzed</p>
             <p class="text-2xl font-semibold text-blue-700">
-              {{ analysisResults()!.totalFiles }}
+              {{ analysisResults()?.totalFiles || 0 }}
             </p>
           </div>
           <div class="bg-white rounded-lg p-3 shadow-sm">
             <p class="text-sm text-gray-500">Total Matches Found</p>
             <p class="text-2xl font-semibold text-indigo-700">
-              {{ analysisResults()!.totalMatches }}
+              {{ analysisResults()?.totalMatches || 0 }}
             </p>
           </div>
           <div
@@ -137,7 +137,7 @@
           >
             <p class="text-sm text-gray-500">Rules Matched</p>
             <p class="text-2xl font-semibold text-purple-700">
-              {{ getObjectKeys(analysisResults()!.matchesByRule).length }}
+              {{ getObjectKeys(analysisResults()?.matchesByRule || {}).length }}
             </p>
           </div>
         </div>
@@ -147,8 +147,8 @@
       <div class="p-4">
         <h4 class="text-md font-medium text-gray-800 mb-3">Matches by Rule</h4>
         <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
-          @for (rule of getObjectEntries(analysisResults()!.matchesByRule);
-          track $index) {
+          @for (rule of getObjectEntries(analysisResults()?.matchesByRule ||
+          {}); track $index) {
           <div
             class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
           >

@@ -5,19 +5,21 @@ import {
   AnalysisResults,
   MatchesByRule,
 } from '../components/model/analysis/analysis.model';
-export interface AnalysisJob {
-  id: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  startTime: string;
-  completedTime?: string;
-  resultPath?: string;
-  error?: string;
-  projectId?: string;
-}
+import { AnalysisJob } from '../components/model/analysis/analysisJob.model';
 
 export interface StartAnalysisResponse {
+  id: number;
   jobId: string;
   status: string;
+}
+
+interface AnalysisJobListResponse {
+  analysisJobs: AnalysisJob[];
+  meta: {
+    totalCount: number;
+    page: number;
+    perPage: number;
+  };
 }
 
 @Injectable({
@@ -33,9 +35,9 @@ export class AnalysisService {
    * @param projectId The ID of the project to analyze
    * @returns Observable with the job ID and initial status
    */
-  startAnalysis(projectId: string): Observable<StartAnalysisResponse> {
+  startAnalysis(projectId: string) {
     return this.http
-      .post<any>(`${this.apiUrl}/analysis_jobs`, {
+      .post<StartAnalysisResponse>(`${this.apiUrl}/analysis_jobs`, {
         project_id: projectId,
       })
       .pipe(
@@ -50,19 +52,20 @@ export class AnalysisService {
    * Load all analysis jobs
    * @returns Observable with an array of all analysis jobs
    */
-  loadAnalysisJobs(): Observable<AnalysisJob[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/analysis_jobs`).pipe(
-      map((response) =>
-        response.map((job) => ({
-          id: job.id,
-          status: job.status,
-          startTime: job.created_at,
-          completedTime: job.completed_at,
-          error: job.error_message,
-          projectId: job.project_id,
-        }))
-      )
-    );
+  loadAnalysisJobs() {
+    return this.http
+      .get<AnalysisJobListResponse>(`${this.apiUrl}/analysis_jobs`)
+      .pipe(
+        map((response) =>
+          response.analysisJobs.map((job) => ({
+            id: job.id,
+            status: job.status,
+            startTime: job.createdAt,
+            completedTime: job.completedAt,
+            projectId: job.projectId,
+          }))
+        )
+      );
   }
 
   /**
@@ -70,17 +73,18 @@ export class AnalysisService {
    * @param jobId The ID of the job to check
    * @returns Observable with the current job status and details
    */
-  getJobStatus(jobId: string): Observable<AnalysisJob> {
-    return this.http.get<any>(`${this.apiUrl}/analysis_jobs/${jobId}`).pipe(
-      map((response) => ({
-        id: response.id,
-        status: response.status,
-        startTime: response.created_at,
-        completedTime: response.updated_at,
-        error: response.error_message,
-        projectId: response.project_id,
-      }))
-    );
+  getJobStatus(jobId: number) {
+    return this.http
+      .get<AnalysisJob>(`${this.apiUrl}/analysis_jobs/${jobId}`)
+      .pipe(
+        map((response) => ({
+          id: response.id,
+          status: response.status,
+          startTime: response.createdAt,
+          completedTime: response.updatedAt,
+          projectId: response.projectId,
+        }))
+      );
   }
 
   /**
@@ -88,7 +92,7 @@ export class AnalysisService {
    * @param jobId The ID of the job to get results for
    * @returns Observable with the analysis results
    */
-  getAnalysisResults(jobId: string): Observable<AnalysisResults> {
+  getAnalysisResults(jobId: number): Observable<AnalysisResults> {
     return this.http
       .get<AnalysisResults>(
         `${this.apiUrl}/analysis_jobs/${jobId}/fetch_results`
@@ -131,7 +135,7 @@ export class AnalysisService {
    * @returns Observable with paginated pattern matches
    */
   getPatternMatches(
-    jobId: string,
+    jobId: number,
     options: {
       page?: number;
       per_page?: number;
@@ -144,7 +148,7 @@ export class AnalysisService {
     total_count: number;
     current_page: number;
     total_pages: number;
-    analysis_job_id: string;
+    analysis_job_id: number;
   }> {
     let params = new HttpParams();
 
@@ -181,7 +185,7 @@ export class AnalysisService {
    */
   getPatternMatchesTimeSeries(
     options: {
-      job_id?: string;
+      job_id?: number;
       start_date?: string;
       end_date?: string;
       rule_id?: string;

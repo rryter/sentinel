@@ -29,7 +29,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
   styleUrl: './job-pattern-matches.component.scss',
 })
 export class JobPatternMatchesComponent implements OnInit {
-  jobId = input<string>('');
+  jobId = input<number>(0);
 
   isLoading = true;
   error: string | null = null;

@@ -1,17 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
+import { AnalysisService } from '../../services/analysis.service';
 import { ProjectsService } from '../../../projects/services/projects.service';
 import { catchError, map, of } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-
-// Interface combining AnalysisJob with project name for display
-interface JobWithProject extends AnalysisJob {
-  projectName?: string;
-  statusClass?: string;
-}
+import { AnalysisJobListItem } from '../model/analysis/analysisJob.model';
 
 @Component({
   selector: 'app-analysis-job-list',
@@ -22,7 +17,7 @@ interface JobWithProject extends AnalysisJob {
   styleUrls: ['./analysis-job-list.component.scss'],
 })
 export class AnalysisJobListComponent implements OnInit {
-  jobs: JobWithProject[] = [];
+  jobs: AnalysisJobListItem[] = [];
   isLoading = true;
   errorMessage = '';
 
@@ -60,24 +55,20 @@ export class AnalysisJobListComponent implements OnInit {
         this.analysisService
           .loadAnalysisJobs()
           .pipe(
-            map((jobs) => {
-              // Add project names and status classes to jobs
-              return jobs.map((job) => {
-                const enrichedJob: JobWithProject = {
-                  ...job,
-                  projectName: job.projectId
-                    ? projectMap.get(job.projectId)
-                    : 'Unknown',
-                  statusClass: this.getStatusClass(job.status),
-                };
-                return enrichedJob;
-              });
-            }),
+            // map((jobs) => {
+            //   // Add project names and status classes to jobs
+            //   return jobs.map((job) => {
+            //     const enrichedJob: AnalysisJob = {
+            //       ...job,
+            //     };
+            //     return enrichedJob;
+            //   });
+            // }),
             catchError((error) => {
               console.error('Error loading analysis jobs:', error);
               this.errorMessage =
                 'Failed to load analysis jobs. Please try again later.';
-              return of([] as JobWithProject[]);
+              return of([] as AnalysisJobListItem[]);
             })
           )
           .subscribe((jobs) => {

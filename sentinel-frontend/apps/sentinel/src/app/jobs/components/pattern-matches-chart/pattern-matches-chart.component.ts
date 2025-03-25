@@ -31,7 +31,7 @@ interface TimeSeriesDataPoint {
 export class PatternMatchesChartComponent
   implements OnInit, AfterViewInit, OnChanges
 {
-  @Input() jobId?: string;
+  @Input() jobId?: number;
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Input() ruleId?: string;

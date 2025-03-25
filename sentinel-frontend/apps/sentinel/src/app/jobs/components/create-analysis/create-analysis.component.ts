@@ -8,17 +8,28 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
+import { AnalysisService } from '../../services/analysis.service';
 import { ProjectsService } from '../../../projects/services/projects.service';
 import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import {
+  AnalysisJob,
+  AnalysisJobListItem,
+  AnalysisJobStatus,
+} from '../model/analysis/analysisJob.model';
 
 interface Project {
   id: string;
   name: string;
+}
+
+// Interface to handle API job response shape vs our internal model
+interface JobResponse {
+  jobId: number;
+  status: string;
 }
 
 @Component({
@@ -43,7 +54,7 @@ export class CreateAnalysisComponent implements OnInit {
   isLoadingProjects = signal(false);
 
   // Internal state signals
-  private currentJobId = signal<string | null>(null);
+  private currentJobId = signal<number | null>(null);
   private timerStartTime = signal<number | null>(null);
   private timerStopTime = signal<number | null>(null);
   private isPolling = signal(false);
@@ -51,17 +62,17 @@ export class CreateAnalysisComponent implements OnInit {
   // Computed signals
   readonly isJobRunning = computed(() => {
     const job = this.job();
-    return job !== null && job.status === 'running';
+    return job !== null && job.status === AnalysisJobStatus.RUNNING;
   });
 
   readonly isJobCompleted = computed(() => {
     const job = this.job();
-    return job !== null && job.status === 'completed';
+    return job !== null && job.status === AnalysisJobStatus.COMPLETED;
   });
 
   readonly isJobFailed = computed(() => {
     const job = this.job();
-    return job !== null && job.status === 'failed';
+    return job !== null && job.status === AnalysisJobStatus.FAILED;
   });
 
   readonly shouldFetchResults = computed(() => {
@@ -142,7 +153,7 @@ export class CreateAnalysisComponent implements OnInit {
           takeUntilDestroyed(this.destroyRef)
         )
         .subscribe({
-          next: (job) => this.job.set(job),
+          next: (job) => this.job.set(this.mapToAnalysisJob(job)),
           error: (err) => {
             this.errorMessage.set(
               `Failed to check job status: ${err.message || 'Unknown error'}`
@@ -246,7 +257,7 @@ export class CreateAnalysisComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (response) => {
+        next: (response: JobResponse) => {
           this.isLoading.set(false);
           this.currentJobId.set(response.jobId);
           this.startTimer();
@@ -265,7 +276,7 @@ export class CreateAnalysisComponent implements OnInit {
       });
   }
 
-  private fetchInitialJobStatus(jobId: string): void {
+  private fetchInitialJobStatus(jobId: number): void {
     this.analysisService
       .getJobStatus(jobId)
       .pipe(
@@ -276,7 +287,7 @@ export class CreateAnalysisComponent implements OnInit {
         })
       )
       .subscribe((job) => {
-        this.job.set(job);
+        this.job.set(this.mapToAnalysisJob(job));
       });
   }
 
@@ -292,7 +303,7 @@ export class CreateAnalysisComponent implements OnInit {
     // Note: We don't reset selectedProjectId to preserve the selection
   }
 
-  private fetchAnalysisResults(jobId: string): void {
+  private fetchAnalysisResults(jobId: number): void {
     if (this.analysisResults()) return; // Don't fetch if we already have results
 
     this.isLoading.set(true);
@@ -327,6 +338,42 @@ export class CreateAnalysisComponent implements OnInit {
   private stopTimer(): void {
     if (this.timerStartTime()) {
       this.timerStopTime.set(Date.now());
+    }
+  }
+
+  // Helper to map API response to our model
+  private mapToAnalysisJob(apiJob: AnalysisJobListItem): AnalysisJob {
+    return {
+      id: apiJob.id,
+      projectId: apiJob.projectId,
+      status: apiJob.status,
+      totalFiles: null,
+      processedFiles: null,
+      completedAt: apiJob.completedTime,
+      createdAt: apiJob.startTime,
+      updatedAt: apiJob.startTime,
+      goJobId: null,
+      processingStatus: this.getProcessingStatusFromJobStatus(apiJob.status),
+      meta: {
+        isComplete: apiJob.status === AnalysisJobStatus.COMPLETED,
+        processingTime: null,
+        createdOn: new Date(apiJob.startTime).toISOString().split('T')[0],
+      },
+    };
+  }
+
+  private getProcessingStatusFromJobStatus(status: AnalysisJobStatus): string {
+    switch (status) {
+      case AnalysisJobStatus.PENDING:
+        return 'Waiting to start';
+      case AnalysisJobStatus.RUNNING:
+        return 'Processing in progress';
+      case AnalysisJobStatus.COMPLETED:
+        return 'Completed';
+      case AnalysisJobStatus.FAILED:
+        return 'Failed';
+      default:
+        return 'Unknown';
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Component, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AnalysisService, AnalysisJob } from '../../services/analysis.service';
+import { AnalysisService } from '../../services/analysis.service';
 import { catchError, map, NEVER, Observable, of, switchMap } from 'rxjs';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-matches-chart.component';
@@ -25,8 +25,7 @@ interface RuleEntry {
   styleUrl: './analysis-results.component.scss',
 })
 export class AnalysisResultsComponent implements OnInit {
-  jobId = input<string>('');
-  analysisJob: AnalysisJob | null = null;
+  jobId = input<number>(0);
   isLoading = true;
   error: string | null = null;
   executionTimeSeconds = 0;
@@ -46,7 +45,7 @@ export class AnalysisResultsComponent implements OnInit {
     this.vm$ = this.buildViewModel(this.jobId());
   }
 
-  private buildViewModel(jobId: string) {
+  private buildViewModel(jobId: number) {
     return this.analysisService.getJobStatus(jobId).pipe(
       catchError((error) => {
         console.error('Error fetching job status:', error);
@@ -58,8 +57,6 @@ export class AnalysisResultsComponent implements OnInit {
         if (!job) {
           return of(null);
         }
-
-        this.analysisJob = job;
 
         // Calculate execution time if job is completed
         if (job.startTime && job.completedTime) {
