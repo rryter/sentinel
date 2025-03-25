@@ -35,7 +35,13 @@ module Api
       
       def create
         project_id = params[:project_id] || params.dig(:api_v1_analysis_jobs_post_request, :project_id)
-        @project = Project.find_by!(id: project_id)
+        @project = Project.find_by(id: project_id)
+
+        if @project.nil?
+          render json: { errors: { project_id: ['is invalid'] } }, status: :unprocessable_entity
+          return
+        end
+
         @job = @project.analysis_jobs.new(status: 'pending')
         
         if @job.save

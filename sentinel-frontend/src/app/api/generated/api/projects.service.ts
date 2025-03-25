@@ -19,7 +19,9 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { ApiV1ProjectsGet200ResponseInner } from '../model/api-v1-projects-get200-response-inner';
+import { ApiV1ProjectsGet200Response } from '../model/api-v1-projects-get200-response';
+// @ts-ignore
+import { ApiV1ProjectsPost201Response } from '../model/api-v1-projects-post201-response';
 // @ts-ignore
 import { ApiV1ProjectsPostRequest } from '../model/api-v1-projects-post-request';
 
@@ -103,9 +105,9 @@ export class ProjectsService implements ProjectsServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1ProjectsGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<ApiV1ProjectsGet200ResponseInner>>;
-    public apiV1ProjectsGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<ApiV1ProjectsGet200ResponseInner>>>;
-    public apiV1ProjectsGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<ApiV1ProjectsGet200ResponseInner>>>;
+    public apiV1ProjectsGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ProjectsGet200Response>;
+    public apiV1ProjectsGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ProjectsGet200Response>>;
+    public apiV1ProjectsGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ProjectsGet200Response>>;
     public apiV1ProjectsGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -140,7 +142,7 @@ export class ProjectsService implements ProjectsServiceInterface {
         }
 
         let localVarPath = `/api/v1/projects`;
-        return this.httpClient.request<Array<ApiV1ProjectsGet200ResponseInner>>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1ProjectsGet200Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -158,9 +160,9 @@ export class ProjectsService implements ProjectsServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ProjectsGet200ResponseInner>;
-    public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ProjectsGet200ResponseInner>>;
-    public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ProjectsGet200ResponseInner>>;
+    public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ProjectsPost201Response>;
+    public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ProjectsPost201Response>>;
+    public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ProjectsPost201Response>>;
     public apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const id = requestParameters.id;
         if (id === null || id === undefined) {
@@ -199,7 +201,7 @@ export class ProjectsService implements ProjectsServiceInterface {
         }
 
         let localVarPath = `/api/v1/projects/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}`;
-        return this.httpClient.request<ApiV1ProjectsGet200ResponseInner>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1ProjectsPost201Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -217,10 +219,10 @@ export class ProjectsService implements ProjectsServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any>;
-    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpResponse<any>>;
-    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpEvent<any>>;
-    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any> {
+    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ProjectsPost201Response>;
+    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ProjectsPost201Response>>;
+    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ProjectsPost201Response>>;
+    public apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const apiV1ProjectsPostRequest = requestParameters.apiV1ProjectsPostRequest;
 
         let localVarHeaders = this.defaultHeaders;
@@ -229,6 +231,7 @@ export class ProjectsService implements ProjectsServiceInterface {
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
             const httpHeaderAccepts: string[] = [
+                'application/json'
             ];
             localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         }
@@ -263,7 +266,7 @@ export class ProjectsService implements ProjectsServiceInterface {
         }
 
         let localVarPath = `/api/v1/projects`;
-        return this.httpClient.request<any>('post', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1ProjectsPost201Response>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: apiV1ProjectsPostRequest,

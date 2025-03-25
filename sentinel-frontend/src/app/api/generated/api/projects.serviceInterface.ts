@@ -13,7 +13,8 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { ApiV1ProjectsGet200ResponseInner } from '../model/models';
+import { ApiV1ProjectsGet200Response } from '../model/models';
+import { ApiV1ProjectsPost201Response } from '../model/models';
 import { ApiV1ProjectsPostRequest } from '../model/models';
 
 
@@ -37,20 +38,20 @@ export interface ProjectsServiceInterface {
      * Lists all projects
      * 
 */
-    apiV1ProjectsGet(extraHttpRequestParams?: any): Observable<Array<ApiV1ProjectsGet200ResponseInner>>;
+    apiV1ProjectsGet(extraHttpRequestParams?: any): Observable<ApiV1ProjectsGet200Response>;
 
     /**
      * Retrieves a project
      * 
 * @param requestParameters
      */
-    apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1ProjectsGet200ResponseInner>;
+    apiV1ProjectsIdGet(requestParameters: ApiV1ProjectsIdGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1ProjectsPost201Response>;
 
     /**
      * Creates a project
      * 
 * @param requestParameters
      */
-    apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, extraHttpRequestParams?: any): Observable<{}>;
+    apiV1ProjectsPost(requestParameters: ApiV1ProjectsPostRequestParams, extraHttpRequestParams?: any): Observable<ApiV1ProjectsPost201Response>;
 
 }

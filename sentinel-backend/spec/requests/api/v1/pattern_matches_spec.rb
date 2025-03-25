@@ -80,6 +80,18 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
             }
           }
           
+        let!(:analysis_job) { create(:analysis_job) }
+        let!(:file_with_violations) { create(:file_with_violations, analysis_job: analysis_job) }
+        let!(:pattern_matches) do
+          [
+            create(:pattern_match, file_with_violations: file_with_violations, created_at: 2.days.ago),
+            create(:pattern_match, file_with_violations: file_with_violations, created_at: 1.day.ago),
+            create(:pattern_match, file_with_violations: file_with_violations, created_at: Time.current)
+          ]
+        end
+        let(:start_date) { 3.days.ago.strftime('%Y-%m-%d') }
+        let(:end_date) { Time.current.strftime('%Y-%m-%d') }
+          
         run_test!
       end
     end
@@ -169,12 +181,26 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
             }
           }
           
-        let(:analysis_job_id) { create(:analysis_job).id }
+        let!(:analysis_job) { create(:analysis_job) }
+        let!(:file_with_violations) { create(:file_with_violations, analysis_job: analysis_job) }
+        let!(:pattern_matches) do
+          [
+            create(:pattern_match, file_with_violations: file_with_violations, created_at: 2.days.ago),
+            create(:pattern_match, file_with_violations: file_with_violations, created_at: 1.day.ago),
+            create(:pattern_match, file_with_violations: file_with_violations, created_at: Time.current)
+          ]
+        end
+        let(:analysis_job_id) { analysis_job.id }
+        let(:start_date) { 3.days.ago.strftime('%Y-%m-%d') }
+        let(:end_date) { Time.current.strftime('%Y-%m-%d') }
+          
         run_test!
       end
       
       response '404', 'analysis job not found' do
         let(:analysis_job_id) { 'invalid' }
+        let(:start_date) { 3.days.ago.strftime('%Y-%m-%d') }
+        let(:end_date) { Time.current.strftime('%Y-%m-%d') }
         run_test!
       end
     end
