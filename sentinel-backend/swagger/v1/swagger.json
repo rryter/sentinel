@@ -667,7 +667,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "matches": {
+                    "data": {
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -690,7 +690,7 @@
                           "match_text": {
                             "type": "string"
                           },
-                          "analysis_file": {
+                          "file_with_violations": {
                             "type": "object",
                             "properties": {
                               "file_path": {
@@ -701,18 +701,23 @@
                         }
                       }
                     },
-                    "total_count": {
-                      "type": "integer"
-                    },
-                    "current_page": {
-                      "type": "integer"
-                    },
-                    "total_pages": {
-                      "type": "integer"
-                    },
-                    "analysis_job_id": {
-                      "type": "integer",
-                      "nullable": true
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total_count": {
+                          "type": "integer"
+                        },
+                        "current_page": {
+                          "type": "integer"
+                        },
+                        "total_pages": {
+                          "type": "integer"
+                        },
+                        "analysis_job_id": {
+                          "type": "integer",
+                          "nullable": true
+                        }
+                      }
                     }
                   }
                 }
@@ -779,21 +784,26 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "date": {
-                        "type": "string"
-                      },
-                      "count": {
-                        "type": "integer"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "count"
+                        ]
                       }
-                    },
-                    "required": [
-                      "date",
-                      "count"
-                    ]
+                    }
                   }
                 }
               }
@@ -871,7 +881,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "matches": {
+                    "data": {
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -894,7 +904,7 @@
                           "match_text": {
                             "type": "string"
                           },
-                          "analysis_file": {
+                          "file_with_violations": {
                             "type": "object",
                             "properties": {
                               "file_path": {
@@ -905,17 +915,22 @@
                         }
                       }
                     },
-                    "total_count": {
-                      "type": "integer"
-                    },
-                    "current_page": {
-                      "type": "integer"
-                    },
-                    "total_pages": {
-                      "type": "integer"
-                    },
-                    "analysis_job_id": {
-                      "type": "integer"
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total_count": {
+                          "type": "integer"
+                        },
+                        "current_page": {
+                          "type": "integer"
+                        },
+                        "total_pages": {
+                          "type": "integer"
+                        },
+                        "analysis_job_id": {
+                          "type": "integer"
+                        }
+                      }
                     }
                   }
                 }
@@ -984,21 +999,26 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "date": {
-                        "type": "string"
-                      },
-                      "count": {
-                        "type": "integer"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "count"
+                        ]
                       }
-                    },
-                    "required": [
-                      "date",
-                      "count"
-                    ]
+                    }
                   }
                 }
               }

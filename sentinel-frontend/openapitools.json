@@ -1,5 +1,6 @@
 {
   "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
   "generator-cli": {
     "version": "7.0.0",
     "generators": {
@@ -17,8 +18,27 @@
           "sortParamsByRequiredFlag": true,
           "useSingleRequestParameter": true,
           "withInterfaces": true,
-          "usePromises": true,
-          "enumPropertyNaming": "UPPERCASE"
+          "taggedUnions": true,
+          "enumPropertyNaming": "UPPERCASE",
+          "stringEnums": true,
+          "snapshot": false,
+          "npmName": "sentinel-api-client",
+          "typeMapping": {
+            "array": "Array"
+          },
+          "apiModulePrefix": "Api",
+          "modelModulePrefix": "Model",
+          "legacyDiscriminatorBehavior": false
+        },
+        "typeMappings": {
+          "file": "Blob"
+        },
+        "templateDir": null,
+        "globalProperties": {
+          "apiTests": false,
+          "modelTests": false,
+          "apiDocs": false,
+          "modelDocs": false
         }
       }
     }

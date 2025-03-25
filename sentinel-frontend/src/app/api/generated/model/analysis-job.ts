@@ -14,18 +14,17 @@
 export interface AnalysisJob { 
     id: number;
     project_id: number;
-    status: AnalysisJob.StatusEnum;
+    status: AnalysisJobStatusEnum;
     created_at?: string;
     updated_at?: string;
 }
-export namespace AnalysisJob {
-    export type StatusEnum = 'pending' | 'running' | 'completed' | 'failed';
-    export const StatusEnum = {
-        PENDING: 'pending' as StatusEnum,
-        RUNNING: 'running' as StatusEnum,
-        COMPLETED: 'completed' as StatusEnum,
-        FAILED: 'failed' as StatusEnum
-    };
-}
+export enum AnalysisJobStatusEnum {
+    PENDING = 'pending',
+    RUNNING = 'running',
+    COMPLETED = 'completed',
+    FAILED = 'failed'
+};
+
+
 
 

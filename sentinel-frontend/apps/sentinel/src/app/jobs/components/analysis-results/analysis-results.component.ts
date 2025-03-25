@@ -6,7 +6,7 @@ import { catchError, map, NEVER, Observable, of, switchMap } from 'rxjs';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-matches-chart.component';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-
+import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 interface RuleEntry {
   name: string;
   count: number;
@@ -36,7 +36,10 @@ export class AnalysisResultsComponent implements OnInit {
     ruleEntries: RuleEntry[];
   } | null> | null = null;
 
-  constructor(private analysisService: AnalysisService) {}
+  constructor(
+    private analysisService: AnalysisService,
+    private analysisJobsService: AnalysisJobsService
+  ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -46,7 +49,7 @@ export class AnalysisResultsComponent implements OnInit {
   }
 
   private buildViewModel(jobId: number) {
-    return this.analysisService.getJobStatus(jobId).pipe(
+    return this.analysisJobsService.apiV1AnalysisJobsIdGet({ id: jobId }).pipe(
       catchError((error) => {
         console.error('Error fetching job status:', error);
         this.error = 'Failed to load job details. Please try again later.';
@@ -58,20 +61,24 @@ export class AnalysisResultsComponent implements OnInit {
           return of(null);
         }
 
-        // Calculate execution time if job is completed
-        if (job.startTime && job.completedTime) {
-          const start = new Date(job.startTime).getTime();
-          const end = new Date(job.completedTime).getTime();
-          this.executionTimeSeconds = Math.round((end - start) / 1000);
+        if (!job.data) {
+          return of(null);
         }
 
+        // Calculate execution time if job is completed
+        // if (job.data.crstartTime && job.completedTime) {
+        //   const start = new Date(job.startTime).getTime();
+        //   const end = new Date(job.completedTime).getTime();
+        //   this.executionTimeSeconds = Math.round((end - start) / 1000);
+        // }
+
         // Only fetch results if job is completed
-        if (job.status === 'completed') {
+        if (job.data.status === 'completed') {
           return this.analysisService.getAnalysisResults(this.jobId()).pipe(
             map((results) => {
               return {
                 results,
-                job,
+                job: job.data,
               };
             }),
             catchError((error) => {

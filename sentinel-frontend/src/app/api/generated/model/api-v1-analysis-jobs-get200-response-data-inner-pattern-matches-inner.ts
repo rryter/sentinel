@@ -20,3 +20,4 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner {
     match_text?: string;
 }
 
+

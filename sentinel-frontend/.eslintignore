@@ -1,0 +1,13 @@
+# Dependencies
+node_modules
+.angular
+
+# Build files
+dist
+.nx/cache
+
+# Generated API code
+src/app/api/generated/**/*
+
+# Test coverage
+coverage 

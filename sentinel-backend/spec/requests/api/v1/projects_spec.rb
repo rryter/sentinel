@@ -7,17 +7,22 @@ RSpec.describe 'Api::V1::Projects', type: :request do
       produces 'application/json'
       
       response '200', 'projects found' do
-        schema type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'integer' },
-              name: { type: 'string' },
-              repository_url: { type: 'string' },
-              created_at: { type: 'string', format: 'date-time' },
-              updated_at: { type: 'string', format: 'date-time' }
-            },
-            required: ['id', 'name', 'repository_url']
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'integer' },
+                  name: { type: 'string' },
+                  repository_url: { type: 'string' },
+                  created_at: { type: 'string', format: 'date-time' },
+                  updated_at: { type: 'string', format: 'date-time' }
+                },
+                required: ['id', 'name', 'repository_url']
+              }
+            }
           }
           
         run_test!
@@ -45,6 +50,20 @@ RSpec.describe 'Api::V1::Projects', type: :request do
       
       response '201', 'project created' do
         let(:project) { { project: { name: 'Test Project', repository_url: 'https://github.com/test/project' } } }
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                name: { type: 'string' },
+                repository_url: { type: 'string' },
+                created_at: { type: 'string', format: 'date-time' },
+                updated_at: { type: 'string', format: 'date-time' }
+              },
+              required: ['id', 'name', 'repository_url']
+            }
+          }
         run_test!
       end
       
@@ -65,13 +84,18 @@ RSpec.describe 'Api::V1::Projects', type: :request do
       response '200', 'project found' do
         schema type: 'object',
           properties: {
-            id: { type: 'integer' },
-            name: { type: 'string' },
-            repository_url: { type: 'string' },
-            created_at: { type: 'string', format: 'date-time' },
-            updated_at: { type: 'string', format: 'date-time' }
-          },
-          required: ['id', 'name', 'repository_url']
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                name: { type: 'string' },
+                repository_url: { type: 'string' },
+                created_at: { type: 'string', format: 'date-time' },
+                updated_at: { type: 'string', format: 'date-time' }
+              },
+              required: ['id', 'name', 'repository_url']
+            }
+          }
           
         let(:id) { create(:project).id }
         run_test!

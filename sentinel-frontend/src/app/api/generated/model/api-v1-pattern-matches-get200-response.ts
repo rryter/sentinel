@@ -9,14 +9,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1PatternMatchesGet200ResponseMatchesInner } from './api-v1-pattern-matches-get200-response-matches-inner';
+import { ApiV1PatternMatchesGet200ResponseMeta } from './api-v1-pattern-matches-get200-response-meta';
+import { ApiV1PatternMatchesGet200ResponseDataInner } from './api-v1-pattern-matches-get200-response-data-inner';
 
 
 export interface ApiV1PatternMatchesGet200Response { 
-    matches?: Array<ApiV1PatternMatchesGet200ResponseMatchesInner>;
-    total_count?: number;
-    current_page?: number;
-    total_pages?: number;
-    analysis_job_id?: number | null;
+    data?: Array<ApiV1PatternMatchesGet200ResponseDataInner>;
+    meta?: ApiV1PatternMatchesGet200ResponseMeta;
 }
+
 

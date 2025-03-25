@@ -15,3 +15,4 @@ export interface ApiV1AnalysisJobsIdFetchResultsGet200ResponseMeta {
     detailed?: boolean;
 }
 
+

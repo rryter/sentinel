@@ -9,17 +9,17 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1PatternMatchesGet200ResponseMatchesInnerAnalysisFile } from './api-v1-pattern-matches-get200-response-matches-inner-analysis-file';
+import { ApiV1PatternMatchesGet200ResponseDataInnerFileWithViolations } from './api-v1-pattern-matches-get200-response-data-inner-file-with-violations';
 
 
-export interface ApiV1PatternMatchesGet200ResponseMatchesInner { 
+export interface ApiV1PatternMatchesGet200ResponseDataInner { 
     id?: number;
     rule_id?: string;
     rule_name?: string;
     line_number?: number;
     column?: number;
     match_text?: string;
-    analysis_file?: ApiV1PatternMatchesGet200ResponseMatchesInnerAnalysisFile;
+    file_with_violations?: ApiV1PatternMatchesGet200ResponseDataInnerFileWithViolations;
 }
 
 

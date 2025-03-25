@@ -15,20 +15,19 @@ import { ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner } from
 
 export interface ApiV1AnalysisJobsGet200ResponseDataInner { 
     id?: number;
-    status?: ApiV1AnalysisJobsGet200ResponseDataInner.StatusEnum;
+    status?: ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum;
     created_at?: string;
     updated_at?: string;
     files_with_violations?: Array<ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner>;
     pattern_matches?: Array<ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner>;
 }
-export namespace ApiV1AnalysisJobsGet200ResponseDataInner {
-    export type StatusEnum = 'pending' | 'running' | 'completed' | 'failed';
-    export const StatusEnum = {
-        PENDING: 'pending' as StatusEnum,
-        RUNNING: 'running' as StatusEnum,
-        COMPLETED: 'completed' as StatusEnum,
-        FAILED: 'failed' as StatusEnum
-    };
-}
+export enum ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum {
+    PENDING = 'pending',
+    RUNNING = 'running',
+    COMPLETED = 'completed',
+    FAILED = 'failed'
+};
+
+
 
 

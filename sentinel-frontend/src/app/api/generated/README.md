@@ -1,4 +1,4 @@
-## @
+## sentinel-api-client@v1
 
 ### Building
 
@@ -19,7 +19,7 @@ Navigate to the folder of your consuming project and run one of next commands.
 _published:_
 
 ```
-npm install @ --save
+npm install sentinel-api-client@v1 --save
 ```
 
 _without publishing (not recommended):_
@@ -39,7 +39,7 @@ npm link
 
 In your project:
 ```
-npm link 
+npm link sentinel-api-client
 ```
 
 __Note for Windows users:__ The Angular CLI has troubles to use linked npm packages.
@@ -54,12 +54,12 @@ In your Angular project:
 
 ```
 // without configuring providers
-import { ApiModule } from '';
+import { ApiApiModule } from 'sentinel-api-client';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
     imports: [
-        ApiModule,
+        ApiApiModule,
         // make sure to import the HttpClientModule in the AppModule only,
         // see https://github.com/angular/angular/issues/20575
         HttpClientModule
@@ -73,7 +73,7 @@ export class AppModule {}
 
 ```
 // configuring providers
-import { ApiModule, Configuration, ConfigurationParameters } from '';
+import { ApiApiModule, Configuration, ConfigurationParameters } from 'sentinel-api-client';
 
 export function apiConfigFactory (): Configuration {
   const params: ConfigurationParameters = {
@@ -83,7 +83,7 @@ export function apiConfigFactory (): Configuration {
 }
 
 @NgModule({
-    imports: [ ApiModule.forRoot(apiConfigFactory) ],
+    imports: [ ApiApiModule.forRoot(apiConfigFactory) ],
     declarations: [ AppComponent ],
     providers: [],
     bootstrap: [ AppComponent ]
@@ -93,10 +93,10 @@ export class AppModule {}
 
 ```
 // configuring providers with an authentication service that manages your access tokens
-import { ApiModule, Configuration } from '';
+import { ApiApiModule, Configuration } from 'sentinel-api-client';
 
 @NgModule({
-    imports: [ ApiModule ],
+    imports: [ ApiApiModule ],
     declarations: [ AppComponent ],
     providers: [
       {
@@ -117,28 +117,28 @@ export class AppModule {}
 ```
 
 ```
-import { DefaultApi } from '';
+import { DefaultApi } from 'sentinel-api-client';
 
 export class AppComponent {
     constructor(private apiGateway: DefaultApi) { }
 }
 ```
 
-Note: The ApiModule is restricted to being instantiated once app wide.
+Note: The ApiApiModule is restricted to being instantiated once app wide.
 This is to ensure that all services are treated as singletons.
 
-#### Using multiple OpenAPI files / APIs / ApiModules
-In order to use multiple `ApiModules` generated from different OpenAPI files,
+#### Using multiple OpenAPI files / APIs / ApiApiModules
+In order to use multiple `ApiApiModules` generated from different OpenAPI files,
 you can create an alias name when importing the modules
 in order to avoid naming conflicts:
 ```
-import { ApiModule } from 'my-api-path';
-import { ApiModule as OtherApiModule } from 'my-other-api-path';
+import { ApiApiModule } from 'my-api-path';
+import { ApiApiModule as OtherApiModule } from 'my-other-api-path';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   imports: [
-    ApiModule,
+    ApiApiModule,
     OtherApiModule,
     // make sure to import the HttpClientModule in the AppModule only,
     // see https://github.com/angular/angular/issues/20575
@@ -155,7 +155,7 @@ export class AppModule {
 If different than the generated base path, during app bootstrap, you can provide the base path to your service.
 
 ```
-import { BASE_PATH } from '';
+import { BASE_PATH } from 'sentinel-api-client';
 
 bootstrap(AppComponent, [
     { provide: BASE_PATH, useValue: 'https://your-web-service.com' },
@@ -164,7 +164,7 @@ bootstrap(AppComponent, [
 or
 
 ```
-import { BASE_PATH } from '';
+import { BASE_PATH } from 'sentinel-api-client';
 
 @NgModule({
     imports: [],
@@ -188,7 +188,7 @@ export const environment = {
 
 In the src/app/app.module.ts:
 ```
-import { BASE_PATH } from '';
+import { BASE_PATH } from 'sentinel-api-client';
 import { environment } from '../environments/environment';
 
 @NgModule({

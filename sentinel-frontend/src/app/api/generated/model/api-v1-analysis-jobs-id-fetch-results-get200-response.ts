@@ -18,3 +18,4 @@ export interface ApiV1AnalysisJobsIdFetchResultsGet200Response {
     meta?: ApiV1AnalysisJobsIdFetchResultsGet200ResponseMeta;
 }
 
+

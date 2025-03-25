@@ -23,7 +23,7 @@ import { ApiV1AnalysisJobsAnalysisJobIdPatternMatchesGet200Response } from '../m
 // @ts-ignore
 import { ApiV1PatternMatchesGet200Response } from '../model/api-v1-pattern-matches-get200-response';
 // @ts-ignore
-import { ApiV1PatternMatchesTimeSeriesGet200ResponseInner } from '../model/api-v1-pattern-matches-time-series-get200-response-inner';
+import { ApiV1PatternMatchesTimeSeriesGet200Response } from '../model/api-v1-pattern-matches-time-series-get200-response';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -195,9 +195,9 @@ export class PatternMatchesService implements PatternMatchesServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>;
-    public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>>;
-    public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>>;
+    public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1PatternMatchesTimeSeriesGet200Response>;
+    public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1PatternMatchesTimeSeriesGet200Response>>;
+    public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1PatternMatchesTimeSeriesGet200Response>>;
     public apiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGet(requestParameters: ApiV1AnalysisJobsAnalysisJobIdPatternMatchesTimeSeriesGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const analysisJobId = requestParameters.analysisJobId;
         if (analysisJobId === null || analysisJobId === undefined) {
@@ -258,7 +258,7 @@ export class PatternMatchesService implements PatternMatchesServiceInterface {
         }
 
         let localVarPath = `/api/v1/analysis_jobs/${this.configuration.encodeParam({name: "analysisJobId", value: analysisJobId, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}/pattern_matches/time_series`;
-        return this.httpClient.request<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1PatternMatchesTimeSeriesGet200Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters,
@@ -365,9 +365,9 @@ export class PatternMatchesService implements PatternMatchesServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>;
-    public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>>;
-    public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>>;
+    public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1PatternMatchesTimeSeriesGet200Response>;
+    public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1PatternMatchesTimeSeriesGet200Response>>;
+    public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1PatternMatchesTimeSeriesGet200Response>>;
     public apiV1PatternMatchesTimeSeriesGet(requestParameters: ApiV1PatternMatchesTimeSeriesGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const startDate = requestParameters.startDate;
         const endDate = requestParameters.endDate;
@@ -429,7 +429,7 @@ export class PatternMatchesService implements PatternMatchesServiceInterface {
         }
 
         let localVarPath = `/api/v1/pattern_matches/time_series`;
-        return this.httpClient.request<Array<ApiV1PatternMatchesTimeSeriesGet200ResponseInner>>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1PatternMatchesTimeSeriesGet200Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters,

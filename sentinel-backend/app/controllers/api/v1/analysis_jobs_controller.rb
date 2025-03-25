@@ -28,12 +28,14 @@ module Api
           pattern_matches: { file_with_violations: {} }
         ).find(params[:id])
         
-        # Using AMS with includes
-        render_serialized @job, include: [:files_with_violations, :pattern_matches]
+        # Using AMS with includes and attributes adapter to prevent root wrapping
+        serialized_data = ActiveModelSerializers::SerializableResource.new(@job, include: [:files_with_violations, :pattern_matches], adapter: :attributes).as_json
+        render json: { data: serialized_data }
       end
       
       def create
-        @project = Project.find_by!(id: params[:project_id])
+        project_id = params[:project_id] || params.dig(:api_v1_analysis_jobs_post_request, :project_id)
+        @project = Project.find_by!(id: project_id)
         @job = @project.analysis_jobs.new(status: 'pending')
         
         if @job.save

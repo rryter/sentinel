@@ -14,6 +14,8 @@ import {
 } from 'rxjs';
 import { PatternMatchesChartComponent } from '../pattern-matches-chart/pattern-matches-chart.component';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { PatternMatchesService } from 'src/app/api/generated/api/pattern-matches.service';
+import { ApiV1AnalysisJobsAnalysisJobIdPatternMatchesGet200Response } from 'src/app/api/generated/model/api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response';
 
 @Component({
   selector: 'app-job-pattern-matches',
@@ -44,9 +46,12 @@ export class JobPatternMatchesComponent implements OnInit {
 
   // Reactive filter stream
   private filtersChanged = new BehaviorSubject<void>(undefined);
-  patternMatches$: Observable<any> | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  patternMatches$: Observable<
+    ApiV1AnalysisJobsAnalysisJobIdPatternMatchesGet200Response | undefined
+  > | null = null;
 
-  constructor(private analysisService: AnalysisService) {}
+  constructor(private patternMatchesService: PatternMatchesService) {}
 
   ngOnInit(): void {
     this.setupDataStream();
@@ -65,12 +70,13 @@ export class JobPatternMatchesComponent implements OnInit {
       switchMap(([jobId]) => {
         this.isLoading = true;
 
-        return this.analysisService
-          .getPatternMatches(jobId, {
+        return this.patternMatchesService
+          .apiV1AnalysisJobsAnalysisJobIdPatternMatchesGet({
+            analysisJobId: jobId,
             page: this.currentPage,
-            per_page: this.pageSize,
-            rule_name: this.ruleNameFilter || undefined,
-            file_path: this.filePathFilter || undefined,
+            perPage: this.pageSize,
+            ruleName: this.ruleNameFilter || undefined,
+            filePath: this.filePathFilter || undefined,
           })
           .pipe(
             map((response) => {
@@ -82,13 +88,7 @@ export class JobPatternMatchesComponent implements OnInit {
               this.error =
                 'Failed to load pattern matches. Please try again later.';
               this.isLoading = false;
-              return of({
-                matches: [],
-                total_count: 0,
-                current_page: 1,
-                total_pages: 0,
-                analysis_job_id: jobId,
-              });
+              return of(undefined);
             })
           );
       })

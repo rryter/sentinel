@@ -79,16 +79,16 @@
   @if (patternMatches$ | async; as result) {
   <div>
     <div
-      *ngIf="result?.matches?.length === 0"
+      *ngIf="result?.data?.length === 0"
       class="text-center py-8 text-gray-500"
     >
       No pattern matches found.
     </div>
 
-    <div *ngIf="result?.matches?.length > 0">
+    <div *ngIf="result.data">
       <div class="space-y-4">
         <div
-          *ngFor="let match of result.matches"
+          *ngFor="let match of result.data"
           class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden"
         >
           <div
@@ -98,25 +98,23 @@
             <span
               class="mt-1 sm:mt-0 text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded break-all"
             >
-              {{ match.analysis_file.file_path }}
+              {{ match.file_with_violations?.file_path }}
             </span>
           </div>
           <div class="p-4">
             <div class="text-gray-700 mb-3">
-              {{ match.description }}
+              {{ match | json }}
             </div>
             <div
               class="font-mono text-sm bg-gray-100 px-2 py-1 rounded inline-block mb-3"
             >
-              Line {{ match.start_line }}:{{ match.start_col }} -
-              {{ match.end_line }}:{{ match.end_col }}
+              Line {{ match.line_number }}
             </div>
             <div
-              *ngIf="match.metadata?.suggestion"
               class="mt-3 bg-blue-50 p-3 border-l-4 border-blue-500 rounded-r-md"
             >
               <pre class="whitespace-pre-wrap text-sm text-gray-700">{{
-                match.metadata.suggestion
+                match | json
               }}</pre>
             </div>
           </div>
@@ -133,10 +131,9 @@
           Previous
         </button>
         <span class="text-sm text-gray-700">
-          Page {{ result.current_page }} of {{ result.total_pages }}
+          <!-- Page {{ result.current_page }} of {{ result.total_pages }} -->
         </span>
         <button
-          [disabled]="currentPage >= result.total_pages"
           (click)="onPageChange(currentPage + 1)"
           hlmBtn
           variant="outline"

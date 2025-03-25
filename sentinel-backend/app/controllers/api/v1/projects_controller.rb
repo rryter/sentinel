@@ -6,12 +6,12 @@ module Api
       # GET /api/v1/projects
       def index
         @projects = Project.all
-        render json: @projects
+        render_serialized @projects
       end
 
       # GET /api/v1/projects/:id
       def show
-        render json: @project
+        render_serialized @project
       end
 
       # POST /api/v1/projects
@@ -19,7 +19,7 @@ module Api
         @project = Project.new(project_params)
 
         if @project.save
-          render json: @project, status: :created
+          render_serialized @project, status: :created
         else
           render json: { errors: @project.errors }, status: :unprocessable_entity
         end

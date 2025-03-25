@@ -20,6 +20,8 @@ import {
   AnalysisJobListItem,
   AnalysisJobStatus,
 } from '../model/analysis/analysisJob.model';
+import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
+import { ApiV1AnalysisJobsIdGet200Response } from 'src/app/api/generated/model/api-v1-analysis-jobs-id-get200-response';
 
 interface Project {
   id: string;
@@ -40,7 +42,7 @@ interface JobResponse {
   styleUrl: './create-analysis.component.scss',
 })
 export class CreateAnalysisComponent implements OnInit {
-  private analysisService = inject(AnalysisService);
+  private analysisService = inject(AnalysisJobsService);
   private projectsService = inject(ProjectsService);
   private destroyRef = inject(DestroyRef);
 
@@ -138,17 +140,19 @@ export class CreateAnalysisComponent implements OnInit {
           switchMap(() => {
             const jobId = this.currentJobId();
             if (!jobId || !this.isPolling()) return EMPTY;
-            return this.analysisService.getJobStatus(jobId).pipe(
-              catchError((err) => {
-                this.errorMessage.set(
-                  `Failed to check job status: ${
-                    err.message || 'Unknown error'
-                  }`
-                );
-                this.isPolling.set(false);
-                return EMPTY;
-              })
-            );
+            return this.analysisService
+              .apiV1AnalysisJobsIdGet({ id: jobId })
+              .pipe(
+                catchError((err) => {
+                  this.errorMessage.set(
+                    `Failed to check job status: ${
+                      err.message || 'Unknown error'
+                    }`
+                  );
+                  this.isPolling.set(false);
+                  return EMPTY;
+                })
+              );
           }),
           takeUntilDestroyed(this.destroyRef)
         )
@@ -244,7 +248,11 @@ export class CreateAnalysisComponent implements OnInit {
     this.isLoading.set(true);
 
     this.analysisService
-      .startAnalysis(projectId)
+      .apiV1AnalysisJobsPost({
+        apiV1AnalysisJobsPostRequest: {
+          project_id: parseInt(projectId),
+        },
+      })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError((err) => {
@@ -266,7 +274,7 @@ export class CreateAnalysisComponent implements OnInit {
           // Immediately fetch initial job status
           this.fetchInitialJobStatus(response.jobId);
         },
-        error: (err) => {
+        error: (err: Error) => {
           this.isLoading.set(false);
           this.errorMessage.set(
             `Failed to start analysis: ${err.message || 'Unknown error'}`
@@ -278,7 +286,7 @@ export class CreateAnalysisComponent implements OnInit {
 
   private fetchInitialJobStatus(jobId: number): void {
     this.analysisService
-      .getJobStatus(jobId)
+      .apiV1AnalysisJobsIdGet({ id: jobId })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError((err) => {
@@ -286,7 +294,7 @@ export class CreateAnalysisComponent implements OnInit {
           return EMPTY;
         })
       )
-      .subscribe((job) => {
+      .subscribe((job: any) => {
         this.job.set(this.mapToAnalysisJob(job));
       });
   }
@@ -309,7 +317,7 @@ export class CreateAnalysisComponent implements OnInit {
     this.isLoading.set(true);
 
     this.analysisService
-      .getAnalysisResults(jobId)
+      .apiV1AnalysisJobsIdFetchResultsGet({ id: jobId })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError((err) => {
@@ -323,7 +331,7 @@ export class CreateAnalysisComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (results) => {
+        next: (results: any) => {
           this.analysisResults.set(results);
           this.isLoading.set(false);
         },
@@ -342,23 +350,27 @@ export class CreateAnalysisComponent implements OnInit {
   }
 
   // Helper to map API response to our model
-  private mapToAnalysisJob(apiJob: AnalysisJobListItem): AnalysisJob {
+  private mapToAnalysisJob(
+    apiJob: ApiV1AnalysisJobsIdGet200Response
+  ): any | null {
+    if (!apiJob.data) {
+      return null;
+    }
     return {
-      id: apiJob.id,
-      projectId: apiJob.projectId,
-      status: apiJob.status,
-      totalFiles: null,
-      processedFiles: null,
-      completedAt: apiJob.completedTime,
-      createdAt: apiJob.startTime,
-      updatedAt: apiJob.startTime,
-      goJobId: null,
-      processingStatus: this.getProcessingStatusFromJobStatus(apiJob.status),
-      meta: {
-        isComplete: apiJob.status === AnalysisJobStatus.COMPLETED,
-        processingTime: null,
-        createdOn: new Date(apiJob.startTime).toISOString().split('T')[0],
-      },
+      id: apiJob.data.id,
+      status: apiJob.data?.status,
+      // totalFiles: null,
+      // processedFiles: null,
+      // completedAt: apiJob.completedTime,
+      // createdAt: apiJob.startTime,
+      // updatedAt: apiJob.startTime,
+      // goJobId: null,
+      // processingStatus: this.getProcessingStatusFromJobStatus(apiJob.status),
+      // meta: {
+      //   isComplete: apiJob.status === AnalysisJobStatus.COMPLETED,
+      //   processingTime: null,
+      //   createdOn: new Date(apiJob.startTime).toISOString().split('T')[0],
+      // },
     };
   }
 

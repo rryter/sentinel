@@ -15,7 +15,7 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
       response '200', 'pattern matches found' do
         schema type: 'object',
           properties: {
-            matches: { 
+            data: { 
               type: 'array',
               items: {
                 type: 'object',
@@ -26,7 +26,7 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
                   line_number: { type: 'integer' },
                   column: { type: 'integer' },
                   match_text: { type: 'string' },
-                  analysis_file: {
+                  file_with_violations: {
                     type: 'object',
                     properties: {
                       file_path: { type: 'string' }
@@ -35,12 +35,17 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
                 }
               }
             },
-            total_count: { type: 'integer' },
-            current_page: { type: 'integer' },
-            total_pages: { type: 'integer' },
-            analysis_job_id: { 
-              type: 'integer',
-              nullable: true
+            meta: {
+              type: 'object',
+              properties: {
+                total_count: { type: 'integer' },
+                current_page: { type: 'integer' },
+                total_pages: { type: 'integer' },
+                analysis_job_id: { 
+                  type: 'integer',
+                  nullable: true
+                }
+              }
             }
           }
           
@@ -60,14 +65,19 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
       parameter name: :analysis_job_id, in: :query, type: :integer, required: false, description: 'Filter by analysis job ID'
       
       response '200', 'time series data retrieved' do
-        schema type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              date: { type: 'string' },
-              count: { type: 'integer' }
-            },
-            required: ['date', 'count']
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  date: { type: 'string' },
+                  count: { type: 'integer' }
+                },
+                required: ['date', 'count']
+              }
+            }
           }
           
         run_test!
@@ -90,7 +100,7 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
       response '200', 'pattern matches found' do
         schema type: 'object',
           properties: {
-            matches: { 
+            data: { 
               type: 'array',
               items: {
                 type: 'object',
@@ -101,7 +111,7 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
                   line_number: { type: 'integer' },
                   column: { type: 'integer' },
                   match_text: { type: 'string' },
-                  analysis_file: {
+                  file_with_violations: {
                     type: 'object',
                     properties: {
                       file_path: { type: 'string' }
@@ -110,10 +120,15 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
                 }
               }
             },
-            total_count: { type: 'integer' },
-            current_page: { type: 'integer' },
-            total_pages: { type: 'integer' },
-            analysis_job_id: { type: 'integer' }
+            meta: {
+              type: 'object',
+              properties: {
+                total_count: { type: 'integer' },
+                current_page: { type: 'integer' },
+                total_pages: { type: 'integer' },
+                analysis_job_id: { type: 'integer' }
+              }
+            }
           }
           
         let(:analysis_job_id) { create(:analysis_job).id }
@@ -139,14 +154,19 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
       produces 'application/json'
       
       response '200', 'time series data retrieved' do
-        schema type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              date: { type: 'string' },
-              count: { type: 'integer' }
-            },
-            required: ['date', 'count']
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  date: { type: 'string' },
+                  count: { type: 'integer' }
+                },
+                required: ['date', 'count']
+              }
+            }
           }
           
         let(:analysis_job_id) { create(:analysis_job).id }
