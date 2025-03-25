@@ -1,0 +1,10 @@
+# Ignore Git-specific files
+.gitignore
+.gitkeep
+
+# Ignore the generated configuration file itself
+.openapi-generator-ignore
+.openapi-generator/
+
+# Don't override existing README
+README.md 

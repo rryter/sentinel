@@ -1,0 +1,17 @@
+.gitignore
+README.md
+api.base.service.ts
+api.module.ts
+api/api.ts
+api/examples.service.ts
+configuration.ts
+encoder.ts
+git_push.sh
+index.ts
+model/apiV1ExamplesGet200ResponseInner.ts
+model/apiV1ExamplesIdDelete200Response.ts
+model/apiV1ExamplesPostRequest.ts
+model/example.ts
+model/models.ts
+param.ts
+variables.ts
