@@ -36,10 +36,11 @@ services:
     ports:
       - "4200:4200"
     volumes:
-      - ./sentinel-frontend:/app
+      - ./sentinel-frontend:/app:delegated
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
     networks:

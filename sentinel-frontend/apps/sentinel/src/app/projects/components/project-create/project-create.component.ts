@@ -35,83 +35,95 @@ import { ProjectsService } from 'src/app/api/generated/api/projects.service';
         </div>
       </div>
 
-      <div class="mt-8 flow-root">
-        <form
-          [formGroup]="projectForm"
-          (ngSubmit)="onSubmit()"
-          class="space-y-6"
-        >
-          <div>
-            <label
-              for="name"
-              class="block text-sm font-medium leading-6 text-gray-900"
-            >
-              Project Name
-            </label>
-            <div class="mt-2">
-              <input
-                type="text"
-                id="name"
-                formControlName="name"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="My Project"
-              />
-            </div>
-            @if (projectForm.get('name')?.errors?.['required'] &&
-            projectForm.get('name')?.touched) {
-            <p class="mt-2 text-sm text-red-600">Project name is required</p>
-            }
-          </div>
+      <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="mt-8">
+        <div class="space-y-12">
+          <div class="border-b border-gray-900/10 pb-12">
+            <h2 class="text-base/7 font-semibold text-gray-900">
+              Project Information
+            </h2>
+            <p class="mt-1 text-sm/6 text-gray-600">
+              Enter the details of your code repository for analysis.
+            </p>
 
-          <div>
-            <label
-              for="repository_url"
-              class="block text-sm font-medium leading-6 text-gray-900"
-            >
-              Repository URL
-            </label>
-            <div class="mt-2">
-              <input
-                type="text"
-                id="repository_url"
-                formControlName="repository_url"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="https://github.com/username/repository"
-              />
-            </div>
-            @if (projectForm.get('repository_url')?.errors?.['required'] &&
-            projectForm.get('repository_url')?.touched) {
-            <p class="mt-2 text-sm text-red-600">Repository URL is required</p>
-            }
-          </div>
+            <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+              <div class="sm:col-span-4">
+                <label
+                  for="name"
+                  class="block text-sm/6 font-medium text-gray-900"
+                  >Project Name</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    id="name"
+                    formControlName="name"
+                    class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                    placeholder="My Project"
+                  />
+                </div>
+                @if (projectForm.get('name')?.errors?.['required'] &&
+                projectForm.get('name')?.touched) {
+                <p class="mt-2 text-sm text-red-600">
+                  Project name is required
+                </p>
+                }
+              </div>
 
-          @if (errorMessage) {
-          <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">
-                  {{ errorMessage }}
-                </h3>
+              <div class="col-span-full">
+                <label
+                  for="repository_url"
+                  class="block text-sm/6 font-medium text-gray-900"
+                  >Repository URL</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    id="repository_url"
+                    formControlName="repository_url"
+                    class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                    placeholder="https://github.com/username/repository"
+                  />
+                </div>
+                @if (projectForm.get('repository_url')?.errors?.['required'] &&
+                projectForm.get('repository_url')?.touched) {
+                <p class="mt-2 text-sm text-red-600">
+                  Repository URL is required
+                </p>
+                }
               </div>
             </div>
           </div>
-          }
+        </div>
 
-          <div class="flex justify-end gap-x-4">
-            <button
-              type="submit"
-              hlmBtn
-              [disabled]="projectForm.invalid || isLoading"
-            >
-              @if (isLoading) {
-              <span>Creating...</span>
-              } @else {
-              <span>Create Project</span>
-              }
-            </button>
+        @if (errorMessage) {
+        <div class="mt-6 rounded-md bg-red-50 p-4">
+          <div class="flex">
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">
+                {{ errorMessage }}
+              </h3>
+            </div>
           </div>
-        </form>
-      </div>
+        </div>
+        }
+
+        <div class="mt-6 flex items-center justify-end gap-x-6">
+          <button type="button" routerLink="/projects" hlmBtn variant="ghost">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            [disabled]="projectForm.invalid || isLoading"
+          >
+            @if (isLoading) {
+            <span>Creating...</span>
+            } @else {
+            <span>Create Project</span>
+            }
+          </button>
+        </div>
+      </form>
     </div>
   `,
 })
