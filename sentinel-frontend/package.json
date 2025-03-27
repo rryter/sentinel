@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "start": "npx nx run sentinel:serve",
     "generate:api": "openapi-generator-cli generate --generator-key sentinel-api"
   },
   "private": true,
