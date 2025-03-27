@@ -1,6 +1,6 @@
 # Configure Active Model Serializers
 ActiveModelSerializers.config.adapter = :json
-ActiveModelSerializers.config.key_transform = :camel_lower
+ActiveModelSerializers.config.key_transform = :underscore
 
 # Cache serializers for better performance
 ActiveModelSerializers.config.cache_store = Rails.cache

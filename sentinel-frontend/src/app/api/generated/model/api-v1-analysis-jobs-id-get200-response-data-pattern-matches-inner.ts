@@ -11,10 +11,13 @@
  */
 
 
-export interface ApiV1AnalysisJobsGet200ResponseMeta { 
-    total_count: number;
-    page: number;
-    per_page: number;
+export interface ApiV1AnalysisJobsIdGet200ResponseDataPatternMatchesInner { 
+    id?: number;
+    rule_id?: string;
+    rule_name?: string;
+    line_number?: number;
+    column?: number;
+    match_text?: string;
 }
 
 

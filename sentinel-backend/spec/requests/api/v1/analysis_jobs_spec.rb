@@ -9,12 +9,16 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
       
       response '200', 'analysis jobs found' do
+        let!(:analysis_job) { create(:analysis_job, :completed) }
+        
         schema type: 'object',
+          required: ['data', 'meta'],
           properties: {
             data: {
               type: 'array',
               items: {
                 type: 'object',
+                required: ['id', 'status', 'created_at', 'updated_at'],
                 properties: {
                   id: { type: 'integer' },
                   status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
@@ -24,6 +28,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                     type: 'array',
                     items: { 
                       type: 'object',
+                      required: ['id', 'file_path'],
                       properties: {
                         id: { type: 'integer' },
                         file_path: { type: 'string' }
@@ -34,6 +39,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                     type: 'array',
                     items: {
                       type: 'object',
+                      required: ['id', 'rule_id', 'rule_name'],
                       properties: {
                         id: { type: 'integer' },
                         rule_id: { type: 'string' },
@@ -49,6 +55,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             },
             meta: {
               type: 'object',
+              required: ['total_count', 'page', 'per_page'],
               properties: {
                 total_count: { type: 'integer' },
                 page: { type: 'integer' },
@@ -57,6 +64,16 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             }
           }
           
+        before do
+          get '/api/v1/analysis_jobs'
+          puts "Response body: #{response.body}"
+          
+          # Validate response structure matches exactly
+          json = JSON.parse(response.body)
+          expect(json.keys.sort).to eq(['data', 'meta'])
+          expect(json['data'].first.keys.sort).to eq(['id', 'status', 'created_at', 'updated_at', 'files_with_violations', 'pattern_matches'].sort)
+        end
+        
         run_test!
       end
     end

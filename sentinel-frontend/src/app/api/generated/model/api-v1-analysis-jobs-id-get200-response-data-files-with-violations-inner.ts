@@ -11,10 +11,9 @@
  */
 
 
-export interface ApiV1AnalysisJobsGet200ResponseMeta { 
-    total_count: number;
-    page: number;
-    per_page: number;
+export interface ApiV1AnalysisJobsIdGet200ResponseDataFilesWithViolationsInner { 
+    id?: number;
+    file_path?: string;
 }
 
 

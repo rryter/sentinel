@@ -9,12 +9,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1AnalysisJobsGet200ResponseDataInner } from './api-v1-analysis-jobs-get200-response-data-inner';
+import { ApiV1AnalysisJobsIdGet200ResponseData } from './api-v1-analysis-jobs-id-get200-response-data';
 import { ApiV1AnalysisJobsIdFetchResultsGet200ResponseMeta } from './api-v1-analysis-jobs-id-fetch-results-get200-response-meta';
 
 
 export interface ApiV1AnalysisJobsIdFetchResultsGet200Response { 
-    data?: ApiV1AnalysisJobsGet200ResponseDataInner;
+    data?: ApiV1AnalysisJobsIdGet200ResponseData;
     meta?: ApiV1AnalysisJobsIdFetchResultsGet200ResponseMeta;
 }
 

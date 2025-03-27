@@ -1,3 +1,10 @@
+<pre>
+  {{ isLoading }}
+  -
+  {{ errorMessage }}
+  -
+  {{ jobs.length }}
+</pre>
 <div class="container px-4 sm:px-6 lg:px-8">
   <!-- Header Section -->
   <header class="sm:flex sm:items-center mb-8">
@@ -111,21 +118,21 @@
             {{ job.id }}
           </td>
           <td class="px-3 py-4 text-sm text-gray-500">
-            {{ job.filesWithViolations?.length || 0 }} files
+            <!-- {{ job.files_with_violations?.length || 0 }} files -->
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
             <span
               class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
-              [ngClass]="getStatusClass(job.status)"
+              [ngClass]="getStatusClass(job.status || '')"
             >
-              {{ job.status }}
+              {{ job.status || 'Unknown' }}
             </span>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-            {{ formatDate(job.createdAt) }}
+            {{ formatDate(job.created_at) }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-            {{ formatDate(job.updatedAt) }}
+            {{ formatDate(job.updated_at) }}
           </td>
           <td
             class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"

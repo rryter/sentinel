@@ -12,9 +12,9 @@
 
 
 export interface ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner { 
-    id?: number;
-    rule_id?: string;
-    rule_name?: string;
+    id: number;
+    rule_id: string;
+    rule_name: string;
     line_number?: number;
     column?: number;
     match_text?: string;

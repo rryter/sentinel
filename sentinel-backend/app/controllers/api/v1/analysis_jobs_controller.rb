@@ -15,10 +15,13 @@ module Api
           per_page: params[:per_page] || 10
         }
         
-        # Using AMS with includes
-        render_serialized @jobs, 
-                        include: [:files_with_violations, :pattern_matches], 
-                        meta: meta
+        # Using AMS with attributes adapter for flat structure
+        serialized_data = ActiveModelSerializers::SerializableResource.new(@jobs, 
+          include: [:files_with_violations, :pattern_matches],
+          adapter: :attributes
+        ).as_json
+        
+        render json: { data: serialized_data, meta: meta }
       end
       
       def show

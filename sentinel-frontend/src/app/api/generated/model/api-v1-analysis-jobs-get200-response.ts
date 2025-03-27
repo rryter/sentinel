@@ -14,8 +14,8 @@ import { ApiV1AnalysisJobsGet200ResponseMeta } from './api-v1-analysis-jobs-get2
 
 
 export interface ApiV1AnalysisJobsGet200Response { 
-    data?: Array<ApiV1AnalysisJobsGet200ResponseDataInner>;
-    meta?: ApiV1AnalysisJobsGet200ResponseMeta;
+    data: Array<ApiV1AnalysisJobsGet200ResponseDataInner>;
+    meta: ApiV1AnalysisJobsGet200ResponseMeta;
 }
 
 

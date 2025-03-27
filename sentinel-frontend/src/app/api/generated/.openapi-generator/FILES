@@ -24,6 +24,9 @@ model/api-v1-analysis-jobs-get200-response-meta.ts
 model/api-v1-analysis-jobs-get200-response.ts
 model/api-v1-analysis-jobs-id-fetch-results-get200-response-meta.ts
 model/api-v1-analysis-jobs-id-fetch-results-get200-response.ts
+model/api-v1-analysis-jobs-id-get200-response-data-files-with-violations-inner.ts
+model/api-v1-analysis-jobs-id-get200-response-data-pattern-matches-inner.ts
+model/api-v1-analysis-jobs-id-get200-response-data.ts
 model/api-v1-analysis-jobs-id-get200-response.ts
 model/api-v1-analysis-jobs-id-process-results-post200-response.ts
 model/api-v1-analysis-jobs-post-request.ts

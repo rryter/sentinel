@@ -39,11 +39,21 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
                   "properties": {
                     "data": {
                       "type": "array",
                       "items": {
                         "type": "object",
+                        "required": [
+                          "id",
+                          "status",
+                          "created_at",
+                          "updated_at"
+                        ],
                         "properties": {
                           "id": {
                             "type": "integer"
@@ -69,6 +79,10 @@
                             "type": "array",
                             "items": {
                               "type": "object",
+                              "required": [
+                                "id",
+                                "file_path"
+                              ],
                               "properties": {
                                 "id": {
                                   "type": "integer"
@@ -83,6 +97,11 @@
                             "type": "array",
                             "items": {
                               "type": "object",
+                              "required": [
+                                "id",
+                                "rule_id",
+                                "rule_name"
+                              ],
                               "properties": {
                                 "id": {
                                   "type": "integer"
@@ -110,6 +129,11 @@
                     },
                     "meta": {
                       "type": "object",
+                      "required": [
+                        "total_count",
+                        "page",
+                        "per_page"
+                      ],
                       "properties": {
                         "total_count": {
                           "type": "integer"

@@ -14,10 +14,10 @@ import { ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner } from
 
 
 export interface ApiV1AnalysisJobsGet200ResponseDataInner { 
-    id?: number;
-    status?: ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum;
-    created_at?: string;
-    updated_at?: string;
+    id: number;
+    status: ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum;
+    created_at: string;
+    updated_at: string;
     files_with_violations?: Array<ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner>;
     pattern_matches?: Array<ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner>;
 }

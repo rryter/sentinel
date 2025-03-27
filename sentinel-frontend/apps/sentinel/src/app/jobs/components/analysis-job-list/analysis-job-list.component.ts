@@ -6,44 +6,7 @@ import { DatePipe } from '@angular/common';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-
-interface Project {
-  id: number;
-  name: string;
-  repositoryUrl: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ProjectsResponse {
-  projects: Project[];
-}
-
-interface AnalysisJob {
-  id: number;
-  projectId: number;
-  status: string;
-  totalFiles: number;
-  processedFiles: number;
-  completedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  goJobId: string;
-  processingStatus: string;
-  filesWithViolations: Array<{ id: number; filePath: string }>;
-  patternMatches: Array<{
-    id: number;
-    ruleId: string;
-    ruleName: string;
-    lineNumber: number;
-    column: number;
-    matchText: string;
-  }>;
-}
-
-interface AnalysisJobsResponse {
-  analysisJobs: AnalysisJob[];
-}
+import { AnalysisJob } from 'src/app/api/generated/model/analysis-job';
 
 @Component({
   selector: 'app-analysis-job-list',
@@ -72,9 +35,8 @@ export class AnalysisJobListComponent implements OnInit {
       .apiV1ProjectsGet()
       .pipe(
         map((response) => {
-          const typedResponse = response as unknown as ProjectsResponse;
-          if (typedResponse?.projects) {
-            typedResponse.projects.forEach((project) => {
+          if (response.data) {
+            response.data.forEach((project) => {
               if (project.id) {
                 this.projectMap.set(
                   project.id,
@@ -83,24 +45,16 @@ export class AnalysisJobListComponent implements OnInit {
               }
             });
           }
+          return response;
         }),
         switchMap(() => this.analysisService.apiV1AnalysisJobsGet({})),
-        map((response) => {
-          const typedResponse = response as unknown as AnalysisJobsResponse;
-          if (!typedResponse?.analysisJobs) return [];
-
-          return typedResponse.analysisJobs.sort(
-            (a: AnalysisJob, b: AnalysisJob) => {
-              // Sort by creation date, newest first
-              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-              return dateB - dateA;
-            }
-          );
+        map((response: any) => {
+          console.log('Raw API Response:', JSON.stringify(response, null, 2));
+          return response.data || [];
         })
       )
       .subscribe({
-        next: (jobs) => {
+        next: (jobs: AnalysisJob[]) => {
           this.jobs = jobs;
           this.isLoading = false;
         },
@@ -137,6 +91,6 @@ export class AnalysisJobListComponent implements OnInit {
   }
 
   trackById(index: number, item: AnalysisJob): number {
-    return item.id;
+    return item.id || index;
   }
 }

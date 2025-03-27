@@ -12,8 +12,8 @@
 
 
 export interface ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner { 
-    id?: number;
-    file_path?: string;
+    id: number;
+    file_path: string;
 }
 
 

@@ -21,6 +21,9 @@ fi
 # Navigate to project root
 cd "$(dirname "$0")/.." || exit 1
 
+echo "Running API tests..."
+(cd $BACKEND_DIR && bundle exec rspec spec/requests/api/v1/analysis_jobs_spec.rb)
+
 echo "Generating OpenAPI documentation from Rails API..."
 (cd $BACKEND_DIR && bundle exec rake api:generate_docs)
 
