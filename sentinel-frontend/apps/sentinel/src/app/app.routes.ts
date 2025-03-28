@@ -1,5 +1,4 @@
 import { Route } from '@angular/router';
-import { AppComponent } from './app.component';
 import { RuleListComponent } from './rules/components/rules/list/rule-list.component';
 import { UploaderComponent } from './rules/components/rules/uploader/uploader.component';
 import { RuleDetailsComponent } from './rules/components/rules/details/details.component';

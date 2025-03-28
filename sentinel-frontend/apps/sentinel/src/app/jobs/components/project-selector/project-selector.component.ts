@@ -2,11 +2,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-projects-get200-response-data-inner';
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 
 @Component({
   selector: 'app-project-selector',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BrnSelectImports, HlmSelectImports],
   template: `
     <div class="mb-4">
       <label
@@ -30,18 +32,22 @@ import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/mode
           </p>
         </div>
         } @else {
-        <select
-          id="project-select"
-          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:max-w-xs sm:text-sm sm:leading-6"
+        <brn-select
+          class="inline-block"
+          placeholder="Select a project"
           [(ngModel)]="selectedId"
           (ngModelChange)="selectionChange.emit($event)"
           [disabled]="disabled"
         >
-          <option [ngValue]="null" disabled>Select a project</option>
-          @for (project of projects; track project.id) {
-          <option [ngValue]="project.id">{{ project.name }}</option>
-          }
-        </select>
+          <hlm-select-trigger class="w-56">
+            <hlm-select-value />
+          </hlm-select-trigger>
+          <hlm-select-content>
+            @for (project of projects; track project.id) {
+            <hlm-option [value]="project.id">{{ project.name }}</hlm-option>
+            }
+          </hlm-select-content>
+        </brn-select>
         }
       </div>
     </div>

@@ -23,9 +23,11 @@ import { ProjectsService } from 'src/app/api/generated/api/projects.service';
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-          <h1 class="text-base font-semibold text-gray-900">Create Project</h1>
-          <p class="mt-2 text-sm text-gray-700">
-            Add a new code repository for analysis.
+          <h1 class="text-base/7 font-semibold text-gray-900">
+            Project Information
+          </h1>
+          <p class="mt-1 text-sm/6 text-gray-600">
+            Enter the details of your code repository for analysis.
           </p>
         </div>
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -38,13 +40,6 @@ import { ProjectsService } from 'src/app/api/generated/api/projects.service';
       <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="mt-8">
         <div class="space-y-12">
           <div class="border-b border-gray-900/10 pb-12">
-            <h2 class="text-base/7 font-semibold text-gray-900">
-              Project Information
-            </h2>
-            <p class="mt-1 text-sm/6 text-gray-600">
-              Enter the details of your code repository for analysis.
-            </p>
-
             <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-4">
                 <label
