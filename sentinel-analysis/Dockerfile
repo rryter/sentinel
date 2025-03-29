@@ -14,47 +14,38 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Build the binaries
+# Build the binaries with debug information
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 ./runIndexer.sh
 
 # Development stage
-FROM debian:bookworm-slim AS development
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    curl \
-    gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update && apt-get install -y \
-    nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM alpine:latest AS development
+RUN apk add --no-cache go gcc musl-dev git wget
 WORKDIR /app
-
-# Copy binaries and necessary files from builder
 COPY --from=builder /app/bin/uploader /app/bin/uploader
 COPY --from=builder /app/bin/indexer /app/bin/indexer
-COPY --from=builder /app/bin/rules /app/bin/rules
+COPY --from=builder /app/rules /app/rules
+COPY --from=builder /app/uploads /app/uploads
 COPY --from=builder /app/results /app/results
+RUN chmod +x /app/bin/uploader /app/bin/indexer && \
+    mkdir -p /app/src
 
-# Create necessary directories and set permissions
-RUN mkdir -p /app/bin/uploads && \
-    chmod +x /app/bin/uploader /app/bin/indexer
+# Install Delve debugger
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
+    ln -s /root/go/bin/dlv /usr/local/bin/dlv
 
-# Add health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+# Expose ports for both services
+EXPOSE 8080 2345 2346
 
-# Command to run
-CMD ["./bin/uploader"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+# Start uploader with Delve debugger
+CMD ["dlv", "--listen=:2345", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "/app/bin/uploader", "--", "-port=8080"]
 
 # Production stage
 FROM debian:bookworm-slim AS production
 
-# Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \

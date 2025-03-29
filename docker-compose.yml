@@ -7,10 +7,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+      - "1234:1234" # Rails debugger
     environment:
       - RAILS_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/sentinel_development
       - REDIS_URL=redis://redis:6379/1
+      - RUBY_DEBUG_OPEN=true
+      - RUBY_DEBUG_HOST=0.0.0.0
+      - RUBY_DEBUG_PORT=1234
     depends_on:
       db:
         condition: service_healthy
@@ -25,6 +29,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - sentinel-network
+
+  sidekiq:
+    build:
+      context: ./sentinel-backend
+      dockerfile: Dockerfile
+    command: bundle exec rdbg -n --host 0.0.0.0 --port 1235 -- sidekiq -C config/sidekiq.yml
+    ports:
+      - "1235:1235" # Sidekiq debugger
+    environment:
+      - RAILS_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/sentinel_development
+      - REDIS_URL=redis://redis:6379/1
+      - RUBY_DEBUG_OPEN=true
+      - RUBY_DEBUG_HOST=0.0.0.0
+      - RUBY_DEBUG_PORT=1235
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./sentinel-backend:/app
+      - /app/tmp/cache
     networks:
       - sentinel-network
 
@@ -89,23 +118,20 @@ services:
   analysis:
     build:
       context: ./sentinel-analysis
-      dockerfile: Dockerfile
       target: development
     ports:
-      - "8080:8080"
-    environment:
-      - GO_ENV=development
-      - TARGET_DIR=/target
+      - "8080:8080" # Uploader service
+      - "2345:2345" # Uploader debugger
+      - "2346:2346" # Indexer debugger
     volumes:
-      - ./sentinel-analysis:/app
-      - go-modules:/go/pkg/mod
-      - /home/rryter/projects/rai/apps/angular-ai-gen-backend/src/app:/target
+      - ./sentinel-analysis:/app/src
+      - analysis_data:/app/uploads
+      - analysis_results:/app/results
+    environment:
+      - REDIS_URL=redis://redis:6379
     depends_on:
       redis:
         condition: service_healthy
-    command: ["./bin/uploader"]
-    networks:
-      - sentinel-network
 
 networks:
   sentinel-network:
@@ -115,3 +141,5 @@ volumes:
   postgres_data:
   redis_data:
   go-modules:
+  analysis_data:
+  analysis_results:
