@@ -36,11 +36,19 @@ func NewServer(uploadDir, rulesDir, resultsDir, indexerPath string) *Server {
 // setupRoutes configures all the routes for the server
 func (s *Server) setupRoutes() {
 	// Apply CORS middleware to all endpoints
+	s.router.Handle("/health", http.HandlerFunc(s.handleHealth))
 	s.router.Handle("/api/upload", s.corsMiddleware(http.HandlerFunc(s.handleFileUpload)))
 	s.router.Handle("/api/rules", s.corsMiddleware(http.HandlerFunc(s.handleGetRules)))
 	s.router.Handle("/api/analyze", s.corsMiddleware(http.HandlerFunc(s.handleStartAnalysis)))
 	s.router.Handle("/api/analyze/status/", s.corsMiddleware(http.HandlerFunc(s.handleGetJobStatus)))
 	s.router.Handle("/api/analyze/results/", s.corsMiddleware(http.HandlerFunc(s.handleGetAnalysisResults)))
+}
+
+// handleHealth handles health check requests
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status": "healthy"}`))
 }
 
 // corsMiddleware handles CORS for Angular frontend

@@ -29,6 +29,11 @@ echo "Building and starting frontend container..."
 docker compose build frontend
 docker compose up -d frontend
 
+# Build and start the analysis container
+echo "Building and starting analysis container..."
+docker compose build analysis
+docker compose up -d analysis
+
 # Generate API clients
 # echo "Generating API clients..."
 # docker compose exec frontend java -jar node_modules/@openapitools/openapi-generator-cli/versions/7.0.0.jar generate \

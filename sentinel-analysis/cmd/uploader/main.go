@@ -15,10 +15,10 @@ type RouteInfo struct {
 }
 
 func main() {
-	// Use absolute paths for directories
-	uploadDir := "/home/rryter/projects/sentinel/sentinel-analysis/uploads"
-	rulesDir := "/home/rryter/projects/sentinel/sentinel-analysis/bin/rules"
-	resultsDir := "/home/rryter/projects/sentinel/sentinel-analysis/results"
+	// Use relative paths for directories
+	uploadDir := "uploads"
+	rulesDir := "bin/rules"
+	resultsDir := "results"
 
 	// Ensure directories exist
 	for _, dir := range []string{uploadDir, rulesDir, resultsDir} {
@@ -36,7 +36,7 @@ func main() {
 
 	// Try to find the indexer binary in several locations
 	possibleLocations := []string{
-		"/home/rryter/projects/sentinel/sentinel-analysis/bin/indexer",         // absolute path in bin
+		"bin/indexer",         // relative path in bin
 	}
 
 	var indexerPath string
@@ -58,7 +58,7 @@ func main() {
 	if indexerPath == "" {
 		log.Printf("Warning: Indexer binary not found in any of the expected locations. Analysis functionality may not work.")
 		// Use a default path anyway
-		indexerPath = "../indexer"
+		indexerPath = "bin/indexer"
 	}
 
 	// Initialize the server
@@ -85,6 +85,6 @@ func main() {
 
 	// Start the server
 	port := ":8080"
-	fmt.Printf("\nFile upload and analysis API started at http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, server.router))
+	fmt.Printf("\nFile upload and analysis API started at http://0.0.0.0%s\n", port)
+	log.Fatal(http.ListenAndServe("0.0.0.0"+port, server.router))
 }

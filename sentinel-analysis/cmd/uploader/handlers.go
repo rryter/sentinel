@@ -144,23 +144,57 @@ func (s *Server) handleGetRules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get the current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Printf("Error getting current working directory: %v", err)
+	} else {
+		log.Printf("Current working directory: %s", cwd)
+	}
+
+	// Convert rules directory to absolute path
+	absRulesDir, err := filepath.Abs(s.rulesDir)
+	if err != nil {
+		log.Printf("Error getting absolute path for rules directory: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error": "Failed to resolve rules directory path"}`)
+		return
+	}
+	log.Printf("Absolute rules directory: %s", absRulesDir)
+
+	// Check if rules directory exists
+	if _, err := os.Stat(absRulesDir); os.IsNotExist(err) {
+		log.Printf("Rules directory does not exist: %s", absRulesDir)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error": "Rules directory does not exist"}`)
+		return
+	}
+	log.Printf("Rules directory exists: %s", absRulesDir)
+
 	// Map to store rules by category
 	rulesByCategory := make(map[string][]string)
 
 	// Walk through the rules directory
-	err := filepath.Walk(s.rulesDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(absRulesDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			log.Printf("Error walking path %s: %v", path, err)
 			return err
 		}
 
 		// Skip the root directory and directories
-		if path == s.rulesDir || info.IsDir() {
+		if path == absRulesDir || info.IsDir() {
+			log.Printf("Skipping directory: %s", path)
 			return nil
 		}
 
+		log.Printf("Found file: %s", path)
+
 		// Get relative path from rules directory
-		relPath, err := filepath.Rel(s.rulesDir, path)
+		relPath, err := filepath.Rel(absRulesDir, path)
 		if err != nil {
+			log.Printf("Error getting relative path for %s: %v", path, err)
 			return err
 		}
 		// Split path to get category and filename
@@ -174,18 +208,23 @@ func (s *Server) handleGetRules(w http.ResponseWriter, r *http.Request) {
 			filename = parts[1]
 		}
 
-		// Only consider files with .go extension
-		if !strings.HasSuffix(filename, ".go") {
+		log.Printf("Category: %s, Filename: %s", category, filename)
+
+		// Only consider files with .so extension
+		if !strings.HasSuffix(filename, ".so") {
+			log.Printf("Skipping non-.so file: %s", filename)
 			return nil
 		}
 
 		// Add rule to the appropriate category
 		rulesByCategory[category] = append(rulesByCategory[category], filename)
+		log.Printf("Added rule to category %s: %s", category, filename)
 
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("Error walking rules directory: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error": "Failed to read rules directory: %s"}`, err.Error())
