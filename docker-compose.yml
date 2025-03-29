@@ -95,9 +95,11 @@ services:
       - "8080:8080"
     environment:
       - GO_ENV=development
-      - REDIS_URL=redis://redis:6379/1
+      - TARGET_DIR=/target
     volumes:
+      - ./sentinel-analysis:/app
       - go-modules:/go/pkg/mod
+      - /home/rryter/projects/rai/apps/angular-ai-gen-backend/src/app:/target
     depends_on:
       redis:
         condition: service_healthy

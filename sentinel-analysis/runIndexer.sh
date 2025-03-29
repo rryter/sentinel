@@ -19,43 +19,27 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Print header
-printf "\n${BOLD}${BLUE}Running Sentinel Indexer...${NC}\n"
-if [ "$DEBUG" = true ]; then
-    printf "${YELLOW}Debug mode enabled${NC}\n"
-fi
-printf "\n"
+echo -e "\nRunning Sentinel Indexer...\n"
 
-printf "${YELLOW}➜ ${BOLD}Removing all compiled rules...${NC}\n"
-# Delete all the compiled rules
-rm -rf bin/rules/*
-
-# Build the rules
-printf "${YELLOW}➜ ${BOLD}Building rules...${NC}\n"
-chmod +x build_rules.sh
+# Build rules first
 ./build_rules.sh
 
-# Build the indexer
-printf "\n${YELLOW}➜ ${BOLD}Building indexer...${NC}\n"
-mkdir -p bin
-
-printf "  ${CYAN}⚡${NC} Compiling indexer..."
-if output=$(time go build -o bin/indexer ./cmd/indexer 2>&1); then
-    printf " ${GREEN}✓${NC}\n"
-else
-    printf " ${RED}✗${NC}\n"
-    printf "    ${RED}Error:${NC} %s\n" "$output"
+echo -e "\n➜ Building indexer..."
+echo -e "  ${CYAN}⚡${NC} Compiling indexer..."
+CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o bin/indexer cmd/indexer/main.go
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to compile indexer${NC}"
     exit 1
 fi
 
-printf "  ${CYAN}⚡${NC} Compiling uploader..."
-if output=$(time go build -o bin/uploader ./cmd/uploader 2>&1); then
-    printf " ${GREEN}✓${NC}\n"
-else
-    printf " ${RED}✗${NC}\n"
-    printf "    ${RED}Error:${NC} %s\n" "$output"
+echo -e "  ${CYAN}⚡${NC} Compiling uploader..."
+CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o bin/uploader ./cmd/uploader/...
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to compile uploader${NC}"
     exit 1
 fi
+
+echo -e "${GREEN}Build completed successfully${NC}"
 
 exit 0
 

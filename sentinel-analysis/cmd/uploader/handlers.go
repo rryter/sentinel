@@ -407,8 +407,13 @@ func (s *Server) runAnalysis(jobID string) {
 	}
 
 	// Prepare the command to run the indexer with correct arguments
+	targetDir := os.Getenv("TARGET_DIR")
+	if targetDir == "" {
+		targetDir = "/target" // Default value if not set
+	}
+
 	cmd := exec.Command(s.indexerPath,
-		"-dir", "/home/rryter/projects/rai/apps/angular-ai-gen-backend/src/app",
+		"-dir", targetDir,
 		"-outdir", jobDir,
 		"-rules", s.rulesDir,
 		"-cache", filepath.Join(s.resultsDir, "ast-cache.json"))
