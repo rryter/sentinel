@@ -1,8 +1,6 @@
 .gitignore
 README.md
 api.module.ts
-api/analysis-jobs.service.ts
-api/analysis-jobs.serviceInterface.ts
 api/api.ts
 api/examples.service.ts
 api/examples.serviceInterface.ts
@@ -21,14 +19,8 @@ model/analysis-job-response.ts
 model/analysis-job.ts
 model/api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response-meta.ts
 model/api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response.ts
-model/api-v1-analysis-jobs-get200-response-data-inner-files-with-violations-inner.ts
-model/api-v1-analysis-jobs-get200-response-data-inner-pattern-matches-inner.ts
-model/api-v1-analysis-jobs-get200-response-data-inner.ts
-model/api-v1-analysis-jobs-get200-response-meta.ts
-model/api-v1-analysis-jobs-get200-response.ts
-model/api-v1-analysis-jobs-id-process-results-post200-response.ts
-model/api-v1-analysis-jobs-post-request.ts
 model/api-v1-examples-get200-response-inner.ts
+model/api-v1-examples-id-delete200-response.ts
 model/api-v1-examples-post-request.ts
 model/api-v1-pattern-matches-get200-response-data-inner-file-with-violations.ts
 model/api-v1-pattern-matches-get200-response-data-inner.ts

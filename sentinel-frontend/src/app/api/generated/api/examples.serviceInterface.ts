@@ -13,8 +13,8 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { ApiV1AnalysisJobsIdProcessResultsPost200Response } from '../model/models';
 import { ApiV1ExamplesGet200ResponseInner } from '../model/models';
+import { ApiV1ExamplesIdDelete200Response } from '../model/models';
 import { ApiV1ExamplesPostRequest } from '../model/models';
 
 
@@ -54,7 +54,7 @@ export interface ExamplesServiceInterface {
      * 
 * @param requestParameters
      */
-    apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsIdProcessResultsPost200Response>;
+    apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, extraHttpRequestParams?: any): Observable<ApiV1ExamplesIdDelete200Response>;
 
     /**
      * Retrieves an example

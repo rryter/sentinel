@@ -5,14 +5,8 @@ export * from './analysis-job-response-analysis-job-files-with-violations-inner'
 export * from './analysis-job-response-analysis-job-pattern-matches-inner';
 export * from './api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response';
 export * from './api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response-meta';
-export * from './api-v1-analysis-jobs-get200-response';
-export * from './api-v1-analysis-jobs-get200-response-data-inner';
-export * from './api-v1-analysis-jobs-get200-response-data-inner-files-with-violations-inner';
-export * from './api-v1-analysis-jobs-get200-response-data-inner-pattern-matches-inner';
-export * from './api-v1-analysis-jobs-get200-response-meta';
-export * from './api-v1-analysis-jobs-id-process-results-post200-response';
-export * from './api-v1-analysis-jobs-post-request';
 export * from './api-v1-examples-get200-response-inner';
+export * from './api-v1-examples-id-delete200-response';
 export * from './api-v1-examples-post-request';
 export * from './api-v1-pattern-matches-get200-response';
 export * from './api-v1-pattern-matches-get200-response-data-inner';

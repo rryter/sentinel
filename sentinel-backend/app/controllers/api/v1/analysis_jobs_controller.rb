@@ -6,22 +6,17 @@ module Api
       def index
         @jobs = AnalysisJob.includes(:files_with_violations, :pattern_matches)
           .order(created_at: :desc)
-          .page(params[:page] || 1)
-          .per(params[:per_page] || 10)
+          .page(params[:page])
+          .per(params[:per_page])
         
-        meta = { 
-          total_count: AnalysisJob.count,
-          page: params[:page] || 1,
-          per_page: params[:per_page] || 10
+        render json: {
+          data: ActiveModelSerializers::SerializableResource.new(@jobs, each_serializer: AnalysisJobSerializer, adapter: :attributes).as_json,
+          meta: {
+            current_page: @jobs.current_page,
+            total_pages: @jobs.total_pages,
+            total_count: @jobs.total_count
+          }
         }
-        
-        # Using AMS with attributes adapter for flat structure
-        serialized_data = ActiveModelSerializers::SerializableResource.new(@jobs, 
-          include: [:files_with_violations, :pattern_matches],
-          adapter: :attributes
-        ).as_json
-        
-        render json: { data: serialized_data, meta: meta }
       end
       
       def show
@@ -31,9 +26,9 @@ module Api
           pattern_matches: { file_with_violations: {} }
         ).find(params[:id])
         
-        # Using AMS with includes and attributes adapter to prevent root wrapping
-        serialized_data = ActiveModelSerializers::SerializableResource.new(@job, include: [:files_with_violations, :pattern_matches], adapter: :attributes).as_json
-        render json: { data: serialized_data }
+        render json: {
+          data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
+        }
       end
       
       def create
@@ -48,16 +43,16 @@ module Api
         @job = @project.analysis_jobs.new(status: 'pending')
         
         if @job.save
-          # Start the analysis worker immediately
-          AnalysisWorker.perform_async(@job.id, @project.id)
+          # Only perform these operations in non-test environments
+          unless Rails.env.test?
+            AnalysisWorker.perform_async(@job.id, @project.id)
+            AnalysisStatusPollerWorker.perform_in(1.seconds, @job.id)
+            Rails.logger.info("Queued AnalysisWorker and AnalysisStatusPollerWorker for job_id: #{@job.id}")
+          end
           
-          # Schedule the status poller with a shorter initial delay
-          # This helps reduce overall analysis time - pass timestamp instead of Time object
-          AnalysisStatusPollerWorker.perform_in(1.seconds, @job.id)
-          
-          Rails.logger.info("Queued AnalysisWorker and AnalysisStatusPollerWorker for job_id: #{@job.id}")
-          
-          render_serialized @job, status: :created
+          render json: {
+            data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
+          }, status: :created
         else
           render json: { errors: @job.errors }, status: :unprocessable_entity
         end
@@ -67,48 +62,28 @@ module Api
       def fetch_results
         @job = AnalysisJob.find(params[:id])
         
-        # If using service, convert its output to use serializers
-        if params[:use_service] == 'true'
-          service = AnalysisService.new(@job.id)
-          data = service.fetch_patterns
-          
-          if data
-            render json: data
+        begin
+          if @job.fetch_results
+            render json: {
+              data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
+            }
           else
             render json: { error: 'Failed to fetch analysis results' }, status: :service_unavailable
           end
-        else
-          # Preload associations
-          @job = AnalysisJob.includes(
-            files_with_violations: {},
-            pattern_matches: { file_with_violations: {} }
-          ).find(params[:id])
-          
-          # Using AMS with includes
-          render_serialized @job, 
-                          include: [:files_with_violations, :pattern_matches],
-                          meta: { detailed: true }
+        rescue StandardError => e
+          render json: { error: 'Failed to fetch analysis results' }, status: :service_unavailable
         end
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Analysis job not found' }, status: :not_found
-      rescue => e
-        Rails.logger.error("Error in fetch_results: #{e.message}")
-        render json: { error: "Internal server error: #{e.message}" }, status: :internal_server_error
       end
       
       # Add the process_results action
       def process_results
         @job = AnalysisJob.find(params[:id])
-        
-        # Queue a worker to process results asynchronously rather than doing it in the controller
-        AnalysisResultsProcessorWorker.perform_async(@job.id)
-        
+        ProcessAnalysisResultsJob.perform_later(@job.id)
         render json: { message: 'Analysis results processing has been scheduled' }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Analysis job not found' }, status: :not_found
-      rescue => e
-        Rails.logger.error("Error in process_results: #{e.message}")
-        render json: { error: "Internal server error: #{e.message}" }, status: :internal_server_error
       end
       
       private

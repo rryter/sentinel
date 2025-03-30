@@ -19,9 +19,9 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { ApiV1AnalysisJobsIdProcessResultsPost200Response } from '../model/api-v1-analysis-jobs-id-process-results-post200-response';
-// @ts-ignore
 import { ApiV1ExamplesGet200ResponseInner } from '../model/api-v1-examples-get200-response-inner';
+// @ts-ignore
+import { ApiV1ExamplesIdDelete200Response } from '../model/api-v1-examples-id-delete200-response';
 // @ts-ignore
 import { ApiV1ExamplesPostRequest } from '../model/api-v1-examples-post-request';
 
@@ -162,9 +162,9 @@ export class ExamplesService implements ExamplesServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsIdProcessResultsPost200Response>;
-    public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsIdProcessResultsPost200Response>>;
-    public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsIdProcessResultsPost200Response>>;
+    public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ExamplesIdDelete200Response>;
+    public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ExamplesIdDelete200Response>>;
+    public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ExamplesIdDelete200Response>>;
     public apiV1ExamplesIdDelete(requestParameters: ApiV1ExamplesIdDeleteRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const id = requestParameters.id;
         if (id === null || id === undefined) {
@@ -203,7 +203,7 @@ export class ExamplesService implements ExamplesServiceInterface {
         }
 
         let localVarPath = `/api/v1/examples/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}`;
-        return this.httpClient.request<ApiV1AnalysisJobsIdProcessResultsPost200Response>('delete', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1ExamplesIdDelete200Response>('delete', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
