@@ -21,11 +21,6 @@ import { ApiV1ProjectsPostRequest } from '../model/models';
 import { Configuration }                                     from '../configuration';
 
 
-export interface ApiV1ProjectsGetRequestParams {
-    page?: number;
-    perPage?: number;
-}
-
 export interface ApiV1ProjectsIdGetRequestParams {
     id: number;
 }
@@ -42,9 +37,8 @@ export interface ProjectsServiceInterface {
     /**
      * Lists all projects
      * 
-* @param requestParameters
-     */
-    apiV1ProjectsGet(requestParameters: ApiV1ProjectsGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1ProjectsGet200Response>;
+*/
+    apiV1ProjectsGet(extraHttpRequestParams?: any): Observable<ApiV1ProjectsGet200Response>;
 
     /**
      * Retrieves a project

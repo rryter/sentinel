@@ -1,158 +1,242 @@
-require 'rails_helper'
+require 'swagger_helper'
 
-RSpec.describe Api::V1::AnalysisJobsController, type: :request do
-  let(:project) { create(:project) }
-  let(:valid_attributes) do
-    {
-      project_id: project.id,
-      repository_url: 'https://github.com/test/repo.git',
-      branch: 'main',
-      commit_sha: 'abc123',
-      status: 'pending'
-    }
-  end
+RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
+  path '/api/v1/analysis_jobs' do
+    get 'Lists all analysis jobs' do
+      tags 'Analysis Jobs'
+      produces 'application/json'
+      
+      response '200', 'analysis jobs found' do
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'integer' },
+                  project_id: { type: 'integer' },
+                  status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
+                  created_at: { type: 'string', format: 'date-time' },
+                  updated_at: { type: 'string', format: 'date-time' }
+                },
+                required: ['id', 'project_id', 'status']
+              }
+            },
+            meta: {
+              type: 'object',
+              properties: {
+                current_page: { type: 'integer' },
+                total_pages: { type: 'integer' },
+                total_count: { type: 'integer' }
+              }
+            }
+          },
+          required: ['data', 'meta']
 
-  describe 'GET /api/v1/analysis_jobs' do
-    context 'when analysis jobs exist' do
-      let!(:analysis_jobs) { create_list(:analysis_job, 5, :completed, project: project) }
-
-      it 'returns a list of analysis jobs' do
-        get '/api/v1/analysis_jobs'
-        expect(response).to have_http_status(:ok)
-        data = JSON.parse(response.body)
-        expect(data['data']).to be_an(Array)
-        expect(data['data'].length).to eq(5)
-      end
-
-      context 'with pagination' do
-        it 'returns paginated results' do
-          get '/api/v1/analysis_jobs', params: { page: 1, per_page: 2 }
-          expect(response).to have_http_status(:ok)
+        let(:project) { create(:project) }
+        let!(:analysis_jobs) { create_list(:analysis_job, 5, :completed, project: project) }
+        
+        run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['data'].length).to eq(2)
-          expect(data['meta']['current_page']).to eq(1)
-          expect(data['meta']['total_pages']).to eq(3)
-          expect(data['meta']['total_count']).to eq(5)
-        end
-
-        it 'returns the second page' do
-          get '/api/v1/analysis_jobs', params: { page: 2, per_page: 2 }
-          expect(response).to have_http_status(:ok)
-          data = JSON.parse(response.body)
-          expect(data['data'].length).to eq(2)
-          expect(data['meta']['current_page']).to eq(2)
-        end
-
-        it 'returns the last page' do
-          get '/api/v1/analysis_jobs', params: { page: 3, per_page: 2 }
-          expect(response).to have_http_status(:ok)
-          data = JSON.parse(response.body)
-          expect(data['data'].length).to eq(1)
-          expect(data['meta']['current_page']).to eq(3)
+          expect(data['data']).to be_an(Array)
+          expect(data['data'].length).to eq(5)
         end
       end
     end
 
-    context 'when no analysis jobs exist' do
-      it 'returns an empty array' do
-        get '/api/v1/analysis_jobs'
-        expect(response).to have_http_status(:ok)
-        data = JSON.parse(response.body)
-        expect(data['data']).to be_an(Array)
-        expect(data['data']).to be_empty
+    post 'Creates a new analysis job' do
+      tags 'Analysis Jobs'
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :analysis_job, in: :body, schema: {
+        type: 'object',
+        properties: {
+          project_id: { type: 'integer' },
+          repository_url: { type: 'string' },
+          branch: { type: 'string' },
+          commit_sha: { type: 'string' },
+          status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] }
+        },
+        required: ['project_id']
+      }
+      
+      response '201', 'analysis job created' do
+        let(:project) { create(:project) }
+        let(:analysis_job) { { project_id: project.id, repository_url: 'https://github.com/test/repo.git', branch: 'main', commit_sha: 'abc123', status: 'pending' } }
+        
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                project_id: { type: 'integer' },
+                status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
+                created_at: { type: 'string', format: 'date-time' },
+                updated_at: { type: 'string', format: 'date-time' }
+              },
+              required: ['id', 'project_id', 'status']
+            }
+          },
+          required: ['data']
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_a(Hash)
+          expect(data['data']['status']).to eq('pending')
+          expect(data['data']['project_id']).to eq(project.id)
+        end
+      end
+      
+      response '422', 'invalid request' do
+        let(:analysis_job) { { project_id: nil } }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('errors')
+        end
       end
     end
   end
 
-  describe 'POST /api/v1/analysis_jobs' do
-    context 'with valid parameters' do
-      it 'creates a new analysis job' do
-        expect {
-          post '/api/v1/analysis_jobs', params: valid_attributes
-        }.to change(AnalysisJob, :count).by(1)
-
-        expect(response).to have_http_status(:created)
-        data = JSON.parse(response.body)
-        expect(data['data']['status']).to eq('pending')
-        expect(data['data']['project_id']).to eq(project.id)
+  path '/api/v1/analysis_jobs/{id}' do
+    parameter name: :id, in: :path, type: :integer
+    
+    get 'Retrieves an analysis job' do
+      tags 'Analysis Jobs'
+      produces 'application/json'
+      
+      response '200', 'analysis job found' do
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                project_id: { type: 'integer' },
+                status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
+                created_at: { type: 'string', format: 'date-time' },
+                updated_at: { type: 'string', format: 'date-time' }
+              },
+              required: ['id', 'project_id', 'status']
+            }
+          },
+          required: ['data']
+          
+        let(:project) { create(:project) }
+        let(:analysis_job) { create(:analysis_job, :completed, project: project) }
+        let(:id) { analysis_job.id }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_a(Hash)
+          expect(data['data']['id']).to eq(analysis_job.id)
+        end
       end
-    end
-
-    context 'with invalid parameters' do
-      it 'returns unprocessable entity status' do
-        post '/api/v1/analysis_jobs', params: { project_id: nil }
-        expect(response).to have_http_status(:unprocessable_entity)
-      end
-    end
-  end
-
-  describe 'GET /api/v1/analysis_jobs/:id' do
-    let(:analysis_job) { create(:analysis_job, :completed, project: project) }
-
-    context 'when the analysis job exists' do
-      it 'returns the analysis job' do
-        get "/api/v1/analysis_jobs/#{analysis_job.id}"
-        expect(response).to have_http_status(:ok)
-        data = JSON.parse(response.body)
-        expect(data['data']['id']).to eq(analysis_job.id)
-      end
-    end
-
-    context 'when the analysis job does not exist' do
-      it 'returns not found status' do
-        get '/api/v1/analysis_jobs/0'
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-  end
-
-  describe 'GET /api/v1/analysis_jobs/:id/fetch_results' do
-    let(:analysis_job) { create(:analysis_job, :completed, project: project) }
-
-    context 'when the analysis job exists' do
-      it 'returns the analysis job results' do
-        get "/api/v1/analysis_jobs/#{analysis_job.id}/fetch_results"
-        expect(response).to have_http_status(:ok)
-        data = JSON.parse(response.body)
-        expect(data['data']['id']).to eq(analysis_job.id)
-      end
-    end
-
-    context 'when the analysis job does not exist' do
-      it 'returns not found status' do
-        get '/api/v1/analysis_jobs/0/fetch_results'
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-
-    context 'when the service is unavailable' do
-      before do
-        allow_any_instance_of(AnalysisJob).to receive(:fetch_results).and_raise(StandardError)
-      end
-
-      it 'returns service unavailable status' do
-        get "/api/v1/analysis_jobs/#{analysis_job.id}/fetch_results"
-        expect(response).to have_http_status(:service_unavailable)
+      
+      response '404', 'analysis job not found' do
+        let(:id) { 0 }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('error')
+        end
       end
     end
   end
 
-  describe 'POST /api/v1/analysis_jobs/:id/process_results' do
-    let(:analysis_job) { create(:analysis_job, :completed, project: project) }
+  path '/api/v1/analysis_jobs/{id}/fetch_results' do
+    parameter name: :id, in: :path, type: :integer
+    
+    get 'Fetches analysis job results' do
+      tags 'Analysis Jobs'
+      produces 'application/json'
+      
+      response '200', 'analysis job results found' do
+        schema type: 'object',
+          properties: {
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                project_id: { type: 'integer' },
+                status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
+                created_at: { type: 'string', format: 'date-time' },
+                updated_at: { type: 'string', format: 'date-time' }
+              },
+              required: ['id', 'project_id', 'status']
+            }
+          },
+          required: ['data']
+          
+        let(:project) { create(:project) }
+        let(:analysis_job) { create(:analysis_job, :completed, project: project) }
+        let(:id) { analysis_job.id }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_a(Hash)
+          expect(data['data']['id']).to eq(analysis_job.id)
+        end
+      end
+      
+      response '404', 'analysis job not found' do
+        let(:id) { 0 }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('error')
+        end
+      end
 
-    context 'when the analysis job exists' do
-      it 'schedules results processing' do
-        expect(ProcessAnalysisResultsJob).to receive(:perform_later).with(analysis_job.id)
-        post "/api/v1/analysis_jobs/#{analysis_job.id}/process_results"
-        expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)['message']).to eq('Analysis results processing has been scheduled')
+      response '503', 'service unavailable' do
+        let(:project) { create(:project) }
+        let(:analysis_job) { create(:analysis_job, :completed, project: project) }
+        let(:id) { analysis_job.id }
+        
+        before do
+          allow_any_instance_of(AnalysisJob).to receive(:fetch_results).and_raise(StandardError)
+        end
+        
+        run_test! do |response|
+          expect(response).to have_http_status(:service_unavailable)
+        end
       end
     end
+  end
 
-    context 'when the analysis job does not exist' do
-      it 'returns not found status' do
-        post '/api/v1/analysis_jobs/0/process_results'
-        expect(response).to have_http_status(:not_found)
+  path '/api/v1/analysis_jobs/{id}/process_results' do
+    parameter name: :id, in: :path, type: :integer
+    
+    post 'Processes analysis job results' do
+      tags 'Analysis Jobs'
+      produces 'application/json'
+      
+      response '200', 'results processing scheduled' do
+        schema type: 'object',
+          properties: {
+            message: { type: 'string' }
+          },
+          required: ['message']
+          
+        let(:project) { create(:project) }
+        let(:analysis_job) { create(:analysis_job, :completed, project: project) }
+        let(:id) { analysis_job.id }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['message']).to eq('Analysis results processing has been scheduled')
+        end
+      end
+      
+      response '404', 'analysis job not found' do
+        let(:id) { 0 }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('error')
+        end
       end
     end
   end

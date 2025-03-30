@@ -9,17 +9,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner } from './api-v1-analysis-jobs-get200-response-data-inner-pattern-matches-inner';
-import { ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner } from './api-v1-analysis-jobs-get200-response-data-inner-files-with-violations-inner';
 
 
 export interface ApiV1AnalysisJobsGet200ResponseDataInner { 
     id: number;
+    project_id: number;
     status: ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum;
-    created_at: string;
-    updated_at: string;
-    files_with_violations?: Array<ApiV1AnalysisJobsGet200ResponseDataInnerFilesWithViolationsInner>;
-    pattern_matches?: Array<ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner>;
+    created_at?: string;
+    updated_at?: string;
 }
 export enum ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum {
     PENDING = 'pending',

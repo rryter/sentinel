@@ -9,13 +9,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1ProjectsGet200ResponseDataInner } from './api-v1-projects-get200-response-data-inner';
-import { ApiV1ProjectsGet200ResponseMeta } from './api-v1-projects-get200-response-meta';
+import { ApiV1ProjectsGet200ResponseData } from './api-v1-projects-get200-response-data';
 
 
 export interface ApiV1ProjectsGet200Response { 
-    data: Array<ApiV1ProjectsGet200ResponseDataInner>;
-    meta: ApiV1ProjectsGet200ResponseMeta;
+    data: ApiV1ProjectsGet200ResponseData;
+    meta?: any | null;
 }
 
 

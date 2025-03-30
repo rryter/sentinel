@@ -19,11 +19,11 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { AnalysisJobResponse } from '../model/analysis-job-response';
-// @ts-ignore
 import { ApiV1AnalysisJobsGet200Response } from '../model/api-v1-analysis-jobs-get200-response';
 // @ts-ignore
 import { ApiV1AnalysisJobsIdProcessResultsPost200Response } from '../model/api-v1-analysis-jobs-id-process-results-post200-response';
+// @ts-ignore
+import { ApiV1AnalysisJobsPost201Response } from '../model/api-v1-analysis-jobs-post201-response';
 // @ts-ignore
 import { ApiV1AnalysisJobsPostRequest } from '../model/api-v1-analysis-jobs-post-request';
 
@@ -32,7 +32,6 @@ import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables'
 import { Configuration }                                     from '../configuration';
 import {
     AnalysisJobsServiceInterface,
-    ApiV1AnalysisJobsGetRequestParams,
     ApiV1AnalysisJobsIdFetchResultsGetRequestParams,
     ApiV1AnalysisJobsIdGetRequestParams,
     ApiV1AnalysisJobsIdProcessResultsPostRequestParams,
@@ -107,26 +106,13 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
 
     /**
      * Lists all analysis jobs
-     * @param requestParameters
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1AnalysisJobsGet(requestParameters: ApiV1AnalysisJobsGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsGet200Response>;
-    public apiV1AnalysisJobsGet(requestParameters: ApiV1AnalysisJobsGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsGet200Response>>;
-    public apiV1AnalysisJobsGet(requestParameters: ApiV1AnalysisJobsGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsGet200Response>>;
-    public apiV1AnalysisJobsGet(requestParameters: ApiV1AnalysisJobsGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
-        const page = requestParameters.page;
-        const perPage = requestParameters.perPage;
-
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        if (page !== undefined && page !== null) {
-          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-            <any>page, 'page');
-        }
-        if (perPage !== undefined && perPage !== null) {
-          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-            <any>perPage, 'per_page');
-        }
+    public apiV1AnalysisJobsGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsGet200Response>;
+    public apiV1AnalysisJobsGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsGet200Response>>;
+    public apiV1AnalysisJobsGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsGet200Response>>;
+    public apiV1AnalysisJobsGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -163,7 +149,6 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
         return this.httpClient.request<ApiV1AnalysisJobsGet200Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,
@@ -179,20 +164,13 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AnalysisJobResponse>;
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AnalysisJobResponse>>;
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AnalysisJobResponse>>;
+    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsPost201Response>;
+    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsPost201Response>>;
+    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsPost201Response>>;
     public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const id = requestParameters.id;
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling apiV1AnalysisJobsIdFetchResultsGet.');
-        }
-        const useService = requestParameters.useService;
-
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        if (useService !== undefined && useService !== null) {
-          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-            <any>useService, 'use_service');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -227,10 +205,9 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
         }
 
         let localVarPath = `/api/v1/analysis_jobs/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}/fetch_results`;
-        return this.httpClient.request<AnalysisJobResponse>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1AnalysisJobsPost201Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,
@@ -246,9 +223,9 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AnalysisJobResponse>;
-    public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AnalysisJobResponse>>;
-    public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AnalysisJobResponse>>;
+    public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsPost201Response>;
+    public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsPost201Response>>;
+    public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsPost201Response>>;
     public apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const id = requestParameters.id;
         if (id === null || id === undefined) {
@@ -287,7 +264,7 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
         }
 
         let localVarPath = `/api/v1/analysis_jobs/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}`;
-        return this.httpClient.request<AnalysisJobResponse>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1AnalysisJobsPost201Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -359,14 +336,14 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
     }
 
     /**
-     * Creates an analysis job
+     * Creates a new analysis job
      * @param requestParameters
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AnalysisJobResponse>;
-    public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AnalysisJobResponse>>;
-    public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AnalysisJobResponse>>;
+    public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsPost201Response>;
+    public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsPost201Response>>;
+    public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsPost201Response>>;
     public apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         const apiV1AnalysisJobsPostRequest = requestParameters.apiV1AnalysisJobsPostRequest;
 
@@ -411,7 +388,7 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
         }
 
         let localVarPath = `/api/v1/analysis_jobs`;
-        return this.httpClient.request<AnalysisJobResponse>('post', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1AnalysisJobsPost201Response>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: apiV1AnalysisJobsPostRequest,

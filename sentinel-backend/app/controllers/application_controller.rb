@@ -41,7 +41,7 @@ class ApplicationController < ActionController::API
     # Using AMS with attributes adapter for flat structure
     serialized_data = ActiveModelSerializers::SerializableResource.new(resource, **serializer_options).as_json
     
-    render json: { data: serialized_data, meta: serializer_options[:meta] }
+    render json: { data: serialized_data, meta: serializer_options[:meta] }, status: options[:status]
   end
 
   def not_found(exception)

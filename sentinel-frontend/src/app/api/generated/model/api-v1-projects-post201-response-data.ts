@@ -9,16 +9,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ApiV1ProjectsGet200ResponseDataProjectsInner } from './api-v1-projects-get200-response-data-projects-inner';
 
 
-export interface ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner { 
-    id: number;
-    rule_name: string;
-    start_line: number;
-    end_line: number;
-    start_col?: number;
-    end_col?: number;
-    match_text?: string;
+export interface ApiV1ProjectsPost201ResponseData { 
+    project: ApiV1ProjectsGet200ResponseDataProjectsInner;
 }
 
 

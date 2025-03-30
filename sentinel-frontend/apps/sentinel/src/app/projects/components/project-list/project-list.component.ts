@@ -25,14 +25,14 @@ export class ProjectListComponent implements OnInit {
   }
 
   private loadProjects() {
-    this.projectsService.apiV1ProjectsGet().subscribe({
-      next: (response: any) => {
-        this.projects = (response.projects || []).map((project: any) => ({
+    this.projectsService.apiV1ProjectsGet({}).subscribe({
+      next: (response) => {
+        this.projects = (response.data || []).map((project) => ({
           id: project.id,
           name: project.name,
-          repository_url: project.repositoryUrl,
-          created_at: project.createdAt,
-          updated_at: project.updatedAt,
+          repository_url: project.repository_url,
+          created_at: project.created_at,
+          updated_at: project.updated_at,
         }));
         this.isLoading = false;
       },

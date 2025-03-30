@@ -13,23 +13,17 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { AnalysisJobResponse } from '../model/models';
 import { ApiV1AnalysisJobsGet200Response } from '../model/models';
 import { ApiV1AnalysisJobsIdProcessResultsPost200Response } from '../model/models';
+import { ApiV1AnalysisJobsPost201Response } from '../model/models';
 import { ApiV1AnalysisJobsPostRequest } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
 
 
-export interface ApiV1AnalysisJobsGetRequestParams {
-    page?: number;
-    perPage?: number;
-}
-
 export interface ApiV1AnalysisJobsIdFetchResultsGetRequestParams {
     id: number;
-    useService?: boolean;
 }
 
 export interface ApiV1AnalysisJobsIdGetRequestParams {
@@ -52,23 +46,22 @@ export interface AnalysisJobsServiceInterface {
     /**
      * Lists all analysis jobs
      * 
-* @param requestParameters
-     */
-    apiV1AnalysisJobsGet(requestParameters: ApiV1AnalysisJobsGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsGet200Response>;
+*/
+    apiV1AnalysisJobsGet(extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsGet200Response>;
 
     /**
      * Fetches analysis job results
      * 
 * @param requestParameters
      */
-    apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, extraHttpRequestParams?: any): Observable<AnalysisJobResponse>;
+    apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsPost201Response>;
 
     /**
      * Retrieves an analysis job
      * 
 * @param requestParameters
      */
-    apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, extraHttpRequestParams?: any): Observable<AnalysisJobResponse>;
+    apiV1AnalysisJobsIdGet(requestParameters: ApiV1AnalysisJobsIdGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsPost201Response>;
 
     /**
      * Processes analysis job results
@@ -78,10 +71,10 @@ export interface AnalysisJobsServiceInterface {
     apiV1AnalysisJobsIdProcessResultsPost(requestParameters: ApiV1AnalysisJobsIdProcessResultsPostRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsIdProcessResultsPost200Response>;
 
     /**
-     * Creates an analysis job
+     * Creates a new analysis job
      * 
 * @param requestParameters
      */
-    apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, extraHttpRequestParams?: any): Observable<AnalysisJobResponse>;
+    apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsPost201Response>;
 
 }

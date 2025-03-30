@@ -11,8 +11,12 @@
  */
 
 
-export interface ApiV1PatternMatchesGet200ResponseMatchesInnerAnalysisFile { 
-    file_path?: string;
+export interface ApiV1ProjectsGet200ResponseDataProjectsInner { 
+    id: number;
+    name: string;
+    repository_url: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 

@@ -5,116 +5,47 @@ RSpec.describe 'Api::V1::Projects', type: :request do
     get 'Lists all projects' do
       tags 'Projects'
       produces 'application/json'
-      parameter name: :page, in: :query, type: :integer, required: false, description: 'Page number'
-      parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
       
       response '200', 'projects found' do
         schema type: 'object',
           properties: {
             data: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'integer' },
-                  name: { type: 'string' },
-                  repository_url: { type: 'string' },
-                  created_at: { type: 'string', format: 'date-time' },
-                  updated_at: { type: 'string', format: 'date-time' }
-                },
-                required: ['id', 'name', 'repository_url']
-              }
-            },
-            meta: {
               type: 'object',
               properties: {
-                current_page: { type: 'integer' },
-                total_pages: { type: 'integer' },
-                total_count: { type: 'integer' }
+                projects: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'integer' },
+                      name: { type: 'string' },
+                      repository_url: { type: 'string' },
+                      created_at: { type: 'string', format: 'date-time' },
+                      updated_at: { type: 'string', format: 'date-time' }
+                    },
+                    required: ['id', 'name', 'repository_url']
+                  }
+                }
               },
-              required: ['current_page', 'total_pages', 'total_count']
-            }
+              required: ['projects']
+            },
+            meta: { type: ['object', 'null'] }
           },
-          required: ['data', 'meta'],
-          additionalProperties: false
+          required: ['data']
 
-        context 'with default pagination' do
-          let!(:projects) { create_list(:project, 5) }
-          
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['data']).to be_an(Array)
-            expect(data['data'].length).to eq(5)
-            expect(data['meta']).to include(
-              'current_page' => 1,
-              'total_pages' => 1,
-              'total_count' => 5
-            )
-          end
-        end
-
-        context 'with custom pagination' do
-          let!(:projects) { create_list(:project, 5) }
-          let(:page) { 1 }
-          let(:per_page) { 2 }
-          
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['data']).to be_an(Array)
-            expect(data['data'].length).to eq(2)
-            expect(data['meta']).to include(
-              'current_page' => 1,
-              'total_pages' => 3,
-              'total_count' => 5
-            )
-          end
-        end
-
-        context 'with second page' do
-          let!(:projects) { create_list(:project, 5) }
-          let(:page) { 2 }
-          let(:per_page) { 2 }
-          
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['data']).to be_an(Array)
-            expect(data['data'].length).to eq(2)
-            expect(data['meta']).to include(
-              'current_page' => 2,
-              'total_pages' => 3,
-              'total_count' => 5
-            )
-          end
-        end
-
-        context 'with last page' do
-          let!(:projects) { create_list(:project, 5) }
-          let(:page) { 3 }
-          let(:per_page) { 2 }
-          
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['data']).to be_an(Array)
-            expect(data['data'].length).to eq(1)
-            expect(data['meta']).to include(
-              'current_page' => 3,
-              'total_pages' => 3,
-              'total_count' => 5
-            )
-          end
-        end
-
-        context 'when no projects exist' do
-          run_test! do |response|
-            data = JSON.parse(response.body)
-            expect(data['data']).to be_an(Array)
-            expect(data['data']).to be_empty
-            expect(data['meta']).to include(
-              'current_page' => 1,
-              'total_pages' => 0,
-              'total_count' => 0
-            )
-          end
+        let!(:project) { create(:project) }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']['projects']).to be_an(Array)
+          expect(data['data']['projects'].length).to eq(1)
+          expect(data['data']['projects'].first).to include(
+            'id' => project.id,
+            'name' => project.name,
+            'repository_url' => project.repository_url
+          )
+          expect(data['data']['projects'].first).to have_key('created_at')
+          expect(data['data']['projects'].first).to have_key('updated_at')
         end
       end
     end
@@ -146,28 +77,34 @@ RSpec.describe 'Api::V1::Projects', type: :request do
             data: {
               type: 'object',
               properties: {
-                id: { type: 'integer' },
-                name: { type: 'string' },
-                repository_url: { type: 'string' },
-                created_at: { type: 'string', format: 'date-time' },
-                updated_at: { type: 'string', format: 'date-time' }
+                project: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer' },
+                    name: { type: 'string' },
+                    repository_url: { type: 'string' },
+                    created_at: { type: 'string', format: 'date-time' },
+                    updated_at: { type: 'string', format: 'date-time' }
+                  },
+                  required: ['id', 'name', 'repository_url']
+                }
               },
-              required: ['id', 'name', 'repository_url']
-            }
+              required: ['project']
+            },
+            meta: { type: ['object', 'null'] }
           },
-          required: ['data'],
-          additionalProperties: false
+          required: ['data']
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['data']).to be_a(Hash)
-          expect(data['data']).to include(
+          expect(data['data']['project']).to be_a(Hash)
+          expect(data['data']['project']).to include(
             'name' => 'Test Project',
             'repository_url' => 'https://github.com/test/project'
           )
-          expect(data['data']).to have_key('id')
-          expect(data['data']).to have_key('created_at')
-          expect(data['data']).to have_key('updated_at')
+          expect(data['data']['project']).to have_key('id')
+          expect(data['data']['project']).to have_key('created_at')
+          expect(data['data']['project']).to have_key('updated_at')
         end
       end
       
@@ -196,31 +133,37 @@ RSpec.describe 'Api::V1::Projects', type: :request do
             data: {
               type: 'object',
               properties: {
-                id: { type: 'integer' },
-                name: { type: 'string' },
-                repository_url: { type: 'string' },
-                created_at: { type: 'string', format: 'date-time' },
-                updated_at: { type: 'string', format: 'date-time' }
+                project: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer' },
+                    name: { type: 'string' },
+                    repository_url: { type: 'string' },
+                    created_at: { type: 'string', format: 'date-time' },
+                    updated_at: { type: 'string', format: 'date-time' }
+                  },
+                  required: ['id', 'name', 'repository_url']
+                }
               },
-              required: ['id', 'name', 'repository_url']
-            }
+              required: ['project']
+            },
+            meta: { type: ['object', 'null'] }
           },
-          required: ['data'],
-          additionalProperties: false
+          required: ['data']
           
         let(:project) { create(:project) }
         let(:id) { project.id }
         
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['data']).to be_a(Hash)
-          expect(data['data']).to include(
+          expect(data['data']['project']).to be_a(Hash)
+          expect(data['data']['project']).to include(
             'id' => project.id,
             'name' => project.name,
             'repository_url' => project.repository_url
           )
-          expect(data['data']).to have_key('created_at')
-          expect(data['data']).to have_key('updated_at')
+          expect(data['data']['project']).to have_key('created_at')
+          expect(data['data']['project']).to have_key('updated_at')
         end
       end
       

@@ -13,6 +13,18 @@
 
 export interface ApiV1AnalysisJobsPostRequest { 
     project_id: number;
+    repository_url?: string;
+    branch?: string;
+    commit_sha?: string;
+    status?: ApiV1AnalysisJobsPostRequestStatusEnum;
 }
+export enum ApiV1AnalysisJobsPostRequestStatusEnum {
+    PENDING = 'pending',
+    RUNNING = 'running',
+    COMPLETED = 'completed',
+    FAILED = 'failed'
+};
+
+
 
 
