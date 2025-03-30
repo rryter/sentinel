@@ -6,8 +6,17 @@ module Api
       # GET /api/v1/projects
       def index
         @projects = Project.all
+          .order(created_at: :desc)
+          .page(params[:page])
+          .per(params[:per_page])
+        
         render json: {
-          data: ActiveModelSerializers::SerializableResource.new(@projects, each_serializer: ProjectSerializer, adapter: :attributes).as_json
+          data: ActiveModelSerializers::SerializableResource.new(@projects, each_serializer: ProjectSerializer, adapter: :attributes).as_json,
+          meta: {
+            current_page: @projects.current_page,
+            total_pages: @projects.total_pages,
+            total_count: @projects.total_count
+          }
         }
       end
 

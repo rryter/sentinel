@@ -5,6 +5,8 @@ RSpec.describe 'Api::V1::Projects', type: :request do
     get 'Lists all projects' do
       tags 'Projects'
       produces 'application/json'
+      parameter name: :page, in: :query, type: :integer, required: false, description: 'Page number'
+      parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
       
       response '200', 'projects found' do
         schema type: 'object',
@@ -22,24 +24,97 @@ RSpec.describe 'Api::V1::Projects', type: :request do
                 },
                 required: ['id', 'name', 'repository_url']
               }
+            },
+            meta: {
+              type: 'object',
+              properties: {
+                current_page: { type: 'integer' },
+                total_pages: { type: 'integer' },
+                total_count: { type: 'integer' }
+              },
+              required: ['current_page', 'total_pages', 'total_count']
             }
           },
-          required: ['data'],
+          required: ['data', 'meta'],
           additionalProperties: false
 
-        let!(:project) { create(:project) }
-        
-        run_test! do |response|
-          data = JSON.parse(response.body)
-          expect(data['data']).to be_an(Array)
-          expect(data['data'].length).to eq(1)
-          expect(data['data'].first).to include(
-            'id' => project.id,
-            'name' => project.name,
-            'repository_url' => project.repository_url
-          )
-          expect(data['data'].first).to have_key('created_at')
-          expect(data['data'].first).to have_key('updated_at')
+        context 'with default pagination' do
+          let!(:projects) { create_list(:project, 5) }
+          
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['data']).to be_an(Array)
+            expect(data['data'].length).to eq(5)
+            expect(data['meta']).to include(
+              'current_page' => 1,
+              'total_pages' => 1,
+              'total_count' => 5
+            )
+          end
+        end
+
+        context 'with custom pagination' do
+          let!(:projects) { create_list(:project, 5) }
+          let(:page) { 1 }
+          let(:per_page) { 2 }
+          
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['data']).to be_an(Array)
+            expect(data['data'].length).to eq(2)
+            expect(data['meta']).to include(
+              'current_page' => 1,
+              'total_pages' => 3,
+              'total_count' => 5
+            )
+          end
+        end
+
+        context 'with second page' do
+          let!(:projects) { create_list(:project, 5) }
+          let(:page) { 2 }
+          let(:per_page) { 2 }
+          
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['data']).to be_an(Array)
+            expect(data['data'].length).to eq(2)
+            expect(data['meta']).to include(
+              'current_page' => 2,
+              'total_pages' => 3,
+              'total_count' => 5
+            )
+          end
+        end
+
+        context 'with last page' do
+          let!(:projects) { create_list(:project, 5) }
+          let(:page) { 3 }
+          let(:per_page) { 2 }
+          
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['data']).to be_an(Array)
+            expect(data['data'].length).to eq(1)
+            expect(data['meta']).to include(
+              'current_page' => 3,
+              'total_pages' => 3,
+              'total_count' => 5
+            )
+          end
+        end
+
+        context 'when no projects exist' do
+          run_test! do |response|
+            data = JSON.parse(response.body)
+            expect(data['data']).to be_an(Array)
+            expect(data['data']).to be_empty
+            expect(data['meta']).to include(
+              'current_page' => 1,
+              'total_pages' => 0,
+              'total_count' => 0
+            )
+          end
         end
       end
     end
