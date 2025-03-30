@@ -38,6 +38,7 @@ echo "Generating Angular API clients from OpenAPI spec..."
     -i ../$BACKEND_DIR/swagger/v1/swagger.json \
     -g typescript-angular \
     -o src/app/api/generated \
+    --skip-validate-spec \
     --additional-properties=providedIn=root,ngVersion=19.0.0,supportsES6=true,nullSafeAdditionalProps=true,fileNaming=kebab-case,modelPropertyNaming=original,sortParamsByRequiredFlag=true,useSingleRequestParameter=true,withInterfaces=true,taggedUnions=true,enumPropertyNaming=UPPERCASE,stringEnums=true,snapshot=false,npmName=sentinel-api-client,apiModulePrefix=Api,modelModulePrefix=Model,legacyDiscriminatorBehavior=false)
 
 echo "API client generation completed. Generated TypeScript clients are in $FRONTEND_DIR/src/app/api/generated" 

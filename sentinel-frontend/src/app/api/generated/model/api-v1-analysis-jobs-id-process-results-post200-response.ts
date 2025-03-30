@@ -12,7 +12,7 @@
 
 
 export interface ApiV1AnalysisJobsIdProcessResultsPost200Response { 
-    message?: string;
+    message: string;
 }
 
 

@@ -37,69 +37,121 @@ RSpec.configure do |config|
         schemas: {
           # Project schema
           Project: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              name: { type: :string },
-              repository_url: { type: :string },
-              created_at: { type: :string, format: 'date-time' },
-              updated_at: { type: :string, format: 'date-time' }
+            'type' => 'object',
+            'properties' => {
+              'id' => { 'type' => 'integer' },
+              'name' => { 'type' => 'string' },
+              'repository_url' => { 'type' => 'string' },
+              'created_at' => { 'type' => 'string', 'format' => 'date-time' },
+              'updated_at' => { 'type' => 'string', 'format' => 'date-time' }
             },
-            required: ['id', 'name', 'repository_url']
+            'required' => ['id', 'name', 'repository_url']
           },
           
           # Analysis Job schema
           AnalysisJob: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              project_id: { type: :integer },
-              status: { type: :string, enum: ['pending', 'running', 'completed', 'failed'] },
-              created_at: { type: :string, format: 'date-time' },
-              updated_at: { type: :string, format: 'date-time' }
+            'type' => 'object',
+            'properties' => {
+              'id' => { 'type' => 'integer' },
+              'project_id' => { 'type' => 'integer' },
+              'status' => { 'type' => 'string', 'enum' => ['pending', 'running', 'completed', 'failed'] },
+              'created_at' => { 'type' => 'string', 'format' => 'date-time' },
+              'updated_at' => { 'type' => 'string', 'format' => 'date-time' }
             },
-            required: ['id', 'project_id', 'status']
+            'required' => ['id', 'project_id', 'status']
+          },
+          
+          # Analysis Job Response schema
+          AnalysisJobResponse: {
+            'type' => 'object',
+            'properties' => {
+              'analysis_job' => {
+                'type' => 'object',
+                'properties' => {
+                  'id' => { 'type' => 'integer' },
+                  'status' => { 'type' => 'string', 'enum' => ['pending', 'running', 'completed', 'failed'] },
+                  'created_at' => { 'type' => 'string', 'format' => 'date-time' },
+                  'updated_at' => { 'type' => 'string', 'format' => 'date-time' },
+                  'files_with_violations' => {
+                    'type' => 'array',
+                    'items' => {
+                      'type' => 'object',
+                      'properties' => {
+                        'id' => { 'type' => 'integer' },
+                        'file_path' => { 'type' => 'string' },
+                        'analysis_job_id' => { 'type' => 'integer' },
+                        'display_path' => { 'type' => 'string' },
+                        'job_status' => { 'type' => 'string', 'enum' => ['pending', 'running', 'completed', 'failed'] }
+                      }
+                    }
+                  },
+                  'pattern_matches' => {
+                    'type' => 'array',
+                    'items' => {
+                      'type' => 'object',
+                      'properties' => {
+                        'id' => { 'type' => 'integer' },
+                        'start_line' => { 'type' => 'integer' },
+                        'end_line' => { 'type' => 'integer' },
+                        'start_col' => { 'type' => 'integer' },
+                        'end_col' => { 'type' => 'integer' },
+                        'file_with_violations_id' => { 'type' => 'integer' },
+                        'rule_id' => { 'type' => 'string' },
+                        'rule_name' => { 'type' => 'string' },
+                        'description' => { 'type' => 'string' },
+                        'line_number' => { 'type' => 'integer' },
+                        'pattern_name' => { 'type' => 'string' },
+                        'location' => { 'type' => 'string' },
+                        'metadata_content' => { 'type' => 'object' },
+                        'code_snippet' => { 'type' => ['string', 'null'] }
+                      }
+                    }
+                  }
+                },
+                'required' => ['id', 'status', 'created_at', 'updated_at']
+              }
+            }
           },
           
           # File with violations schema
           FileWithViolations: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              analysis_job_id: { type: :integer },
-              file_path: { type: :string },
-              created_at: { type: :string, format: 'date-time' },
-              updated_at: { type: :string, format: 'date-time' }
+            'type' => 'object',
+            'properties' => {
+              'id' => { 'type' => 'integer' },
+              'analysis_job_id' => { 'type' => 'integer' },
+              'file_path' => { 'type' => 'string' },
+              'created_at' => { 'type' => 'string', 'format' => 'date-time' },
+              'updated_at' => { 'type' => 'string', 'format' => 'date-time' }
             },
-            required: ['id', 'analysis_job_id', 'file_path']
+            'required' => ['id', 'analysis_job_id', 'file_path']
           },
           
           # Pattern match schema
           PatternMatch: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              analysis_file_id: { type: :integer },
-              rule_id: { type: :string },
-              rule_name: { type: :string },
-              line_number: { type: :integer },
-              column: { type: :integer },
-              match_text: { type: :string },
-              created_at: { type: :string, format: 'date-time' },
-              updated_at: { type: :string, format: 'date-time' }
+            'type' => 'object',
+            'properties' => {
+              'id' => { 'type' => 'integer' },
+              'analysis_file_id' => { 'type' => 'integer' },
+              'rule_id' => { 'type' => 'string' },
+              'rule_name' => { 'type' => 'string' },
+              'line_number' => { 'type' => 'integer' },
+              'column' => { 'type' => 'integer' },
+              'match_text' => { 'type' => 'string' },
+              'created_at' => { 'type' => 'string', 'format' => 'date-time' },
+              'updated_at' => { 'type' => 'string', 'format' => 'date-time' }
             },
-            required: ['id', 'analysis_file_id', 'rule_id', 'rule_name', 'line_number']
+            'required' => ['id', 'analysis_file_id', 'rule_id', 'rule_name', 'line_number']
           },
           
           # Example schema (for demonstration purposes)
           Example: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              name: { type: :string },
-              description: { type: :string }
+            'type' => 'object',
+            'properties' => {
+              'id' => { 'type' => 'integer' },
+              'name' => { 'type' => 'string' },
+              'description' => { 'type' => 'string' }
             },
-            required: ['id', 'name', 'description']
+            'required' => ['id', 'name', 'description']
           }
         },
         securitySchemes: {

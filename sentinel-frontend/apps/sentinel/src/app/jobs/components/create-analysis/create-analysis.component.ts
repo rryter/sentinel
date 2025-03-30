@@ -21,6 +21,7 @@ import { JobStatusComponent } from '../job-status/job-status.component';
 import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
 import { AnalysisResultsComponent } from '../analysis-results/analysis-results.component';
 import { AnalysisResults } from '../model/analysis/analysis.model';
+import { AnalysisJobResponse } from '../model/analysis/analysisJob.model';
 
 enum AnalysisJobStatus {
   PENDING = 'pending',
@@ -34,11 +35,6 @@ interface AnalysisJob {
   status: string;
   created_at: string;
   completed_at: string | null;
-}
-
-interface JobResponse {
-  jobId: number;
-  status: string;
 }
 
 @Component({
@@ -322,14 +318,15 @@ export class CreateAnalysisComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (response: JobResponse) => {
+        next: (response) => {
           this.isLoading.set(false);
-          this.currentJobId.set(response.jobId);
+          this.currentJobId.set(response.analysis_job?.id ?? null);
           this.startTimer();
           this.isPolling.set(true);
 
-          // Immediately fetch initial job status
-          this.fetchInitialJobStatus(response.jobId);
+          if (response.analysis_job) {
+            this.fetchInitialJobStatus(response.analysis_job.id);
+          }
         },
         error: (err: Error) => {
           this.isLoading.set(false);

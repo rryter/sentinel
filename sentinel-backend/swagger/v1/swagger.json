@@ -99,23 +99,27 @@
                               "type": "object",
                               "required": [
                                 "id",
-                                "rule_id",
-                                "rule_name"
+                                "rule_name",
+                                "start_line",
+                                "end_line"
                               ],
                               "properties": {
                                 "id": {
                                   "type": "integer"
                                 },
-                                "rule_id": {
-                                  "type": "string"
-                                },
                                 "rule_name": {
                                   "type": "string"
                                 },
-                                "line_number": {
+                                "start_line": {
                                   "type": "integer"
                                 },
-                                "column": {
+                                "end_line": {
+                                  "type": "integer"
+                                },
+                                "start_col": {
+                                  "type": "integer"
+                                },
+                                "end_col": {
                                   "type": "integer"
                                 },
                                 "match_text": {
@@ -161,7 +165,14 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "analysis job created"
+            "description": "analysis job created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisJobResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "invalid request"
@@ -208,74 +219,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "running",
-                            "completed",
-                            "failed"
-                          ]
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "files_with_violations": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "file_path": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        },
-                        "pattern_matches": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "rule_id": {
-                                "type": "string"
-                              },
-                              "rule_name": {
-                                "type": "string"
-                              },
-                              "line_number": {
-                                "type": "integer"
-                              },
-                              "column": {
-                                "type": "integer"
-                              },
-                              "match_text": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/AnalysisJobResponse"
                 }
               }
             }
@@ -317,82 +261,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "running",
-                            "completed",
-                            "failed"
-                          ]
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "files_with_violations": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "file_path": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        },
-                        "pattern_matches": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "integer"
-                              },
-                              "rule_id": {
-                                "type": "string"
-                              },
-                              "rule_name": {
-                                "type": "string"
-                              },
-                              "line_number": {
-                                "type": "integer"
-                              },
-                              "column": {
-                                "type": "integer"
-                              },
-                              "match_text": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "detailed": {
-                          "type": "boolean"
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/AnalysisJobResponse"
                 }
               }
             }
@@ -433,7 +302,10 @@
                     "message": {
                       "type": "string"
                     }
-                  }
+                  },
+                  "required": [
+                    "message"
+                  ]
                 }
               }
             }
@@ -1320,6 +1192,124 @@
           "project_id",
           "status"
         ]
+      },
+      "AnalysisJobResponse": {
+        "type": "object",
+        "properties": {
+          "analysis_job": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "running",
+                  "completed",
+                  "failed"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "files_with_violations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "file_path": {
+                      "type": "string"
+                    },
+                    "analysis_job_id": {
+                      "type": "integer"
+                    },
+                    "display_path": {
+                      "type": "string"
+                    },
+                    "job_status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running",
+                        "completed",
+                        "failed"
+                      ]
+                    }
+                  }
+                }
+              },
+              "pattern_matches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "start_line": {
+                      "type": "integer"
+                    },
+                    "end_line": {
+                      "type": "integer"
+                    },
+                    "start_col": {
+                      "type": "integer"
+                    },
+                    "end_col": {
+                      "type": "integer"
+                    },
+                    "file_with_violations_id": {
+                      "type": "integer"
+                    },
+                    "rule_id": {
+                      "type": "string"
+                    },
+                    "rule_name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "line_number": {
+                      "type": "integer"
+                    },
+                    "pattern_name": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "metadata_content": {
+                      "type": "object"
+                    },
+                    "code_snippet": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "id",
+              "status",
+              "created_at",
+              "updated_at"
+            ]
+          }
+        }
       },
       "FileWithViolations": {
         "type": "object",

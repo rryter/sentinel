@@ -37,16 +37,12 @@ services:
     build:
       context: ./sentinel-backend
       dockerfile: Dockerfile
-    command: bundle exec rdbg -n --host 0.0.0.0 --port 1235 -- /usr/local/bundle/bin/sidekiq -C config/sidekiq.yml
-    ports:
-      - "1235:1235" # Sidekiq debugger
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    entrypoint: [] # This will override the Dockerfile's entrypoint
     environment:
       - RAILS_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/sentinel_development
       - REDIS_URL=redis://redis:6379/1
-      - RUBY_DEBUG_OPEN=true
-      - RUBY_DEBUG_HOST=0.0.0.0
-      - RUBY_DEBUG_PORT=1235
       - ANALYZER_SERVICE_URL=http://analysis:8080
     depends_on:
       db:

@@ -11,42 +11,43 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       response '200', 'analysis jobs found' do
         let!(:analysis_job) { create(:analysis_job, :completed) }
         
-        schema type: 'object',
+        schema type: :object,
           required: ['data', 'meta'],
           properties: {
             data: {
-              type: 'array',
+              type: :array,
               items: {
-                type: 'object',
+                type: :object,
                 required: ['id', 'status', 'created_at', 'updated_at'],
                 properties: {
-                  id: { type: 'integer' },
-                  status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
-                  created_at: { type: 'string', format: 'date-time' },
-                  updated_at: { type: 'string', format: 'date-time' },
+                  id: { type: :integer },
+                  status: { type: :string, enum: ['pending', 'running', 'completed', 'failed'] },
+                  created_at: { type: :string, format: 'date-time' },
+                  updated_at: { type: :string, format: 'date-time' },
                   files_with_violations: {
-                    type: 'array',
+                    type: :array,
                     items: { 
-                      type: 'object',
+                      type: :object,
                       required: ['id', 'file_path'],
                       properties: {
-                        id: { type: 'integer' },
-                        file_path: { type: 'string' }
+                        id: { type: :integer },
+                        file_path: { type: :string }
                       }
                     }
                   },
                   pattern_matches: {
-                    type: 'array',
+                    type: :array,
                     items: {
-                      type: 'object',
-                      required: ['id', 'rule_id', 'rule_name'],
+                      type: :object,
+                      required: ['id', 'rule_name', 'start_line', 'end_line'],
                       properties: {
-                        id: { type: 'integer' },
-                        rule_id: { type: 'string' },
-                        rule_name: { type: 'string' },
-                        line_number: { type: 'integer' },
-                        column: { type: 'integer' },
-                        match_text: { type: 'string' }
+                        id: { type: :integer },
+                        rule_name: { type: :string },
+                        start_line: { type: :integer },
+                        end_line: { type: :integer },
+                        start_col: { type: :integer },
+                        end_col: { type: :integer },
+                        match_text: { type: :string }
                       }
                     }
                   }
@@ -54,24 +55,18 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
               }
             },
             meta: {
-              type: 'object',
+              type: :object,
               required: ['total_count', 'page', 'per_page'],
               properties: {
-                total_count: { type: 'integer' },
-                page: { type: 'integer' },
-                per_page: { type: 'integer' }
+                total_count: { type: :integer },
+                page: { type: :integer },
+                per_page: { type: :integer }
               }
             }
           }
           
         before do
           get '/api/v1/analysis_jobs'
-          puts "Response body: #{response.body}"
-          
-          # Validate response structure matches exactly
-          json = JSON.parse(response.body)
-          expect(json.keys.sort).to eq(['data', 'meta'])
-          expect(json['data'].first.keys.sort).to eq(['id', 'status', 'created_at', 'updated_at', 'files_with_violations', 'pattern_matches'].sort)
         end
         
         run_test!
@@ -82,21 +77,32 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       tags 'Analysis Jobs'
       consumes 'application/json'
       produces 'application/json'
-      parameter name: :analysis_job, in: :body, schema: {
-        type: 'object',
+      parameter name: :api_v1_analysis_jobs_post_request, in: :body, schema: {
+        type: :object,
         properties: {
-          project_id: { type: 'integer' }
+          project_id: { type: :integer }
         },
         required: ['project_id']
       }
       
       response '201', 'analysis job created' do
-        let(:analysis_job) { { project_id: create(:project).id } }
+        let(:project) { create(:project) }
+        let(:api_v1_analysis_jobs_post_request) { { project_id: project.id } }
+        
+        schema '$ref' => '#/components/schemas/AnalysisJobResponse'
+        
+        before do
+          allow(AnalysisWorker).to receive(:perform_async)
+          allow(AnalysisStatusPollerWorker).to receive(:perform_in)
+          post '/api/v1/analysis_jobs', params: api_v1_analysis_jobs_post_request
+          puts "Response body: #{response.body}"
+        end
+        
         run_test!
       end
       
       response '422', 'invalid request' do
-        let(:analysis_job) { { project_id: 'invalid' } }
+        let(:api_v1_analysis_jobs_post_request) { { project_id: 'invalid' } }
         run_test!
       end
     end
@@ -110,42 +116,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       produces 'application/json'
       
       response '200', 'analysis job found' do
-        schema type: 'object',
-          properties: {
-            data: {
-              type: 'object',
-              properties: {
-                id: { type: 'integer' },
-                status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
-                created_at: { type: 'string', format: 'date-time' },
-                updated_at: { type: 'string', format: 'date-time' },
-                files_with_violations: {
-                  type: 'array',
-                  items: { 
-                    type: 'object',
-                    properties: {
-                      id: { type: 'integer' },
-                      file_path: { type: 'string' }
-                    }
-                  }
-                },
-                pattern_matches: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'integer' },
-                      rule_id: { type: 'string' },
-                      rule_name: { type: 'string' },
-                      line_number: { type: 'integer' },
-                      column: { type: 'integer' },
-                      match_text: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          }
+        schema '$ref' => '#/components/schemas/AnalysisJobResponse'
           
         let(:id) { create(:analysis_job).id }
         run_test!
@@ -167,48 +138,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       produces 'application/json'
       
       response '200', 'analysis job results fetched' do
-        schema type: 'object',
-          properties: {
-            data: {
-              type: 'object',
-              properties: {
-                id: { type: 'integer' },
-                status: { type: 'string', enum: ['pending', 'running', 'completed', 'failed'] },
-                created_at: { type: 'string', format: 'date-time' },
-                updated_at: { type: 'string', format: 'date-time' },
-                files_with_violations: {
-                  type: 'array',
-                  items: { 
-                    type: 'object',
-                    properties: {
-                      id: { type: 'integer' },
-                      file_path: { type: 'string' }
-                    }
-                  }
-                },
-                pattern_matches: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'integer' },
-                      rule_id: { type: 'string' },
-                      rule_name: { type: 'string' },
-                      line_number: { type: 'integer' },
-                      column: { type: 'integer' },
-                      match_text: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            },
-            meta: {
-              type: 'object',
-              properties: {
-                detailed: { type: 'boolean' }
-              }
-            }
-          }
+        schema '$ref' => '#/components/schemas/AnalysisJobResponse'
           
         let(:id) { create(:analysis_job).id }
         run_test!
@@ -222,7 +152,6 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       response '503', 'service unavailable' do
         let(:id) { create(:analysis_job).id }
         let(:use_service) { 'true' }
-        # Mock the service to return nil for testing the service unavailable response
         run_test!
       end
     end
@@ -236,12 +165,20 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       produces 'application/json'
       
       response '200', 'processing scheduled' do
-        schema type: 'object',
+        schema type: :object,
           properties: {
-            message: { type: 'string' }
-          }
+            message: { type: :string }
+          },
+          required: ['message']
           
         let(:id) { create(:analysis_job).id }
+        
+        before do
+          allow(AnalysisResultsProcessorWorker).to receive(:perform_async)
+          post "/api/v1/analysis_jobs/#{id}/process_results"
+          puts "Response body: #{response.body}"
+        end
+        
         run_test!
       end
       

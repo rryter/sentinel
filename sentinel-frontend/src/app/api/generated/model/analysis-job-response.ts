@@ -9,16 +9,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { AnalysisJobResponseAnalysisJob } from './analysis-job-response-analysis-job';
 
 
-export interface ApiV1AnalysisJobsGet200ResponseDataInnerPatternMatchesInner { 
-    id: number;
-    rule_name: string;
-    start_line: number;
-    end_line: number;
-    start_col?: number;
-    end_col?: number;
-    match_text?: string;
+export interface AnalysisJobResponse { 
+    analysis_job?: AnalysisJobResponseAnalysisJob;
 }
 
 
