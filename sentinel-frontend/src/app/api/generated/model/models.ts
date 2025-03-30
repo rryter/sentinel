@@ -16,6 +16,7 @@ export * from './api-v1-pattern-matches-time-series-get200-response';
 export * from './api-v1-pattern-matches-time-series-get200-response-data-inner';
 export * from './api-v1-projects-get200-response';
 export * from './api-v1-projects-get200-response-data-inner';
+export * from './api-v1-projects-get200-response-meta';
 export * from './api-v1-projects-post201-response';
 export * from './api-v1-projects-post-request';
 export * from './api-v1-projects-post-request-project';

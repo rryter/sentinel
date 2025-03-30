@@ -30,6 +30,7 @@ import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables'
 import { Configuration }                                     from '../configuration';
 import {
     ProjectsServiceInterface,
+    ApiV1ProjectsGetRequestParams,
     ApiV1ProjectsIdGetRequestParams,
     ApiV1ProjectsPostRequestParams
 } from './projects.serviceInterface';
@@ -102,13 +103,26 @@ export class ProjectsService implements ProjectsServiceInterface {
 
     /**
      * Lists all projects
+     * @param requestParameters
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1ProjectsGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ProjectsGet200Response>;
-    public apiV1ProjectsGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ProjectsGet200Response>>;
-    public apiV1ProjectsGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ProjectsGet200Response>>;
-    public apiV1ProjectsGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public apiV1ProjectsGet(requestParameters: ApiV1ProjectsGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1ProjectsGet200Response>;
+    public apiV1ProjectsGet(requestParameters: ApiV1ProjectsGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1ProjectsGet200Response>>;
+    public apiV1ProjectsGet(requestParameters: ApiV1ProjectsGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1ProjectsGet200Response>>;
+    public apiV1ProjectsGet(requestParameters: ApiV1ProjectsGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        const page = requestParameters.page;
+        const perPage = requestParameters.perPage;
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        if (page !== undefined && page !== null) {
+          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+            <any>page, 'page');
+        }
+        if (perPage !== undefined && perPage !== null) {
+          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+            <any>perPage, 'per_page');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -145,6 +159,7 @@ export class ProjectsService implements ProjectsServiceInterface {
         return this.httpClient.request<ApiV1ProjectsGet200Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,

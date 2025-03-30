@@ -9,11 +9,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1ProjectsGet200ResponseDataInner } from './api-v1-projects-get200-response-data-inner';
 
 
-export interface ApiV1ProjectsPost201Response { 
-    data: ApiV1ProjectsGet200ResponseDataInner;
+export interface ApiV1ProjectsGet200ResponseMeta { 
+    current_page: number;
+    total_pages: number;
+    total_count: number;
 }
 
 
