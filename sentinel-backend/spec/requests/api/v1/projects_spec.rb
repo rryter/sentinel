@@ -23,9 +23,24 @@ RSpec.describe 'Api::V1::Projects', type: :request do
                 required: ['id', 'name', 'repository_url']
               }
             }
-          }
-          
-        run_test!
+          },
+          required: ['data'],
+          additionalProperties: false
+
+        let!(:project) { create(:project) }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_an(Array)
+          expect(data['data'].length).to eq(1)
+          expect(data['data'].first).to include(
+            'id' => project.id,
+            'name' => project.name,
+            'repository_url' => project.repository_url
+          )
+          expect(data['data'].first).to have_key('created_at')
+          expect(data['data'].first).to have_key('updated_at')
+        end
       end
     end
     
@@ -50,6 +65,7 @@ RSpec.describe 'Api::V1::Projects', type: :request do
       
       response '201', 'project created' do
         let(:project) { { project: { name: 'Test Project', repository_url: 'https://github.com/test/project' } } }
+        
         schema type: 'object',
           properties: {
             data: {
@@ -63,13 +79,31 @@ RSpec.describe 'Api::V1::Projects', type: :request do
               },
               required: ['id', 'name', 'repository_url']
             }
-          }
-        run_test!
+          },
+          required: ['data'],
+          additionalProperties: false
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_a(Hash)
+          expect(data['data']).to include(
+            'name' => 'Test Project',
+            'repository_url' => 'https://github.com/test/project'
+          )
+          expect(data['data']).to have_key('id')
+          expect(data['data']).to have_key('created_at')
+          expect(data['data']).to have_key('updated_at')
+        end
       end
       
       response '422', 'invalid request' do
         let(:project) { { project: { name: '' } } }
-        run_test!
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('errors')
+          expect(data['errors']).to have_key('name')
+        end
       end
     end
   end
@@ -95,15 +129,34 @@ RSpec.describe 'Api::V1::Projects', type: :request do
               },
               required: ['id', 'name', 'repository_url']
             }
-          }
+          },
+          required: ['data'],
+          additionalProperties: false
           
-        let(:id) { create(:project).id }
-        run_test!
+        let(:project) { create(:project) }
+        let(:id) { project.id }
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_a(Hash)
+          expect(data['data']).to include(
+            'id' => project.id,
+            'name' => project.name,
+            'repository_url' => project.repository_url
+          )
+          expect(data['data']).to have_key('created_at')
+          expect(data['data']).to have_key('updated_at')
+        end
       end
       
       response '404', 'project not found' do
         let(:id) { 'invalid' }
-        run_test!
+        
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('error')
+          expect(data['error']).to eq('Project not found')
+        end
       end
     end
   end

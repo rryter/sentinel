@@ -6,12 +6,16 @@ module Api
       # GET /api/v1/projects
       def index
         @projects = Project.all
-        render_serialized @projects
+        render json: {
+          data: ActiveModelSerializers::SerializableResource.new(@projects, each_serializer: ProjectSerializer, adapter: :attributes).as_json
+        }
       end
 
       # GET /api/v1/projects/:id
       def show
-        render_serialized @project
+        render json: {
+          data: ActiveModelSerializers::SerializableResource.new(@project, adapter: :attributes).as_json
+        }
       end
 
       # POST /api/v1/projects
@@ -19,7 +23,9 @@ module Api
         @project = Project.new(project_params)
 
         if @project.save
-          render_serialized @project, status: :created
+          render json: {
+            data: ActiveModelSerializers::SerializableResource.new(@project, adapter: :attributes).as_json
+          }, status: :created
         else
           render json: { errors: @project.errors }, status: :unprocessable_entity
         end
