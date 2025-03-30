@@ -256,13 +256,13 @@ export class CreateAnalysisComponent implements OnInit {
             `Failed to load projects: ${err.message || 'Unknown error'}`
           );
           this.isLoadingProjects.set(false);
-          return of({ projects: [] });
+          return of({ data: { projects: [] } });
         })
       )
       .subscribe({
-        next: (response: any) => {
+        next: (response) => {
           this.isLoadingProjects.set(false);
-          const projects = response.projects || [];
+          const projects = response.data.projects || [];
           this.projects.set(projects);
 
           // Auto-select the first project if available

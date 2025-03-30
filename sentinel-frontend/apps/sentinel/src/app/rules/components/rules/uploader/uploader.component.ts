@@ -164,7 +164,8 @@ export class UploaderComponent {
         })
       )
       .subscribe({
-        next: (response: any) => {
+        next: (response) => {
+          console.log('Upload response:', response);
           this.successMessage = `${this.selectedFiles.length} file(s) uploaded successfully`;
           this.selectedFiles = [];
         },
