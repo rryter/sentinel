@@ -148,12 +148,12 @@ class AnalysisService
       # Process file results
       ActiveRecord::Base.transaction do
         data['fileResults'].each do |file_result|
-          analysis_file = analysis_job.analysis_files.find_or_create_by!(file_path: file_result['filePath'])
+          file_with_violations = analysis_job.files_with_violations.find_or_create_by!(file_path: file_result['filePath'])
           
           # Store pattern matches
           if file_result['patternMatches'].present?
             file_result['patternMatches'].each do |match|
-              analysis_file.pattern_matches.create!(
+              file_with_violations.pattern_matches.create!(
                 rule_id: match['ruleId'],
                 rule_name: match['ruleName'],
                 description: match['description'],

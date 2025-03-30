@@ -44,7 +44,7 @@ COPY . .
 EXPOSE 4200
 
 # Start the development server with host 0.0.0.0 for Docker
-CMD ["npx", "nx", "run", "sentinel:serve", "--", "--host", "0.0.0.0", "--poll", "1000"]
+CMD ["npx", "nx", "run", "sentinel:serve", "--", "--host", "0.0.0.0", "--port", "4200", "--poll", "1000", "--disable-host-check", "--allowed-hosts", "all"]
 
 # Production stage
 FROM nginx:alpine AS production

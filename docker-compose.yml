@@ -73,6 +73,7 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - API_URL=http://localhost:3000
+      - HOST=0.0.0.0
     depends_on:
       backend:
         condition: service_healthy
