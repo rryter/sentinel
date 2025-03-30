@@ -25,9 +25,9 @@ export class ProjectListComponent implements OnInit {
   }
 
   private loadProjects() {
-    this.projectsService.apiV1ProjectsGet({}).subscribe({
+    this.projectsService.apiV1ProjectsGet().subscribe({
       next: (response) => {
-        this.projects = (response.data || []).map((project) => ({
+        this.projects = (response.data.projects || []).map((project) => ({
           id: project.id,
           name: project.name,
           repository_url: project.repository_url,

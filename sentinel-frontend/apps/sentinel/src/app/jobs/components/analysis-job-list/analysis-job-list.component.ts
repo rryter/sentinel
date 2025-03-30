@@ -7,6 +7,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
 import { AnalysisJob } from 'src/app/api/generated/model/analysis-job';
+import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/models';
 
 @Component({
   selector: 'app-analysis-job-list',
@@ -19,7 +20,7 @@ import { AnalysisJob } from 'src/app/api/generated/model/analysis-job';
 export class AnalysisJobListComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
-  jobs: AnalysisJob[] = [];
+  jobs: ApiV1AnalysisJobsGet200ResponseDataInner[] = [];
   projectMap = new Map<number, string>();
 
   constructor(
@@ -36,7 +37,7 @@ export class AnalysisJobListComponent implements OnInit {
       .pipe(
         map((response) => {
           if (response.data) {
-            response.data.forEach((project) => {
+            response.data.projects.forEach((project) => {
               if (project.id) {
                 this.projectMap.set(
                   project.id,
@@ -47,14 +48,14 @@ export class AnalysisJobListComponent implements OnInit {
           }
           return response;
         }),
-        switchMap(() => this.analysisService.apiV1AnalysisJobsGet({})),
-        map((response: any) => {
+        switchMap(() => this.analysisService.apiV1AnalysisJobsGet()),
+        map((response) => {
           console.log('Raw API Response:', JSON.stringify(response, null, 2));
           return response.data || [];
         })
       )
       .subscribe({
-        next: (jobs: AnalysisJob[]) => {
+        next: (jobs) => {
           this.jobs = jobs;
           this.isLoading = false;
         },
@@ -90,7 +91,10 @@ export class AnalysisJobListComponent implements OnInit {
     }
   }
 
-  trackById(index: number, item: AnalysisJob): number {
+  trackById(
+    index: number,
+    item: ApiV1AnalysisJobsGet200ResponseDataInner
+  ): number {
     return item.id || index;
   }
 }

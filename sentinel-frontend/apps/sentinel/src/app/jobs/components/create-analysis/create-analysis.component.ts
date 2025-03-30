@@ -320,12 +320,12 @@ export class CreateAnalysisComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.isLoading.set(false);
-          this.currentJobId.set(response.analysis_job?.id ?? null);
+          this.currentJobId.set(response.data.id ?? null);
           this.startTimer();
           this.isPolling.set(true);
 
-          if (response.analysis_job) {
-            this.fetchInitialJobStatus(response.analysis_job.id);
+          if (response.data) {
+            this.fetchInitialJobStatus(response.data.id);
           }
         },
         error: (err: Error) => {

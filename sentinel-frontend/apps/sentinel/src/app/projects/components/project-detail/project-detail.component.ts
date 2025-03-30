@@ -147,7 +147,7 @@ export class ProjectDetailComponent implements OnInit {
       .apiV1ProjectsIdGet({ id: parseInt(projectId) })
       .subscribe({
         next: (response: ApiV1ProjectsPost201Response) => {
-          this.project.set(response.data || null);
+          this.project.set(response.data.project || null);
           this.isLoading.set(false);
         },
         error: (error: Error) => {
