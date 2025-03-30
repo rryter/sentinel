@@ -44,22 +44,10 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p /app/bin/rules /app/uploads /app/results
 
-# Build the uploader and indexer
-RUN cd /app && go build -o /app/bin/uploader ./cmd/uploader && \
-    go build -o /app/bin/indexer ./cmd/indexer
-
-# Build all rules in the same environment as the indexer
-RUN cd /app/rules && \
-    for category in */; do \
-        cd "$category"; \
-        for rule in *.go; do \
-            if [ -f "$rule" ]; then \
-                echo "Building rule: $rule"; \
-                go build -buildmode=plugin -o "/app/bin/rules/${category%/}/${rule%.go}.so" "$rule"; \
-            fi; \
-        done; \
-        cd ..; \
-    done
+# Copy binaries and rules from builder stage
+COPY --from=builder /app/bin/uploader /app/bin/uploader
+COPY --from=builder /app/bin/indexer /app/bin/indexer
+COPY --from=builder /app/bin/rules /app/bin/rules
 
 # Expose ports
 EXPOSE 8080 2345 2346
@@ -97,10 +85,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY --from=builder /app/bin/uploader /app/bin/uploader
-COPY --from=builder /app/bin/indexer /app/bin/indexer
-COPY --from=builder /app/bin/rules /app/bin/rules
-COPY --from=builder /app/results /app/results
+# Copy binaries and rules from development stage
+COPY --from=development /app/bin/uploader /app/bin/uploader
+COPY --from=development /app/bin/indexer /app/bin/indexer
+COPY --from=development /app/bin/rules /app/bin/rules
+COPY --from=development /app/results /app/results
 
 RUN mkdir -p /app/bin/uploads && \
     chmod +x /app/bin/uploader /app/bin/indexer
