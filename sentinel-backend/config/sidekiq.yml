@@ -6,4 +6,3 @@
   - active_storage_purge
 :verbose: true
 :timeout: 60
-:verbose: true 

@@ -22,9 +22,10 @@ RUN npm run build
 # Development stage
 FROM node:20-slim AS development
 
-# Install Java for OpenAPI generator
+# Install Java for OpenAPI generator and curl for health checks
 RUN apt-get update -qq && apt-get install -y \
     openjdk-17-jdk \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

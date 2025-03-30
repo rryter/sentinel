@@ -15,6 +15,7 @@ services:
       - RUBY_DEBUG_OPEN=true
       - RUBY_DEBUG_HOST=0.0.0.0
       - RUBY_DEBUG_PORT=1234
+      - ANALYZER_SERVICE_URL=http://analysis:8080
     depends_on:
       db:
         condition: service_healthy
@@ -36,7 +37,7 @@ services:
     build:
       context: ./sentinel-backend
       dockerfile: Dockerfile
-    command: bundle exec rdbg -n --host 0.0.0.0 --port 1235 -- sidekiq -C config/sidekiq.yml
+    command: bundle exec rdbg -n --host 0.0.0.0 --port 1235 -- /usr/local/bundle/bin/sidekiq -C config/sidekiq.yml
     ports:
       - "1235:1235" # Sidekiq debugger
     environment:
@@ -46,6 +47,7 @@ services:
       - RUBY_DEBUG_OPEN=true
       - RUBY_DEBUG_HOST=0.0.0.0
       - RUBY_DEBUG_PORT=1235
+      - ANALYZER_SERVICE_URL=http://analysis:8080
     depends_on:
       db:
         condition: service_healthy
@@ -127,11 +129,20 @@ services:
       - ./sentinel-analysis:/app/src
       - analysis_data:/app/uploads
       - analysis_results:/app/results
+      - /home/rryter/projects/rai/apps/raiding.ai:/target
     environment:
       - REDIS_URL=redis://redis:6379
     depends_on:
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - sentinel-network
 
 networks:
   sentinel-network:

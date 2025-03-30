@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_24_181456) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_30_093100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_24_181456) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "go_job_id"
+    t.text "error_message"
     t.index ["project_id"], name: "index_analysis_jobs_on_project_id"
     t.index ["status"], name: "index_analysis_jobs_on_status"
   end

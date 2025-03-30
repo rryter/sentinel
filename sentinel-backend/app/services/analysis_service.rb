@@ -1,6 +1,8 @@
 # app/services/analysis_service.rb
 class AnalysisService
-    ANALYZER_SERVICE_URL = ENV.fetch('ANALYZER_SERVICE_URL', 'http://localhost:8080')
+    def analyzer_service_url
+      ENV.fetch('ANALYZER_SERVICE_URL', 'http://localhost:8080')
+    end
     
     def initialize(job_id)
       @job_id = job_id
@@ -15,7 +17,7 @@ class AnalysisService
         Rails.logger.error("Cannot check status for job #{@job_id} - missing Go job ID")
         return nil
       end
-      response = HTTP.get("#{ANALYZER_SERVICE_URL}/api/analyze/status/#{job.go_job_id}")
+      response = HTTP.get("#{analyzer_service_url}/api/analyze/status/#{job.go_job_id}")
       
       if response.status.success?
         return JSON.parse(response.body.to_s)
@@ -37,7 +39,7 @@ class AnalysisService
       job.update!(status: 'running')
       
       # Call the Go service API to start the analysis
-      response = HTTP.post("#{ANALYZER_SERVICE_URL}/api/analyze", json: {
+      response = HTTP.post("#{analyzer_service_url}/api/analyze", json: {
         job_id: @job_id.to_s,
         project_id: project_id.to_s
       })
@@ -79,8 +81,8 @@ class AnalysisService
       end
       
       # Use the results endpoint, not the status endpoint
-      Rails.logger.info("Fetching results from #{ANALYZER_SERVICE_URL}/api/analyze/results/#{job.go_job_id}")
-      response = HTTP.get("#{ANALYZER_SERVICE_URL}/api/analyze/results/#{job.go_job_id}")
+      Rails.logger.info("Fetching results from #{analyzer_service_url}/api/analyze/results/#{job.go_job_id}")
+      response = HTTP.get("#{analyzer_service_url}/api/analyze/results/#{job.go_job_id}")
       
       if response.status.success?
         data = JSON.parse(response.body.to_s)

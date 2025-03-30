@@ -26,8 +26,10 @@ COPY --from=builder /app/bin/indexer /app/bin/indexer
 COPY --from=builder /app/rules /app/rules
 COPY --from=builder /app/uploads /app/uploads
 COPY --from=builder /app/results /app/results
-RUN chmod +x /app/bin/uploader /app/bin/indexer && \
-    mkdir -p /app/src
+COPY --from=builder /app/build_rules.sh /app/build_rules.sh
+COPY --from=builder /app/rules /app/rules
+RUN chmod +x /app/bin/uploader /app/bin/indexer /app/build_rules.sh && \
+    mkdir -p /app/src /app/bin/rules
 
 # Install Delve debugger
 RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
@@ -40,8 +42,31 @@ EXPOSE 8080 2345 2346
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
+# Create a startup script to compile rules and start the uploader
+COPY <<EOF /app/start.sh
+#!/bin/sh
+cd /app/src
+echo "Compiling rules..."
+cd rules
+for category in */; do
+  cd "\$category"
+  for rule in *.go; do
+    if [ -f "\$rule" ]; then
+      echo "Building rule: \$rule"
+      go build -buildmode=plugin -o "/app/bin/rules/\${category%/}/\${rule%.go}.so" "\$rule"
+    fi
+  done
+  cd ..
+done
+cd /app
+echo "Starting uploader service..."
+/app/bin/uploader -port=8080
+EOF
+
+RUN chmod +x /app/start.sh
+
 # Start uploader with Delve debugger
-CMD ["dlv", "--listen=:2345", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "/app/bin/uploader", "--", "-port=8080"]
+CMD ["/app/start.sh"]
 
 # Production stage
 FROM debian:bookworm-slim AS production
