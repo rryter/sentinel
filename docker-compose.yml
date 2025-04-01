@@ -38,7 +38,6 @@ services:
       context: ./sentinel-backend
       dockerfile: Dockerfile
     command: bundle exec sidekiq -C config/sidekiq.yml
-    entrypoint: [] # This will override the Dockerfile's entrypoint
     environment:
       - RAILS_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/sentinel_development
@@ -52,6 +51,7 @@ services:
     volumes:
       - ./sentinel-backend:/app
       - /app/tmp/cache
+      - /app/public/assets
     networks:
       - sentinel-network
 
@@ -126,7 +126,7 @@ services:
       - ./sentinel-analysis:/app/src
       - analysis_data:/app/uploads
       - analysis_results:/app/results
-      - /home/rryter/projects/rai/apps/raiding.ai:/target
+      - /home/rryter/projects/myCSS/packages/mycss-app/src/app:/target
     environment:
       - REDIS_URL=redis://redis:6379
     depends_on:

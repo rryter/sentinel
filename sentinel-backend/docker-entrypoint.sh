@@ -3,8 +3,13 @@ set -e
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
-until bundle exec rails db:version > /dev/null 2>&1; do
+echo "Database URL: $DATABASE_URL"
+echo "Rails environment: $RAILS_ENV"
+
+until bundle exec rails db:version; do
   echo "Database is unavailable - sleeping"
+  echo "Error details:"
+  bundle exec rails db:version 2>&1 || true
   sleep 1
 done
 echo "Database is ready!"
