@@ -292,6 +292,14 @@ func (a *Analyzer) AnalyzeASTFiles(astDir string) ([]AnalysisResult, error) {
 
 		// Only process .ts.ast.json files
 		if !info.IsDir() && strings.HasSuffix(path, ".ts.ast.json") {
+			// Skip node_modules files
+			if strings.Contains(filepath.ToSlash(path), "node_modules") {
+				patterns.Debug("Skipping node_modules file: %s", path)
+				return nil
+			}
+
+			// Acquire semaphore before starting goroutine
+			semaphore <- struct{}{} 
 			wg.Add(1)
 			go func(filePath string) {
 				defer wg.Done()
@@ -314,6 +322,12 @@ func (a *Analyzer) AnalyzeASTFiles(astDir string) ([]AnalysisResult, error) {
 				sourceFilePath, ok := astNode["filePath"].(string)
 				if !ok {
 					errorsChan <- fmt.Errorf("AST file %s does not contain filePath", filePath)
+					return
+				}
+
+				// Skip node_modules files
+				if strings.Contains(filepath.ToSlash(sourceFilePath), "node_modules") {
+					patterns.Debug("Skipping node_modules file from AST: %s", sourceFilePath)
 					return
 				}
 
@@ -348,10 +362,8 @@ func (a *Analyzer) AnalyzeASTFiles(astDir string) ([]AnalysisResult, error) {
 					}
 				}
 			}(path)
-
-			// Acquire semaphore before starting new goroutine
-			semaphore <- struct{}{}
 		}
+
 		return nil
 	})
 

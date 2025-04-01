@@ -126,7 +126,7 @@ services:
       - ./sentinel-analysis:/app/src
       - analysis_data:/app/uploads
       - analysis_results:/app/results
-      - /home/rryter/projects/myCSS/packages/mycss-app/src/app:/target
+      - /home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding:/target
     environment:
       - REDIS_URL=redis://redis:6379
     depends_on:

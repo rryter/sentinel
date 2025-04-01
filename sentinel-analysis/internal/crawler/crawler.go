@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"sentinel/indexing/internal/parser/oxc"
+	"sentinel/indexing/internal/patterns"
 	"sentinel/indexing/pkg/models"
 	"sentinel/indexing/pkg/utils"
 )
@@ -91,9 +92,21 @@ func NewCrawler(config *utils.IndexerConfig, parser *oxc.Parser, rootDir string)
 
 // shouldExclude checks if a path should be excluded from analysis
 func (c *Crawler) shouldExclude(path string) bool {
+	patterns.Debug("Checking path for exclusion: %s", path)
+	
+	// Check for node_modules directory using filepath
+	normalizedPath := filepath.ToSlash(path)
+	patterns.Debug("Normalized path: %s", normalizedPath)
+	
+	if strings.Contains(normalizedPath, "node_modules") {
+		patterns.Debug("Excluding path due to node_modules: %s", path)
+		return true
+	}
+
 	// Check against exclude patterns from config
 	for _, pattern := range c.excludePatterns {
 		if strings.Contains(path, pattern) {
+			patterns.Debug("Excluding path due to pattern %s: %s", pattern, path)
 			return true
 		}
 	}
@@ -101,9 +114,11 @@ func (c *Crawler) shouldExclude(path string) bool {
 	// Check for spec and stories files
 	baseName := filepath.Base(path)
 	if strings.HasSuffix(baseName, ".spec.ts") || strings.HasSuffix(baseName, ".stories.ts") {
+		patterns.Debug("Excluding path due to spec/stories file: %s", path)
 		return true
 	}
 
+	patterns.Debug("Path not excluded: %s", path)
 	return false
 }
 
@@ -114,8 +129,8 @@ func (c *Crawler) isTypeScriptFile(path string) bool {
 }
 
 // extractDeclarations extracts TypeScript declarations from the AST
-func (c *Crawler) extractDeclarations(ast interface{}) []TypeScriptDeclaration {
-	declarations := make([]TypeScriptDeclaration, 0)
+func (c *Crawler) extractDeclarations(ast interface{}) []models.TypeScriptDeclaration {
+	declarations := make([]models.TypeScriptDeclaration, 0)
 
 	if astMap, ok := ast.(map[string]interface{}); ok {
 		if astMap["type"] != "Program" {
@@ -150,10 +165,15 @@ func (c *Crawler) extractDeclarations(ast interface{}) []TypeScriptDeclaration {
 						if ok && name != "" {
 							loc := extractLocation(nodeMap)
 
-							decl := TypeScriptDeclaration{
+							decl := models.TypeScriptDeclaration{
 								Type:     nodeType,
 								Name:     name,
-								Location: loc,
+								Location: models.CodeLocation{
+									StartLine: loc.Line,
+									StartCol:  loc.Column,
+									EndLine:   loc.Line,
+									EndCol:    loc.Column,
+								},
 							}
 
 							// Extract additional properties based on type
@@ -265,12 +285,14 @@ func extractClassMembers(body map[string]interface{}) []map[string]interface{} {
 }
 
 // CrawlDirectory crawls a directory for TypeScript files and analyzes them
-func (c *Crawler) CrawlDirectory(dir string) ([]FileAnalysis, error) {
+func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
+	patterns.Debug("Starting directory crawl from: %s", dir)
+	
 	// Create channels for concurrent processing
-	filesChan := make(chan string, 100)    // Buffer channel for file paths
-	resultsChan := make(chan FileAnalysis) // Channel for results
-	errorsChan := make(chan error)         // Channel for errors
-	done := make(chan struct{})            // Signal channel for completion
+	filesChan := make(chan string, 100)           // Buffer channel for file paths
+	resultsChan := make(chan models.FileAnalysis) // Channel for results
+	errorsChan := make(chan error)                // Channel for errors
+	done := make(chan struct{})                   // Signal channel for completion
 
 	// Create a worker pool
 	numWorkers := 8 // Adjust based on CPU cores
@@ -286,7 +308,7 @@ func (c *Crawler) CrawlDirectory(dir string) ([]FileAnalysis, error) {
 	}
 
 	// Start a goroutine to collect results
-	var files []FileAnalysis
+	var files []models.FileAnalysis
 	go func() {
 		for result := range resultsChan {
 			files = append(files, result)
@@ -301,13 +323,17 @@ func (c *Crawler) CrawlDirectory(dir string) ([]FileAnalysis, error) {
 				return err
 			}
 
+			patterns.Debug("Found path during walk: %s", path)
+
 			// Skip excluded directories
 			if info.IsDir() && c.shouldExclude(path) {
+				patterns.Debug("Skipping excluded directory: %s", path)
 				return filepath.SkipDir
 			}
 
 			// Only queue TypeScript files
 			if !info.IsDir() && c.isTypeScriptFile(path) {
+				patterns.Debug("Queueing TypeScript file: %s", path)
 				filesChan <- path
 			}
 
@@ -382,8 +408,14 @@ func (c *Crawler) processFile(filePath, baseDir string) (*models.SourceFile, err
 }
 
 // worker processes files from the files channel
-func (c *Crawler) worker(files <-chan string, results chan<- FileAnalysis, errors chan<- error) {
+func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis, errors chan<- error) {
 	for path := range files {
+		// Skip node_modules files
+		if strings.Contains(filepath.ToSlash(path), "node_modules") {
+			patterns.Debug("Worker skipping node_modules file: %s", path)
+			continue
+		}
+
 		// Get file info for modification time
 		info, err := os.Stat(path)
 		if err != nil {
@@ -436,8 +468,8 @@ func (c *Crawler) worker(files <-chan string, results chan<- FileAnalysis, error
 
 		// Extract declarations, imports, and exports
 		declarations := c.extractDeclarations(result.AST)
-		imports := make([]ImportInfo, 0)
-		exports := make([]ExportInfo, 0)
+		imports := make([]models.ImportInfo, 0)
+		exports := make([]models.ExportInfo, 0)
 
 		if astMap, ok := result.AST.(map[string]interface{}); ok && astMap["type"] == "Program" {
 			if body, ok := astMap["body"].([]interface{}); ok {
@@ -449,7 +481,7 @@ func (c *Crawler) worker(files <-chan string, results chan<- FileAnalysis, error
 						if nodeType == "ImportDeclaration" {
 							if source, ok := nodeMap["source"].(map[string]interface{}); ok {
 								if value, ok := source["value"].(string); ok {
-									imports = append(imports, ImportInfo{
+									imports = append(imports, models.ImportInfo{
 										Source:     value,
 										Specifiers: extractImportSpecifiers(nodeMap),
 									})
@@ -463,7 +495,7 @@ func (c *Crawler) worker(files <-chan string, results chan<- FileAnalysis, error
 							if declaration, ok := nodeMap["declaration"].(map[string]interface{}); ok {
 								if id, ok := declaration["id"].(map[string]interface{}); ok {
 									if name, ok := id["name"].(string); ok {
-										exports = append(exports, ExportInfo{
+										exports = append(exports, models.ExportInfo{
 											Name:      name,
 											IsDefault: false,
 										})
@@ -474,7 +506,7 @@ func (c *Crawler) worker(files <-chan string, results chan<- FileAnalysis, error
 							if declaration, ok := nodeMap["declaration"].(map[string]interface{}); ok {
 								if id, ok := declaration["id"].(map[string]interface{}); ok {
 									if name, ok := id["name"].(string); ok {
-										exports = append(exports, ExportInfo{
+										exports = append(exports, models.ExportInfo{
 											Name:      name,
 											IsDefault: true,
 										})
@@ -488,7 +520,7 @@ func (c *Crawler) worker(files <-chan string, results chan<- FileAnalysis, error
 		}
 
 		// Create file analysis with all extracted information
-		analysis := FileAnalysis{
+		analysis := models.FileAnalysis{
 			Path:         path,
 			RelativePath: relPath,
 			Size:         info.Size(),

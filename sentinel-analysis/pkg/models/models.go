@@ -90,3 +90,36 @@ type IndexingResult struct {
 	FileResults    []AnalysisResult `json:"fileResults"`
 	Timestamp      time.Time        `json:"timestamp"`
 }
+
+// FileAnalysis represents the analysis of a single TypeScript file
+type FileAnalysis struct {
+	Path         string                  `json:"path"`
+	RelativePath string                  `json:"relativePath"`
+	Size         int64                   `json:"size"`
+	ModTime      time.Time               `json:"modTime"`
+	FileType     string                  `json:"fileType"`
+	AST          interface{}             `json:"ast,omitempty"`
+	Imports      []ImportInfo            `json:"imports"`
+	Exports      []ExportInfo            `json:"exports"`
+	Declarations []TypeScriptDeclaration `json:"declarations"`
+}
+
+// ImportInfo represents an import statement
+type ImportInfo struct {
+	Source     string   `json:"source"`
+	Specifiers []string `json:"specifiers"`
+}
+
+// ExportInfo represents an export statement
+type ExportInfo struct {
+	Name      string `json:"name"`
+	IsDefault bool   `json:"isDefault"`
+}
+
+// TypeScriptDeclaration represents a TypeScript declaration (interface, type, class, etc.)
+type TypeScriptDeclaration struct {
+	Type       string                 `json:"type"`
+	Name       string                 `json:"name"`
+	Location   CodeLocation           `json:"location"`
+	Properties map[string]interface{} `json:"properties,omitempty"`
+}
