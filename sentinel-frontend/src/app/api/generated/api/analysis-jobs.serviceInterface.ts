@@ -71,7 +71,7 @@ export interface AnalysisJobsServiceInterface {
     apiV1AnalysisJobsIdProcessResultsPost(requestParameters: ApiV1AnalysisJobsIdProcessResultsPostRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsIdProcessResultsPost200Response>;
 
     /**
-     * Creates a new analysis job
+     * Creates an analysis job
      * 
 * @param requestParameters
      */

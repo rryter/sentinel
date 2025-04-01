@@ -72,6 +72,10 @@ RSpec.configure do |config|
                   'status' => { 'type' => 'string', 'enum' => ['pending', 'running', 'completed', 'failed'] },
                   'created_at' => { 'type' => 'string', 'format' => 'date-time' },
                   'updated_at' => { 'type' => 'string', 'format' => 'date-time' },
+                  'completed_at' => { 'type' => 'string', 'format' => 'date-time', 'nullable' => true },
+                  'total_files' => { 'type' => 'integer', 'nullable' => true },
+                  'total_matches' => { 'type' => 'integer', 'nullable' => true },
+                  'rules_matched' => { 'type' => 'integer', 'nullable' => true },
                   'files_with_violations' => {
                     'type' => 'array',
                     'items' => {

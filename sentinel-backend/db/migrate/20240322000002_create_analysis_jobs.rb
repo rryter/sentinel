@@ -5,6 +5,8 @@ class CreateAnalysisJobs < ActiveRecord::Migration[8.0]
       t.string :status, null: false, default: 'pending'
       t.integer :total_files
       t.integer :processed_files
+      t.integer :total_matches
+      t.integer :rules_matched
       t.datetime :started_at
       t.datetime :completed_at
       

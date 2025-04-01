@@ -18,6 +18,10 @@ export interface AnalysisJobResponseAnalysisJob {
     status: AnalysisJobResponseAnalysisJobStatusEnum;
     created_at: string;
     updated_at: string;
+    completed_at?: string | null;
+    total_files?: number | null;
+    total_matches?: number | null;
+    rules_matched?: number | null;
     files_with_violations?: Array<AnalysisJobResponseAnalysisJobFilesWithViolationsInner>;
     pattern_matches?: Array<AnalysisJobResponseAnalysisJobPatternMatchesInner>;
 }

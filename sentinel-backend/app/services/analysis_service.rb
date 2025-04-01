@@ -99,6 +99,10 @@ class AnalysisService
       data = fetch_patterns
       return false unless data
       
+      # Calculate total matches and unique rules
+      total_matches = 0
+      unique_rules = Set.new
+      
       # Update job with metadata
       analysis_job.update!(
         total_files: data['totalFiles'] || 0,
@@ -112,7 +116,10 @@ class AnalysisService
         # Create fileResults directly from groupedMatches
         file_results = {}
         
-        data['groupedMatches'].each do |_rule_id, matches|
+        data['groupedMatches'].each do |rule_id, matches|
+          unique_rules.add(rule_id)
+          total_matches += matches.length
+          
           matches.each do |match|
             file_path = match['filePath']
             file_results[file_path] ||= { 'filePath' => file_path, 'patternMatches' => [] }

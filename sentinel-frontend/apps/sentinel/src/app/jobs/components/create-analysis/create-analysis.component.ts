@@ -22,6 +22,7 @@ import { ProjectSelectorComponent } from '../project-selector/project-selector.c
 import { AnalysisResultsComponent } from '../analysis-results/analysis-results.component';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { AnalysisJobResponse } from '../model/analysis/analysisJob.model';
+import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 
 enum AnalysisJobStatus {
   PENDING = 'pending',
@@ -99,7 +100,9 @@ export class CreateAnalysisComponent implements OnInit {
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
   job = signal<AnalysisJob | null>(null);
-  analysisResults = signal<AnalysisResults | null>(null);
+  analysisResults = signal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
+    null
+  );
   projects = signal<ApiV1ProjectsGet200ResponseDataInner[]>([]);
   selectedProjectId = signal<number | null>(null);
   isLoadingProjects = signal(false);

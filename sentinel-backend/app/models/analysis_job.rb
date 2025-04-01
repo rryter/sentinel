@@ -15,6 +15,19 @@ class AnalysisJob < ActiveRecord::Base
   # Configure kaminari
   paginates_per 10
 
+  def total_matches
+    pattern_matches.count
+  end
+
+  def rules_matched
+    pattern_matches.select(:rule_id).distinct.count
+  end
+
+  def processing_duration
+    return nil unless completed_at && created_at
+    (completed_at - created_at).to_i
+  end
+
   def fetch_results
     # This is a placeholder method that will be implemented by the service
     # For now, it just returns true to allow the tests to pass

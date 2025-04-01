@@ -15,8 +15,13 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInner {
     id: number;
     project_id: number;
     status: ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum;
+    total_files?: number | null;
+    total_matches?: number | null;
+    rules_matched?: number | null;
+    completed_at?: string | null;
     created_at?: string;
     updated_at?: string;
+    processing_duration?: number | null;
 }
 export enum ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum {
     PENDING = 'pending',

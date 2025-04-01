@@ -1,5 +1,7 @@
 class AnalysisJobSerializer < ActiveModel::Serializer
-  attributes :id, :status, :created_at, :updated_at, :project_id
+  attributes :id, :status, :created_at, :updated_at, :project_id,
+             :total_files, :total_matches, :rules_matched, :completed_at,
+             :processing_duration
   
   has_many :files_with_violations, class_name: "FileWithViolations"
   has_many :pattern_matches

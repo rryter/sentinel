@@ -40,6 +40,23 @@
                               "failed"
                             ]
                           },
+                          "total_files": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "total_matches": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "rules_matched": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "completed_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time"
@@ -47,6 +64,10 @@
                           "updated_at": {
                             "type": "string",
                             "format": "date-time"
+                          },
+                          "processing_duration": {
+                            "type": "integer",
+                            "nullable": true
                           }
                         },
                         "required": [
@@ -82,7 +103,7 @@
         }
       },
       "post": {
-        "summary": "Creates a new analysis job",
+        "summary": "Creates an analysis job",
         "tags": [
           "Analysis Jobs"
         ],
@@ -113,6 +134,23 @@
                             "failed"
                           ]
                         },
+                        "total_files": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "total_matches": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "rules_matched": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "completed_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time"
@@ -120,6 +158,10 @@
                         "updated_at": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "processing_duration": {
+                          "type": "integer",
+                          "nullable": true
                         }
                       },
                       "required": [
@@ -148,24 +190,6 @@
                 "properties": {
                   "project_id": {
                     "type": "integer"
-                  },
-                  "repository_url": {
-                    "type": "string"
-                  },
-                  "branch": {
-                    "type": "string"
-                  },
-                  "commit_sha": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "pending",
-                      "running",
-                      "completed",
-                      "failed"
-                    ]
                   }
                 },
                 "required": [
@@ -219,6 +243,23 @@
                             "failed"
                           ]
                         },
+                        "total_files": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "total_matches": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "rules_matched": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "completed_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time"
@@ -226,6 +267,10 @@
                         "updated_at": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "processing_duration": {
+                          "type": "integer",
+                          "nullable": true
                         }
                       },
                       "required": [
@@ -290,6 +335,23 @@
                             "failed"
                           ]
                         },
+                        "total_files": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "total_matches": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "rules_matched": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "completed_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time"
@@ -297,6 +359,10 @@
                         "updated_at": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "processing_duration": {
+                          "type": "integer",
+                          "nullable": true
                         }
                       },
                       "required": [
@@ -1316,6 +1382,23 @@
               "updated_at": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "completed_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "total_files": {
+                "type": "integer",
+                "nullable": true
+              },
+              "total_matches": {
+                "type": "integer",
+                "nullable": true
+              },
+              "rules_matched": {
+                "type": "integer",
+                "nullable": true
               },
               "files_with_violations": {
                 "type": "array",
