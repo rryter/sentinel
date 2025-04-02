@@ -27,34 +27,34 @@ RUN apk add --no-cache \
     build-base \
     nodejs \
     npm \
-    openjdk17-jdk
+    openjdk17-jdk \
+    bash
 
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
-
-# Download dependencies
-RUN go mod download
-
-# Copy the rest of the application
+# Copy all source files first
 COPY . .
+
+# Make scripts executable
+RUN chmod +x runIndexer.sh build_rules.sh
 
 # Create necessary directories
 RUN mkdir -p /app/bin/rules /app/uploads /app/results
 
-# Copy binaries and rules from builder stage
+# Copy binaries from builder stage
 COPY --from=builder /app/bin/uploader /app/bin/uploader
 COPY --from=builder /app/bin/indexer /app/bin/indexer
-COPY --from=builder /app/bin/rules /app/bin/rules
+
+# Download dependencies
+RUN go mod download
 
 # Expose ports
 EXPOSE 8080 2345 2346
 
 # Create startup script
 COPY <<EOF /app/start.sh
-#!/bin/sh
+#!/bin/bash
 cd /app
 echo "Starting uploader service..."
 /app/bin/uploader
