@@ -9,172 +9,112 @@ import (
 	"sentinel/indexing/internal/patterns/helpers"
 )
 
-// ObservableInputRule checks for Observables being passed directly as inputs
-type ObservableInputRule struct {
-	patterns.BaseRule
+// AngularObservableInputRule checks for Observable inputs in Angular components
+type AngularObservableInputRule struct {
+	*patterns.EnhancedBaseRule
 }
 
-// NewRule is the exported symbol that will be looked up by the plugin loader
+// CreateRuleAngularObservableInput creates a new AngularObservableInputRule
 func CreateRuleAngularObservableInput() patterns.Rule {
-	return &ObservableInputRule{
-		BaseRule: patterns.NewBaseRule(
+	return &AngularObservableInputRule{
+		EnhancedBaseRule: patterns.NewEnhancedBaseRule(
 			"angular-observable-input",
-			"[Angular] Observable Input",
-			"Identifies cases where Observables are passed directly as inputs to components",
+			"Angular Observable Input",
+			"Checks for Observable inputs in Angular components",
 		),
 	}
 }
 
 // Match implements the Rule interface
-func (r *ObservableInputRule) Match(node map[string]interface{}, filePath string) []patterns.Match {
-	body, ok := helpers.GetProgramBody(node, filePath)
+func (r *AngularObservableInputRule) Match(node map[string]interface{}, filePath string) []patterns.Match {
+	return r.ProcessASTNodes(node, filePath, 10, func(n map[string]interface{}) []patterns.Match {
+		return r.handlePropertyDefinition(n, filePath)
+	})
+}
+
+func (r *AngularObservableInputRule) handlePropertyDefinition(node map[string]interface{}, filePath string) []patterns.Match {
+	// Check if this is a property definition
+	if node["type"] != "PropertyDefinition" {
+		return nil
+	}
+
+	// Check if this is an input property
+	if !r.isInputProperty(node) {
+		return nil
+	}
+
+	// Check if the type is Observable
+	if !r.isObservableType(node) {
+		return nil
+	}
+
+	// Create a match
+	return []patterns.Match{
+		*r.CreateMatch(node, filePath, "Avoid using Observable inputs in Angular components", map[string]interface{}{
+			"propertyName": node["key"].(map[string]interface{})["name"].(string),
+		}),
+	}
+}
+
+func (r *AngularObservableInputRule) isInputProperty(node map[string]interface{}) bool {
+	// Check for @Input() decorator
+	decorators, ok := node["decorators"].([]interface{})
 	if !ok {
-		return nil
+		return false
 	}
 
-	matches := helpers.ProcessASTNodes(body, filePath, 1000, func(node map[string]interface{}) []patterns.Match {
-		var nodeMatches []patterns.Match
-
-		if nodeType, ok := node["type"].(string); ok {
-			switch nodeType {
-			case "PropertyDefinition", "ClassProperty":
-				if match := r.handlePropertyDefinition(node, filePath); match != nil {
-					nodeMatches = append(nodeMatches, *match)
-				}
-			case "JSXAttribute", "Property":
-				if match := r.handleInputBinding(node, filePath); match != nil {
-					nodeMatches = append(nodeMatches, *match)
-				}
-			}
+	for _, decorator := range decorators {
+		decoratorNode, ok := decorator.(map[string]interface{})
+		if !ok {
+			continue
 		}
 
-		return nodeMatches
-	})
+		expression, ok := decoratorNode["expression"].(map[string]interface{})
+		if !ok {
+			continue
+		}
 
-	return matches
+		if expression["type"] == "CallExpression" {
+			callee, ok := expression["callee"].(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			if callee["name"] == "Input" {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
-// handlePropertyDefinition checks if a class property is an @Input decorated Observable or an input signal containing an Observable
-func (r *ObservableInputRule) handlePropertyDefinition(node map[string]interface{}, filePath string) *patterns.Match {
-	var propertyName string
-	if key, ok := node["key"].(map[string]interface{}); ok {
-		if name, ok := key["name"].(string); ok {
-			propertyName = name
-		}
+func (r *AngularObservableInputRule) isObservableType(node map[string]interface{}) bool {
+	// Check if the type is Observable
+	typeAnnotation, ok := node["typeAnnotation"].(map[string]interface{})
+	if !ok {
+		return false
 	}
 
-	isObservable := false
-	observableType := ""
-	isInputSignal := false
-	hasInputDecorator := r.hasInputDecorator(node)
-	hasAsyncPipe := false
-
-	// First check if it's an input signal
-	if value, ok := node["value"].(map[string]interface{}); ok {
-		if callExpr, ok := value["type"].(string); ok && callExpr == "CallExpression" {
-			if callee, ok := value["callee"].(map[string]interface{}); ok {
-				if name, ok := callee["name"].(string); ok {
-					if name == "input" {
-						isInputSignal = true
-						isObservable = true
-						observableType = "Observable"
-					}
-				}
-			}
-		}
+	typeAnnotationType, ok := typeAnnotation["typeAnnotation"].(map[string]interface{})
+	if !ok {
+		return false
 	}
 
-	// If it's not an input signal, check if it's a decorated input with Observable type
-	if !isInputSignal && hasInputDecorator {
-		// Check type annotation for Observable<T>
-		if typeAnnotation, ok := node["typeAnnotation"].(map[string]interface{}); ok {
-			if typeRef, ok := typeAnnotation["typeAnnotation"].(map[string]interface{}); ok {
-				if typeName, ok := typeRef["typeName"].(map[string]interface{}); ok {
-					if name, ok := typeName["name"].(string); ok {
-						if name == "Observable" {
-							isObservable = true
-							observableType = name
-						}
-					}
-				}
-			}
+	if typeAnnotationType["type"] == "TSTypeReference" {
+		typeName, ok := typeAnnotationType["typeName"].(map[string]interface{})
+		if !ok {
+			return false
 		}
 
-		// Check value for Observable creation functions
-		if value, ok := node["value"].(map[string]interface{}); ok {
-			if callExpr, ok := value["expression"].(map[string]interface{}); ok {
-				if callee, ok := callExpr["callee"].(map[string]interface{}); ok {
-					if name, ok := callee["name"].(string); ok {
-						if name == "of" || name == "from" || name == "interval" || name == "timer" {
-							isObservable = true
-							observableType = "Observable"
-						}
-					}
-				}
-			}
-		}
+		return typeName["name"] == "Observable"
 	}
 
-	// Only return a match if we have either:
-	// 1. An input signal (which we've confirmed contains an Observable)
-	// 2. A decorated input that we've confirmed is an Observable
-	if !isObservable {
-		return nil
-	}
-
-	description := ""
-	if isInputSignal {
-		description = fmt.Sprintf("Input signal '%s' contains an Observable", propertyName)
-	} else if hasInputDecorator {
-		description = fmt.Sprintf("@Input decorated property '%s' is an Observable", propertyName)
-	}
-
-	// Determine severity based on context
-	severity := "high"
-	if hasAsyncPipe {
-		severity = "medium"
-	}
-
-	return helpers.CreateMatch(r, node, filePath, description, map[string]interface{}{
-		"propertyName":      propertyName,
-		"observableType":    observableType,
-		"isInputSignal":     isInputSignal,
-		"hasInputDecorator": hasInputDecorator,
-		"hasAsyncPipe":      hasAsyncPipe,
-		"severity":          severity,
-		"suggestion":        r.getSuggestion(propertyName),
-		"architecturalImpact": map[string]interface{}{
-			"affectsChangeDetection": true,
-			"potentialMemoryLeak":    true,
-			"testingComplexity":      "high",
-			"maintainability":        "low",
-		},
-	})
-}
-
-// hasInputDecorator checks if a node has an @Input decorator
-func (r *ObservableInputRule) hasInputDecorator(node map[string]interface{}) bool {
-	if decorators, ok := node["decorators"].([]interface{}); ok {
-		for _, dec := range decorators {
-			if decorator, ok := dec.(map[string]interface{}); ok {
-				if expr, ok := decorator["expression"].(map[string]interface{}); ok {
-					// Check for both @Input and @Input()
-					if callee, ok := expr["callee"].(map[string]interface{}); ok {
-						if name, ok := callee["name"].(string); ok && name == "Input" {
-							return true
-						}
-					} else if name, ok := expr["name"].(string); ok && name == "Input" {
-						return true
-					}
-				}
-			}
-		}
-	}
 	return false
 }
 
 // handleInputBinding checks if an input binding is passing an Observable directly
-func (r *ObservableInputRule) handleInputBinding(node map[string]interface{}, filePath string) *patterns.Match {
+func (r *AngularObservableInputRule) handleInputBinding(node map[string]interface{}, filePath string) *patterns.Match {
 	// Get the property name (input binding name)
 	var propertyName string
 	if name, ok := node["name"].(map[string]interface{}); ok {
@@ -211,7 +151,7 @@ func (r *ObservableInputRule) handleInputBinding(node map[string]interface{}, fi
 }
 
 // getSuggestion provides suggestions for fixing the Observable input
-func (r *ObservableInputRule) getSuggestion(observableName string) string {
+func (r *AngularObservableInputRule) getSuggestion(observableName string) string {
 	return fmt.Sprintf(`⚠️ Observable Input Issue Detected
 
 Problem:
@@ -245,7 +185,7 @@ Best Practices:
 }
 
 // calculateLineAndColumn calculates line and column numbers from character offset
-func (r *ObservableInputRule) calculateLineAndColumn(content string, offset int) (int, int) {
+func (r *AngularObservableInputRule) calculateLineAndColumn(content string, offset int) (int, int) {
 	// Count newlines up to the offset to get the line number
 	beforeOffset := content[:offset]
 	line := strings.Count(beforeOffset, "\n") + 1
@@ -263,7 +203,7 @@ func (r *ObservableInputRule) calculateLineAndColumn(content string, offset int)
 }
 
 // readFile reads the content of a file
-func (r *ObservableInputRule) readFile(filePath string) (string, error) {
+func (r *AngularObservableInputRule) readFile(filePath string) (string, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return "", err

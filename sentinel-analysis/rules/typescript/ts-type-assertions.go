@@ -10,7 +10,7 @@ import (
 
 // TypeAssertionRule checks for TypeScript type assertions
 type TypeAssertionRule struct {
-	patterns.BaseRule
+	*patterns.EnhancedBaseRule
 }
 
 // AssertionContext represents the context in which a type assertion is used
@@ -23,7 +23,7 @@ type AssertionContext struct {
 
 func CreateRuleTsTypeAssertions() patterns.Rule {
 	return &TypeAssertionRule{
-		BaseRule: patterns.NewBaseRule(
+		EnhancedBaseRule: patterns.NewEnhancedBaseRule(
 			"ts-type-assertion",
 			"[TypeScript] Type Assertion",
 			"Identifies potentially unsafe TypeScript type assertions and suggests safer alternatives",
@@ -33,15 +33,15 @@ func CreateRuleTsTypeAssertions() patterns.Rule {
 
 // Match implements the Rule interface
 func (r *TypeAssertionRule) Match(node map[string]interface{}, filePath string) []patterns.Match {
-	body, ok := helpers.GetProgramBody(node, filePath)
+	body, ok := r.GetProgramBody(node, filePath)
 	if !ok {
 		return nil
 	}
 
-	matches := helpers.ProcessASTNodes(body, filePath, 1000, func(node map[string]interface{}) []patterns.Match {
+	matches := r.ProcessASTNodes(body, filePath, 1000, func(node map[string]interface{}) []patterns.Match {
 		var nodeMatches []patterns.Match
 
-		if nodeType, ok := node["type"].(string); ok {
+		if nodeType := r.GetNodeType(node); nodeType != "" {
 			switch nodeType {
 			case "TSAsExpression":
 				if match := r.handleAsExpression(node, filePath); match != nil {
