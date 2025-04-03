@@ -22,7 +22,6 @@ type AssertionContext struct {
 }
 
 func CreateRuleTsTypeAssertions() patterns.Rule {
-	patterns.Debug("Creating TypeAssertionRule")
 	return &TypeAssertionRule{
 		BaseRule: patterns.NewBaseRule(
 			"ts-type-assertion",
@@ -58,7 +57,6 @@ func (r *TypeAssertionRule) Match(node map[string]interface{}, filePath string) 
 		return nodeMatches
 	})
 
-	patterns.Debug("Found %d matches in file %s", len(matches), filePath)
 	return matches
 }
 
@@ -158,8 +156,6 @@ func (r *TypeAssertionRule) handleAsExpression(node map[string]interface{}, file
 func (r *TypeAssertionRule) handleTypeAssertion(node map[string]interface{}, filePath string) *patterns.Match {
 	assertedType := helpers.ExtractTypeString(node["typeAnnotation"].(map[string]interface{}))
 	context := r.analyzeContext(node)
-
-	patterns.Debug("Found angle-bracket assertion to type '%s' in file %s", assertedType, filePath)
 
 	return helpers.CreateMatch(r, node, filePath,
 		fmt.Sprintf("Type assertion using angle-bracket syntax to type '%s' (consider using 'as' syntax instead)", assertedType),

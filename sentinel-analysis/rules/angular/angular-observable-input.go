@@ -16,7 +16,6 @@ type ObservableInputRule struct {
 
 // NewRule is the exported symbol that will be looked up by the plugin loader
 func CreateRuleAngularObservableInput() patterns.Rule {
-	patterns.Debug("Creating ObservableInputRule")
 	return &ObservableInputRule{
 		BaseRule: patterns.NewBaseRule(
 			"angular-observable-input",
@@ -28,8 +27,6 @@ func CreateRuleAngularObservableInput() patterns.Rule {
 
 // Match implements the Rule interface
 func (r *ObservableInputRule) Match(node map[string]interface{}, filePath string) []patterns.Match {
-	patterns.Debug("=== Starting ObservableInputRule.Match for file: %s ===", filePath)
-
 	body, ok := helpers.GetProgramBody(node, filePath)
 	if !ok {
 		return nil
@@ -54,8 +51,6 @@ func (r *ObservableInputRule) Match(node map[string]interface{}, filePath string
 		return nodeMatches
 	})
 
-	patterns.Debug("=== Completed ObservableInputRule.Match for file: %s ===", filePath)
-	patterns.Debug("📊 Found %d total matches", len(matches))
 	return matches
 }
 
@@ -68,26 +63,18 @@ func (r *ObservableInputRule) handlePropertyDefinition(node map[string]interface
 		}
 	}
 
-	patterns.Debug("Analyzing property %s", propertyName)
-
 	isObservable := false
 	observableType := ""
 	isInputSignal := false
 	hasInputDecorator := r.hasInputDecorator(node)
 	hasAsyncPipe := false
 
-	patterns.Debug("Property initial state - Name: %s, isInputSignal: %v, isObservable: %v, hasInputDecorator: %v",
-		propertyName, isInputSignal, isObservable, hasInputDecorator)
-
 	// First check if it's an input signal
 	if value, ok := node["value"].(map[string]interface{}); ok {
-		patterns.Debug("Found value node for %s: %v", propertyName, value)
 		if callExpr, ok := value["type"].(string); ok && callExpr == "CallExpression" {
 			if callee, ok := value["callee"].(map[string]interface{}); ok {
 				if name, ok := callee["name"].(string); ok {
-					patterns.Debug("Found function name for %s: %s", propertyName, name)
 					if name == "input" {
-						patterns.Debug("Found input signal declaration for %s", propertyName)
 						isInputSignal = true
 						isObservable = true
 						observableType = "Observable"
@@ -104,7 +91,6 @@ func (r *ObservableInputRule) handlePropertyDefinition(node map[string]interface
 			if typeRef, ok := typeAnnotation["typeAnnotation"].(map[string]interface{}); ok {
 				if typeName, ok := typeRef["typeName"].(map[string]interface{}); ok {
 					if name, ok := typeName["name"].(string); ok {
-						patterns.Debug("Found type annotation for @Input: %s", name)
 						if name == "Observable" {
 							isObservable = true
 							observableType = name
@@ -119,7 +105,6 @@ func (r *ObservableInputRule) handlePropertyDefinition(node map[string]interface
 			if callExpr, ok := value["expression"].(map[string]interface{}); ok {
 				if callee, ok := callExpr["callee"].(map[string]interface{}); ok {
 					if name, ok := callee["name"].(string); ok {
-						patterns.Debug("Found value function for @Input: %s", name)
 						if name == "of" || name == "from" || name == "interval" || name == "timer" {
 							isObservable = true
 							observableType = "Observable"
@@ -129,9 +114,6 @@ func (r *ObservableInputRule) handlePropertyDefinition(node map[string]interface
 			}
 		}
 	}
-
-	patterns.Debug("Property analysis results - Name: %s, isInputSignal: %v, isObservable: %v, hasInputDecorator: %v",
-		propertyName, isInputSignal, isObservable, hasInputDecorator)
 
 	// Only return a match if we have either:
 	// 1. An input signal (which we've confirmed contains an Observable)

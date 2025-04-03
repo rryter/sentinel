@@ -79,10 +79,17 @@ type CacheEntry struct {
 
 // NewCrawler creates a new crawler instance
 func NewCrawler(config *utils.IndexerConfig, parser *oxc.Parser, rootDir string) *Crawler {
+	// Convert rootDir to absolute path
+	absRootDir, err := filepath.Abs(rootDir)
+	if err != nil {
+		patterns.Error("Failed to get absolute path for root directory: %v", err)
+		absRootDir = rootDir
+	}
+	
 	return &Crawler{
 		config:          config,
 		parser:          parser,
-		rootDir:         rootDir,
+		rootDir:         absRootDir,
 		excludePatterns: config.ExcludePatterns,
 		astCache: &ASTCache{
 			cache: make(map[string]CacheEntry),
@@ -92,33 +99,30 @@ func NewCrawler(config *utils.IndexerConfig, parser *oxc.Parser, rootDir string)
 
 // shouldExclude checks if a path should be excluded from analysis
 func (c *Crawler) shouldExclude(path string) bool {
-	patterns.Debug("Checking path for exclusion: %s", path)
+	// Convert path to absolute path for comparison
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
 	
-	// Check for node_modules directory using filepath
-	normalizedPath := filepath.ToSlash(path)
-	patterns.Debug("Normalized path: %s", normalizedPath)
-	
-	if strings.Contains(normalizedPath, "node_modules") {
-		patterns.Debug("Excluding path due to node_modules: %s", path)
+	// Check for node_modules directory
+	if strings.Contains(absPath, "node_modules") {
 		return true
 	}
 
 	// Check against exclude patterns from config
 	for _, pattern := range c.excludePatterns {
-		if strings.Contains(path, pattern) {
-			patterns.Debug("Excluding path due to pattern %s: %s", pattern, path)
+		if strings.Contains(absPath, pattern) {
 			return true
 		}
 	}
 
 	// Check for spec and stories files
-	baseName := filepath.Base(path)
+	baseName := filepath.Base(absPath)
 	if strings.HasSuffix(baseName, ".spec.ts") || strings.HasSuffix(baseName, ".stories.ts") {
-		patterns.Debug("Excluding path due to spec/stories file: %s", path)
 		return true
 	}
 
-	patterns.Debug("Path not excluded: %s", path)
 	return false
 }
 
@@ -284,9 +288,53 @@ func extractClassMembers(body map[string]interface{}) []map[string]interface{} {
 	return members
 }
 
+// isWithinTargetDir checks if a path is within the target directory
+func (c *Crawler) isWithinTargetDir(path string) bool {
+	// Convert both paths to absolute paths for comparison
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+	
+	// Check if the path starts with the root directory
+	return strings.HasPrefix(absPath, c.rootDir)
+}
+
+// resolveImportPath resolves an import path relative to the source file
+func (c *Crawler) resolveImportPath(importPath, sourceFile string) string {
+	// If it's an absolute path, check if it's within target directory
+	if strings.HasPrefix(importPath, "/") {
+		if c.isWithinTargetDir(importPath) {
+			return importPath
+		}
+		return ""
+	}
+
+	// For relative paths, resolve from the source file's directory
+	sourceDir := filepath.Dir(sourceFile)
+	resolvedPath := filepath.Join(sourceDir, importPath)
+	
+	// Clean the path to handle any ".." components
+	resolvedPath = filepath.Clean(resolvedPath)
+	
+	// Check if the resolved path is within target directory
+	if c.isWithinTargetDir(resolvedPath) {
+		return resolvedPath
+	}
+	
+	return ""
+}
+
 // CrawlDirectory crawls a directory for TypeScript files and analyzes them
 func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
-	patterns.Debug("Starting directory crawl from: %s", dir)
+	// Convert dir to absolute path
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path for target directory: %w", err)
+	}
+	
+	// Clear the cache at the start of each crawl
+	c.ClearCache()
 	
 	// Create channels for concurrent processing
 	filesChan := make(chan string, 100)           // Buffer channel for file paths
@@ -318,22 +366,41 @@ func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
 
 	// Walk directory and send files to workers
 	go func() {
-		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(absDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 
-			patterns.Debug("Found path during walk: %s", path)
-
-			// Skip excluded directories
-			if info.IsDir() && c.shouldExclude(path) {
-				patterns.Debug("Skipping excluded directory: %s", path)
+			// Ensure we're within the target directory
+			if !c.isWithinTargetDir(path) {
 				return filepath.SkipDir
+			}
+
+			// Skip excluded paths (both files and directories)
+			if c.shouldExclude(path) {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
+			// Handle symlinks
+			if info.Mode()&os.ModeSymlink != 0 {
+				if !c.config.FollowSymlinks {
+					return nil
+				}
+				// Resolve symlink and check if it's within target directory
+				realPath, err := filepath.EvalSymlinks(path)
+				if err != nil {
+					return nil
+				}
+				if !c.isWithinTargetDir(realPath) || c.shouldExclude(realPath) {
+					return filepath.SkipDir
+				}
 			}
 
 			// Only queue TypeScript files
 			if !info.IsDir() && c.isTypeScriptFile(path) {
-				patterns.Debug("Queueing TypeScript file: %s", path)
 				filesChan <- path
 			}
 
@@ -410,9 +477,13 @@ func (c *Crawler) processFile(filePath, baseDir string) (*models.SourceFile, err
 // worker processes files from the files channel
 func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis, errors chan<- error) {
 	for path := range files {
-		// Skip node_modules files
-		if strings.Contains(filepath.ToSlash(path), "node_modules") {
-			patterns.Debug("Worker skipping node_modules file: %s", path)
+		// Ensure we're within the target directory
+		if !c.isWithinTargetDir(path) {
+			continue
+		}
+
+		// Skip excluded files
+		if c.shouldExclude(path) {
 			continue
 		}
 
@@ -481,8 +552,13 @@ func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis
 						if nodeType == "ImportDeclaration" {
 							if source, ok := nodeMap["source"].(map[string]interface{}); ok {
 								if value, ok := source["value"].(string); ok {
+									// Resolve import path
+									resolvedPath := c.resolveImportPath(value, path)
+									if resolvedPath == "" || c.shouldExclude(resolvedPath) {
+										continue
+									}
 									imports = append(imports, models.ImportInfo{
-										Source:     value,
+										Source:     resolvedPath,
 										Specifiers: extractImportSpecifiers(nodeMap),
 									})
 								}

@@ -42,12 +42,13 @@
       "showLog": true
     },
     {
-      "type": "rdbg",
+      "name": "Connect to Uploader",
+      "type": "go",
       "request": "attach",
-      "name": "Attach to Rails",
-      "host": "backend",
-      "port": 1234,
-      "remoteWorkspaceRoot": "/app"
+      "mode": "remote",
+      "remotePath": "/app/cmd/uploader",
+      "port": 2345,
+      "host": "127.0.0.1"
     },
     {
       "type": "rdbg",

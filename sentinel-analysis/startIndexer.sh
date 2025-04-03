@@ -1,5 +1,5 @@
 # Set target directory and create output directory
-TARGET_DIR="/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding/"
+TARGET_DIR="/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding"
 OUTPUT_DIR="analysis"
 RULES_DIR="bin/rules"
 CACHE_FILE="$OUTPUT_DIR/ast-cache.json"

@@ -12,14 +12,14 @@ func CreateMatch(rule patterns.Rule, node map[string]interface{}, filePath strin
 	start, ok1 := node["start"].(float64)
 	end, ok2 := node["end"].(float64)
 	if !ok1 || !ok2 {
-		patterns.Debug("Invalid location information for node in file %s", filePath)
+		patterns.Debug("Invalid location information for node")
 		return nil
 	}
 
 	// Read file content for line/column calculation
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		patterns.Error("Error reading file %s: %v", filePath, err)
+		patterns.Error("Error reading file: %v", err)
 		return nil
 	}
 
@@ -48,7 +48,7 @@ func ProcessASTNodes(node interface{}, filePath string, maxDepth int, visitor fu
 		var nodeMatches []patterns.Match
 
 		if depth > maxDepth {
-			patterns.Debug("Maximum recursion depth reached while processing file: %s", filePath)
+			patterns.Debug("Maximum recursion depth reached")
 			return nodeMatches
 		}
 
@@ -84,14 +84,14 @@ func GetProgramBody(node map[string]interface{}, filePath string) ([]interface{}
 	// Get the program node
 	program, ok := node["program"].(map[string]interface{})
 	if !ok {
-		patterns.Debug("No program node found in AST for file: %s", filePath)
+		patterns.Debug("No program node found in AST")
 		return nil, false
 	}
 
 	// Get the body of the program
 	body, ok := program["body"].([]interface{})
 	if !ok {
-		patterns.Debug("No body found in program for file: %s", filePath)
+		patterns.Debug("No body found in program")
 		return nil, false
 	}
 

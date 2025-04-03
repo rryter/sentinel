@@ -116,12 +116,12 @@ func main() {
 		var astMap map[string]interface{}
 		astBytes, err := json.Marshal(file.AST)
 		if err != nil {
-			patterns.PrintWarning("Failed to marshal AST for %s: %v", file.RelativePath, err)
+			patterns.PrintWarning("Failed to marshal AST: %v", err)
 			continue
 		}
 		
 		if err := json.Unmarshal(astBytes, &astMap); err != nil {
-			patterns.PrintWarning("Failed to unmarshal AST for %s: %v", file.RelativePath, err)
+			patterns.PrintWarning("Failed to unmarshal AST: %v", err)
 			continue
 		}
 		
@@ -129,7 +129,7 @@ func main() {
 		astMap["filePath"] = file.Path
 		
 		if err := writeJSON(astPath, astMap); err != nil {
-			patterns.PrintWarning("Failed to write AST for %s: %v", file.RelativePath, err)
+			patterns.PrintWarning("Failed to write AST: %v", err)
 		}
 	}
 	patterns.Info("Debug: Writing ASTs to files took: %v", time.Since(startASTWrite))

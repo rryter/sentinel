@@ -15,10 +15,10 @@ type RouteInfo struct {
 }
 
 func main() {
-	// Use relative paths for directories
-	uploadDir := "uploads"
-	rulesDir := "bin/rules"
-	resultsDir := "results"
+	// Use absolute paths for directories
+	uploadDir := "/app/uploads"
+	rulesDir := "/app/bin/rules"
+	resultsDir := "/app/results"
 
 	// Ensure directories exist
 	for _, dir := range []string{uploadDir, rulesDir, resultsDir} {
@@ -36,7 +36,7 @@ func main() {
 
 	// Try to find the indexer binary in several locations
 	possibleLocations := []string{
-		"bin/indexer",         // relative path in bin
+		"/app/bin/indexer",         // absolute path in bin
 	}
 
 	var indexerPath string
@@ -58,7 +58,7 @@ func main() {
 	if indexerPath == "" {
 		log.Printf("Warning: Indexer binary not found in any of the expected locations. Analysis functionality may not work.")
 		// Use a default path anyway
-		indexerPath = "bin/indexer"
+		indexerPath = "/app/bin/indexer"
 	}
 
 	// Initialize the server

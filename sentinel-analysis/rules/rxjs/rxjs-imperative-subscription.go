@@ -34,7 +34,6 @@ func CreateRuleRxjsImperativeSubscription() patterns.Rule {
 
 // Match implements the Rule interface
 func (r *DirectSubscriptionRule) Match(node map[string]interface{}, filePath string) []patterns.Match {
-	patterns.Debug("=== Starting DirectSubscriptionRule.Match for file: %s ===", filePath)
 
 	body, ok := helpers.GetProgramBody(node, filePath)
 	if !ok {
@@ -49,18 +48,14 @@ func (r *DirectSubscriptionRule) Match(node map[string]interface{}, filePath str
 				if calleeType, ok := callee["type"].(string); ok && calleeType == "MemberExpression" {
 					if property, ok := callee["property"].(map[string]interface{}); ok {
 						if name, ok := property["name"].(string); ok && name == "subscribe" {
-							patterns.Debug("🎯 Found subscribe call in file %s", filePath)
 							// Check for assignments in the callback function
 							if args, ok := node["arguments"].([]interface{}); ok && len(args) > 0 {
 								// Get the first argument (callback function)
 								if callback, ok := args[0].(map[string]interface{}); ok {
 									if assignments := r.findAssignmentsInCallback(callback); len(assignments) > 0 {
-										patterns.Debug("✨ Found %d assignments in subscribe callback", len(assignments))
 										if match := r.createMatch(node, assignments, filePath); match != nil {
 											nodeMatches = append(nodeMatches, *match)
 										}
-									} else {
-										patterns.Debug("ℹ️ No assignments found in subscribe callback")
 									}
 								}
 							}
@@ -73,8 +68,6 @@ func (r *DirectSubscriptionRule) Match(node map[string]interface{}, filePath str
 		return nodeMatches
 	})
 
-	patterns.Debug("=== Completed DirectSubscriptionRule.Match for file: %s ===", filePath)
-	patterns.Debug("📊 Found %d total matches", len(matches))
 	return matches
 }
 

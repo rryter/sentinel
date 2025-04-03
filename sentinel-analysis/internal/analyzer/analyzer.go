@@ -294,7 +294,6 @@ func (a *Analyzer) AnalyzeASTFiles(astDir string) ([]AnalysisResult, error) {
 		if !info.IsDir() && strings.HasSuffix(path, ".ts.ast.json") {
 			// Skip node_modules files
 			if strings.Contains(filepath.ToSlash(path), "node_modules") {
-				patterns.Debug("Skipping node_modules file: %s", path)
 				return nil
 			}
 
@@ -327,25 +326,16 @@ func (a *Analyzer) AnalyzeASTFiles(astDir string) ([]AnalysisResult, error) {
 
 				// Skip node_modules files
 				if strings.Contains(filepath.ToSlash(sourceFilePath), "node_modules") {
-					patterns.Debug("Skipping node_modules file from AST: %s", sourceFilePath)
 					return
 				}
 
 				atomic.AddInt32(&fileCount, 1)
 				atomic.AddInt32(&analyzedFiles, 1)
 
-				patterns.Debug("Applying rules to file: %s", sourceFilePath)
-
 				// Apply all rules to the AST in a single pass
 				var matches []patterns.Match
 				for _, rule := range a.registry.GetAllRules() {
-					patterns.Debug("Applying rule %s (%s) to file %s", rule.Name(), rule.ID(), sourceFilePath)
 					ruleMatches := rule.Match(astNode, sourceFilePath)
-					if len(ruleMatches) == 0 {
-						patterns.Debug("✅ Rule %s found no issues in file %s", rule.Name(), sourceFilePath)
-					} else {
-						patterns.Debug("📊 Rule %s found %d matches in file %s", rule.Name(), len(ruleMatches), sourceFilePath)
-					}
 					matches = append(matches, ruleMatches...)
 				}
 
@@ -465,6 +455,8 @@ func (a *Analyzer) PrintSummary(results []AnalysisResult) {
 	totalMatches := 0
 	matchesByRule := make(map[string]int)
 
+	patterns.Info("=== Analysis Summary ===")
+	patterns.Info("Files analyzed: %d", len(results))
 	for _, result := range results {
 		for _, match := range result.Matches {
 			totalMatches++
@@ -472,10 +464,11 @@ func (a *Analyzer) PrintSummary(results []AnalysisResult) {
 		}
 	}
 
-	patterns.Info("Files analyzed: %d", len(results))
+	patterns.Info("\n=== Matches by Rule ===")
 	for ruleID, count := range matchesByRule {
 		if rule, exists := a.registry.GetRule(ruleID); exists {
-			fmt.Printf("%s: %d\n", rule.Name(), count)
+			patterns.Info("  %s: %d", rule.Name(), count)
 		}
 	}
+	patterns.Info("Total matches: %d", totalMatches)
 }

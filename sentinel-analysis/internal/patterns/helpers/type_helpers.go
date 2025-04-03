@@ -24,6 +24,17 @@ func ExtractTypeString(typeNode map[string]interface{}) string {
 	}
 
 	switch typeStr {
+	case "TSAsExpression":
+		// Handle type assertions (e.g., "value as Type")
+		if typeAnnotation, ok := typeNode["typeAnnotation"].(map[string]interface{}); ok {
+			return ExtractTypeString(typeAnnotation)
+		}
+	case "TSArrayType":
+		// Handle array types (e.g., "Type[]")
+		if elementType, ok := typeNode["elementType"].(map[string]interface{}); ok {
+			elementTypeStr := ExtractTypeString(elementType)
+			return elementTypeStr + "[]"
+		}
 	case "TSTypeReference":
 		if typeName, ok := typeNode["typeName"].(map[string]interface{}); ok {
 			if name, ok := typeName["name"].(string); ok {

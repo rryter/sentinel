@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"sentinel/indexing/internal/patterns"
 	"strings"
 )
 
@@ -23,7 +22,6 @@ func GetNodeLocation(node map[string]interface{}) Location {
 			}
 		}
 	}
-	patterns.Debug("Could not get location information from node")
 	return Location{}
 }
 
