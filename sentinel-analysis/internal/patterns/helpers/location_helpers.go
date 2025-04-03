@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"strings"
+	"sentinel/indexing/internal/patterns"
 )
 
 // Location represents a position in a file
@@ -25,20 +25,20 @@ func GetNodeLocation(node map[string]interface{}) Location {
 	return Location{}
 }
 
-// CalculateLineAndColumn calculates line and column numbers from character offset
-func CalculateLineAndColumn(content string, offset int) (int, int) {
-	// Count newlines up to the offset to get the line number
-	beforeOffset := content[:offset]
-	line := strings.Count(beforeOffset, "\n") + 1
-
-	// Find the last newline before offset to calculate column
-	lastNewline := strings.LastIndex(beforeOffset, "\n")
-	column := 0
-	if lastNewline == -1 {
-		column = offset + 1 // If no newline, column is just the offset + 1
-	} else {
-		column = offset - lastNewline // Column is the number of characters after the last newline
+// GetLocation extracts location information from a node
+func GetLocation(node map[string]interface{}) patterns.Location {
+	loc := patterns.Location{}
+	if start, ok := node["start"].(float64); ok {
+		loc.Start = int(start)
 	}
-
-	return line, column
+	if end, ok := node["end"].(float64); ok {
+		loc.End = int(end)
+	}
+	if line, ok := node["line"].(float64); ok {
+		loc.Line = int(line)
+	}
+	if col, ok := node["column"].(float64); ok {
+		loc.Column = int(col)
+	}
+	return loc
 }

@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+// CalculateLineAndColumn calculates the line and column number for a given position in a file
+func CalculateLineAndColumn(content string, position int) (int, int) {
+	lines := strings.Split(content[:position], "\n")
+	line := len(lines)
+	column := len(lines[len(lines)-1]) + 1
+	return line, column
+}
+
 // ProcessASTNodes traverses AST nodes recursively with a visitor function
 func ProcessASTNodes(node interface{}, filePath string, maxDepth int, visitor func(map[string]interface{}) []Match) []Match {
 	var processNode func(n interface{}, depth int) []Match
@@ -95,12 +103,4 @@ func CreateMatch(rule Rule, node map[string]interface{}, filePath string, descri
 		},
 		Metadata: metadata,
 	}
-}
-
-// CalculateLineAndColumn calculates line and column numbers from a file offset
-func CalculateLineAndColumn(content string, offset int) (int, int) {
-	lines := strings.Split(content[:offset], "\n")
-	line := len(lines)
-	column := len(lines[len(lines)-1]) + 1
-	return line, column
 } 

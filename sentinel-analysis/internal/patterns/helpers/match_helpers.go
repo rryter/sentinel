@@ -24,7 +24,7 @@ func CreateMatch(rule patterns.Rule, node map[string]interface{}, filePath strin
 	}
 
 	// Calculate line and column
-	line, column := CalculateLineAndColumn(string(content), int(start))
+	line, column := patterns.CalculateLineAndColumn(string(content), int(start))
 
 	return &patterns.Match{
 		RuleID:      rule.ID(),
@@ -96,4 +96,4 @@ func GetProgramBody(node map[string]interface{}, filePath string) ([]interface{}
 	}
 
 	return body, true
-}
+} 
