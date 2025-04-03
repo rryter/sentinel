@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"sentinel/indexing/internal/patterns"
+	"strings"
 )
 
 // TypeInfo represents information about a TypeScript type
@@ -80,6 +81,18 @@ func ExtractTypeString(typeNode map[string]interface{}) string {
 			if param, ok := params[0].(map[string]interface{}); ok {
 				return ExtractTypeString(param)
 			}
+		}
+	case "TSUnionType":
+		// Handle union types (e.g., "Type1 | Type2")
+		if types, ok := typeNode["types"].([]interface{}); ok {
+			var typeStrings []string
+			for _, t := range types {
+				if typeMap, ok := t.(map[string]interface{}); ok {
+					typeStr := ExtractTypeString(typeMap)
+					typeStrings = append(typeStrings, typeStr)
+				}
+			}
+			return strings.Join(typeStrings, " | ")
 		}
 	}
 
