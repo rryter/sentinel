@@ -390,7 +390,7 @@ func (s *Server) runAnalysis(jobID string) {
 
 	// Create a directory for the results if it doesn't exist
 	jobDir := filepath.Join(s.resultsDir, jobID)
-	if err := os.MkdirAll(jobDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(jobDir, 0777); err != nil {
 		s.updateJobWithError(jobID, fmt.Sprintf("Failed to create results directory: %s", err.Error()))
 		return
 	}

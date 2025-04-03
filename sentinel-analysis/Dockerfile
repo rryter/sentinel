@@ -7,15 +7,24 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Create non-root user
+RUN useradd -r -u 2000 -g root appuser
+
 # Create necessary directories
-RUN mkdir -p /app/uploads /app/results /app/bin
+RUN mkdir -p /app/uploads /app/results /app/bin /app/js
 
 # Copy the pre-built binaries
 COPY bin/ /app/bin/
 RUN chmod +x /app/bin/*
 
-# Clean results directory
-RUN rm -rf /app/results/*
+# Copy the JavaScript files
+COPY js/ /app/js/
+
+# Set permissions
+RUN chown -R appuser:root /app && \
+    chmod -R 777 /app
+
+USER appuser
 
 # Add debug environment variables
 ENV DEBUG=1
@@ -24,5 +33,4 @@ ENV LOG_LEVEL=debug
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-# Run with verbose output
 CMD ["/app/bin/uploader", "-v"]

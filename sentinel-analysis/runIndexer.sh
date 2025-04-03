@@ -43,8 +43,8 @@ echo -e "${GREEN}Build completed successfully${NC}"
 
 # Set target directory and create output directory
 TARGET_DIR="/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding"
-OUTPUT_DIR="analysis"
-RULES_DIR="bin/rules"
+OUTPUT_DIR="/home/rryter/projects/sentinel/sentinel-analysis/analysis"
+RULES_DIR="/home/rryter/projects/sentinel/sentinel-analysis/bin/rules"
 CACHE_FILE="$OUTPUT_DIR/ast-cache.json"
 
 # Build the indexer command with debug flag if enabled

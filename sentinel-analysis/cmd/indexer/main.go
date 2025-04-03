@@ -86,6 +86,9 @@ func main() {
 
 	// Crawl directory and generate ASTs
 	startCrawl := time.Now()
+
+	patterns.Info("Debug: Cache dir %v", *cacheFile)
+
 	files, err := crawler.CrawlDirectory(absDir)
 	if err != nil {
 		patterns.PrintError("Failed to analyze directory: %v", err)
@@ -103,7 +106,7 @@ func main() {
 	// Create ASTs directory and write ASTs
 	startASTWrite := time.Now()
 	astsDir := filepath.Join(*outDir, "asts")
-	if err := os.MkdirAll(astsDir, 0755); err != nil {
+	if err := os.MkdirAll(astsDir, 0777); err != nil {
 		patterns.PrintError("Failed to create ASTs directory: %v", err)
 		os.Exit(1)
 	}

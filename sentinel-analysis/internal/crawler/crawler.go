@@ -333,6 +333,7 @@ func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
 		return nil, fmt.Errorf("failed to get absolute path for target directory: %w", err)
 	}
 	
+	patterns.Info("Debug: clearCache %v", absDir)
 	// Clear the cache at the start of each crawl
 	c.ClearCache()
 	
@@ -347,6 +348,7 @@ func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
 	workerDone := make(chan struct{})
 	activeWorkers := numWorkers
 
+	patterns.Info("Debug::::: start workers %v", numWorkers)
 	// Start workers
 	for i := 0; i < numWorkers; i++ {
 		go func() {
@@ -366,41 +368,50 @@ func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
 
 	// Walk directory and send files to workers
 	go func() {
+		patterns.Info("Debug: starting directory walk")
 		err := filepath.Walk(absDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
+				patterns.Error("Debug: error walking path %s: %v", path, err)
 				return err
 			}
 
 			// Ensure we're within the target directory
 			if !c.isWithinTargetDir(path) {
+				patterns.Info("Debug: skipping path %s (outside target directory)", path)
 				return filepath.SkipDir
 			}
 
 			// Skip excluded paths (both files and directories)
 			if c.shouldExclude(path) {
 				if info.IsDir() {
+					patterns.Info("Debug: skipping directory %s (excluded)", path)
 					return filepath.SkipDir
 				}
+				patterns.Info("Debug: skipping file %s (excluded)", path)
 				return nil
 			}
 
 			// Handle symlinks
 			if info.Mode()&os.ModeSymlink != 0 {
 				if !c.config.FollowSymlinks {
+					patterns.Info("Debug: skipping symlink %s (symlinks disabled)", path)
 					return nil
 				}
 				// Resolve symlink and check if it's within target directory
 				realPath, err := filepath.EvalSymlinks(path)
 				if err != nil {
+					patterns.Error("Debug: failed to resolve symlink %s: %v", path, err)
 					return nil
 				}
 				if !c.isWithinTargetDir(realPath) || c.shouldExclude(realPath) {
+					patterns.Info("Debug: skipping symlink %s (resolved path excluded)", path)
 					return filepath.SkipDir
 				}
 			}
 
 			// Only queue TypeScript files
 			if !info.IsDir() && c.isTypeScriptFile(path) {
+				patterns.Info("Debug: queueing TypeScript file %s", path)
 				filesChan <- path
 			}
 
@@ -408,9 +419,11 @@ func (c *Crawler) CrawlDirectory(dir string) ([]models.FileAnalysis, error) {
 		})
 
 		if err != nil {
+			patterns.Error("Debug: directory walk failed: %v", err)
 			errorsChan <- fmt.Errorf("failed to walk directory: %w", err)
 		}
 
+		patterns.Info("Debug: directory walk completed")
 		close(filesChan) // Signal that no more files will be sent
 	}()
 
@@ -476,20 +489,25 @@ func (c *Crawler) processFile(filePath, baseDir string) (*models.SourceFile, err
 
 // worker processes files from the files channel
 func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis, errors chan<- error) {
+	patterns.Info("Debug: worker started")
 	for path := range files {
+		patterns.Info("Debug: worker received path %v", path)
 		// Ensure we're within the target directory
 		if !c.isWithinTargetDir(path) {
+			patterns.Info("Debug: path %v is not within target directory", path)
 			continue
 		}
 
 		// Skip excluded files
 		if c.shouldExclude(path) {
+			patterns.Info("Debug: path %v is excluded", path)
 			continue
 		}
 
 		// Get file info for modification time
 		info, err := os.Stat(path)
 		if err != nil {
+			patterns.Error("Debug: failed to stat file %s: %v", path, err)
 			errors <- fmt.Errorf("failed to stat file %s: %w", path, err)
 			continue
 		}
@@ -499,20 +517,25 @@ func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis
 		c.astCache.mu.RLock()
 		if entry, exists := c.astCache.cache[path]; exists && entry.ModTime.Equal(info.ModTime()) {
 			result = entry.AST
+			patterns.Info("Debug: using cached AST for %v", path)
 		}
 		c.astCache.mu.RUnlock()
 
 		if result == nil {
+			patterns.Info("Debug: cache miss for %v, reading file", path)
 			// Cache miss or outdated - read and parse file
 			code, err := os.ReadFile(path)
 			if err != nil {
+				patterns.Error("Debug: failed to read file %s: %v", path, err)
 				errors <- fmt.Errorf("failed to read file %s: %w", path, err)
 				continue
 			}
 
 			// Parse file
+			patterns.Info("Debug: parsing file %v", path)
 			result, err = c.parser.Parse(path, string(code))
 			if err != nil {
+				patterns.Error("Debug: failed to parse file %s: %v", path, err)
 				errors <- fmt.Errorf("failed to parse file %s: %w", path, err)
 				continue
 			}
@@ -524,10 +547,12 @@ func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis
 				AST:     result,
 			}
 			c.astCache.mu.Unlock()
+			patterns.Info("Debug: cached AST for %v", path)
 		}
 
 		// Skip files that failed to parse
 		if !result.Success {
+			patterns.Info("Debug: parsing failed for %v", path)
 			continue
 		}
 
@@ -538,6 +563,7 @@ func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis
 		}
 
 		// Extract declarations, imports, and exports
+		patterns.Info("Debug: extracting declarations for %v", path)
 		declarations := c.extractDeclarations(result.AST)
 		imports := make([]models.ImportInfo, 0)
 		exports := make([]models.ExportInfo, 0)
@@ -608,8 +634,11 @@ func (c *Crawler) worker(files <-chan string, results chan<- models.FileAnalysis
 			Declarations: declarations,
 		}
 
+		patterns.Info("Debug: sending analysis for %v", path)
 		results <- analysis
+		patterns.Info("Debug: analysis sent for %v", path)
 	}
+	patterns.Info("Debug: worker finished")
 }
 
 // extractImportSpecifiers extracts import specifiers from an import declaration

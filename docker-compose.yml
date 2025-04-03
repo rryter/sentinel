@@ -122,14 +122,15 @@ services:
       - "2345:2345" # Uploader debugger
       - "2346:2346" # Indexer debugger
     volumes:
-      - ./results:/app/results
-      - ./uploads:/app/uploads
-      - /home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding:/target
+      - analysis_results:/app/results:rw
+      - ${PWD}/uploads:/app/uploads:rw
+      - /home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding:/target:ro
       - go-modules:/go/pkg/mod
     environment:
       - REDIS_URL=redis://redis:6379
       - RULES_DIR=/app/bin/rules
       - TARGET_DIR=/target
+      - SENTINEL_LOG_LEVEL=DEBUG
     depends_on:
       redis:
         condition: service_healthy
