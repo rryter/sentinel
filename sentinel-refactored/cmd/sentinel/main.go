@@ -42,6 +42,10 @@ func main() {
 	logLevelFlag := flag.String("log-level", "", "Set log level (debug, info, warn, error) (overrides config file)")
 	followSymlinksFlag := flag.Bool("follow-symlinks", config.DefaultFollowSymlinks, "Follow symbolic links (overrides config file if set)")
 	debugFlag := flag.Bool("debug", false, "Enable debug logging (shortcut for --log-level=debug, overrides other levels)")
+	// Add cache-related flags
+	useCacheFlag := flag.Bool("use-cache", config.DefaultUseCache, "Enable caching to speed up repeated analyses (overrides config file if set)")
+	cacheDirFlag := flag.String("cache-dir", "", "Directory to store cache files (overrides config file)")
+	clearCacheFlag := flag.Bool("clear-cache", false, "Clear the cache before running")
 	flag.Parse()
 
 	// 2. Load config from file
@@ -61,16 +65,28 @@ func main() {
 	if *outputDirFlag != "" {
 		cfg.OutputDir = *outputDirFlag
 	}
-	// Check if follow-symlinks was explicitly set on the command line
-	// This requires checking if the flag value differs from its default
+	if *cacheDirFlag != "" {
+		cfg.CacheDir = *cacheDirFlag
+	}
+	
+	// Check if flags were explicitly set on the command line
 	followSymlinksIsSet := false
+	useCacheIsSet := false
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == "follow-symlinks" {
 			followSymlinksIsSet = true
 		}
+		if f.Name == "use-cache" {
+			useCacheIsSet = true
+		}
 	})
+	
 	if followSymlinksIsSet {
 		cfg.FollowSymlinks = *followSymlinksFlag
+	}
+	
+	if useCacheIsSet {
+		cfg.UseCache = *useCacheFlag
 	}
 	
 	if *logLevelFlag != "" {
@@ -114,8 +130,13 @@ func main() {
 		customlog.Fatalf("Failed to initialize crawler: %v", err)
 	}
 
-	// Initialize Analyzer
-	analyzer, err := analysis.NewAnalyzer(psr, registry)
+	// Initialize Analyzer with cache options from config
+	analyzerOpts := analysis.AnalyzerOptions{
+		UseCache:   cfg.UseCache,
+		CacheDir:   cfg.CacheDir,
+		CleanCache: *clearCacheFlag,
+	}
+	analyzer, err := analysis.NewAnalyzer(psr, registry, analyzerOpts)
 	if err != nil {
 		customlog.Fatalf("Failed to initialize analyzer: %v", err)
 	}
@@ -142,8 +163,12 @@ func main() {
 	
 	// Debug the results
 	for i, result := range results {
-		customlog.Debugf("Result %d: File=%s, Matches=%d, Error=%v", 
-			i, result.FilePath, len(result.Matches), result.Error)
+		cacheStatus := ""
+		if result.FromCache {
+			cacheStatus = " (from cache)"
+		}
+		customlog.Debugf("Result %d: File=%s, Matches=%d, Error=%v%s", 
+			i, result.FilePath, len(result.Matches), result.Error, cacheStatus)
 		for j, match := range result.Matches {
 			customlog.Debugf("  Match %d: RuleID=%s, Message=%s", 
 				j, match.RuleID, match.Message)
@@ -189,8 +214,12 @@ func main() {
 type AggregateResult struct {
 	TotalFilesAnalyzed int                                 `json:"totalFilesAnalyzed"`
 	TotalMatchesFound  int                                 `json:"totalMatchesFound"`
-	MatchesByRuleID    map[string][]rule_interface.Match `json:"matchesByRuleId"`
+	MatchesByRuleID    map[string][]rule_interface.Match   `json:"matchesByRuleId"`
 	FilesWithErrors    []string                            `json:"filesWithErrors"`
+	// Cache information
+	CacheEnabled       bool                                `json:"cacheEnabled"`
+	FilesFromCache     int                                 `json:"filesFromCache,omitempty"`
+	CacheHitRate       float64                             `json:"cacheHitRate,omitempty"`
 }
 
 // aggregateResults processes the raw analysis results into a structured summary.
@@ -199,16 +228,31 @@ func aggregateResults(results []analysis.FileAnalysisResult) AggregateResult {
 		TotalFilesAnalyzed: len(results),
 		MatchesByRuleID:    make(map[string][]rule_interface.Match),
 		FilesWithErrors:    make([]string, 0),
+		CacheEnabled:       false,
+		FilesFromCache:     0,
 	}
+	
+	cacheHits := 0
 	for _, res := range results {
 		if res.Error != nil {
 			agg.FilesWithErrors = append(agg.FilesWithErrors, res.FilePath)
+		}
+		if res.FromCache {
+			cacheHits++
+			agg.CacheEnabled = true
 		}
 		agg.TotalMatchesFound += len(res.Matches)
 		for _, match := range res.Matches {
 			agg.MatchesByRuleID[match.RuleID] = append(agg.MatchesByRuleID[match.RuleID], match)
 		}
 	}
+	
+	// Set cache information
+	agg.FilesFromCache = cacheHits
+	if agg.TotalFilesAnalyzed > 0 {
+		agg.CacheHitRate = float64(cacheHits) / float64(agg.TotalFilesAnalyzed) * 100.0
+	}
+	
 	return agg
 }
 
@@ -220,6 +264,12 @@ func printSummary(agg AggregateResult) {
 	log.Println(strings.Repeat("=", 40))
 	customlog.Infof("Files Analyzed: %d", agg.TotalFilesAnalyzed)
 	customlog.Infof("Total Matches Found: %d", agg.TotalMatchesFound)
+	
+	// Print cache information if enabled
+	if agg.CacheEnabled {
+		customlog.Infof("Cache Utilization: %.1f%% (%d/%d files from cache)", 
+			agg.CacheHitRate, agg.FilesFromCache, agg.TotalFilesAnalyzed)
+	}
 
 	if len(agg.MatchesByRuleID) > 0 {
 		log.Println("\nMatches by Rule:")

@@ -1,0 +1,27 @@
+# Sentinel Example Configuration File
+# Save this as sentinel.yaml to use with the application
+
+# Base directories
+targetDirectory: "."                  # Directory to analyze
+rulesDirectory: "rules-definitions"   # Directory containing rule plugins
+outputDirectory: "analysis_output"    # Directory to save analysis results
+
+# File traversal options
+followSymlinks: false                 # Whether to follow symbolic links during analysis
+excludePatterns:                      # Glob patterns to exclude from analysis
+  - "node_modules/**"
+  - ".git/**"
+  - "dist/**"
+  - "build/**"
+excludeSuffixes:                      # File extensions or suffixes to exclude
+  - ".d.ts"
+  - ".min.js"
+  - ".spec.ts"
+  - ".test.ts"
+
+# Logging options
+logLevel: "info"                      # Log level: debug, info, warn, error
+
+# Cache options - improves performance for repeated analyses
+useCache: true                        # Enable/disable caching (default: true)
+cacheDirectory: ".sentinel-cache"     # Directory to store cache files 

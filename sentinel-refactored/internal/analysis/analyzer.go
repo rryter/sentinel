@@ -3,9 +3,12 @@ package analysis
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
+	"sentinel-refactored/internal/cache"
 	"sentinel-refactored/internal/parser"
 	"sentinel-refactored/internal/rules"
 	"sentinel-refactored/internal/worker"
@@ -20,22 +23,74 @@ type BatchParser interface {
 
 // Analyzer orchestrates the code analysis process.
 type Analyzer struct {
-	parser   parser.Parser
-	registry *rules.RuleRegistry
+	parser    parser.Parser
+	registry  *rules.RuleRegistry
+	cache     *cache.ResultCache
+	cacheDir  string
+	useCache  bool
+	cacheHits int
+}
+
+// AnalyzerOptions provides configuration options for the Analyzer
+type AnalyzerOptions struct {
+	UseCache  bool
+	CacheDir  string
+	CleanCache bool
+}
+
+// DefaultAnalyzerOptions returns the default options
+func DefaultAnalyzerOptions() AnalyzerOptions {
+	return AnalyzerOptions{
+		UseCache:   true,
+		CacheDir:   ".sentinel-cache",
+		CleanCache: false,
+	}
 }
 
 // NewAnalyzer creates a new Analyzer.
-func NewAnalyzer(p parser.Parser, r *rules.RuleRegistry) (*Analyzer, error) {
+func NewAnalyzer(p parser.Parser, r *rules.RuleRegistry, opts ...AnalyzerOptions) (*Analyzer, error) {
 	if p == nil {
 		return nil, fmt.Errorf("analyzer: parser cannot be nil")
 	}
 	if r == nil {
 		return nil, fmt.Errorf("analyzer: rule registry cannot be nil")
 	}
-	return &Analyzer{
+
+	// Apply options
+	options := DefaultAnalyzerOptions()
+	if len(opts) > 0 {
+		options = opts[0]
+	}
+
+	analyzer := &Analyzer{
 		parser:   p,
 		registry: r,
-	}, nil
+		useCache: options.UseCache,
+		cacheDir: options.CacheDir,
+	}
+
+	// Initialize cache if enabled
+	if options.UseCache {
+		absPath, err := filepath.Abs(options.CacheDir)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get absolute path for cache directory: %w", err)
+		}
+		
+		customlog.Debugf("Initializing result cache in: %s", absPath)
+		c, err := cache.NewResultCache(absPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize cache: %w", err)
+		}
+		analyzer.cache = c
+		
+		// Clean cache if requested
+		if options.CleanCache {
+			removed := c.CleanupOldEntries()
+			customlog.Infof("Cleaned up %d stale cache entries", removed)
+		}
+	}
+
+	return analyzer, nil
 }
 
 // AnalysisTaskData holds the data for a single file analysis task.
@@ -50,14 +105,69 @@ type FileAnalysisResult struct {
 	FilePath string
 	Matches  []rule_interface.Match
 	Error    error // Error encountered during analysis of this specific file
+	FromCache bool // Whether this result was retrieved from cache
 }
 
 // AnalyzeFiles takes a list of file paths, parses them, and applies all registered rules.
 // It uses a worker pool to process files in parallel and batch parsing when available.
 func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error) {
+	startTime := time.Now()
+	a.cacheHits = 0
+	
 	numFiles := len(filePaths)
 	if numFiles == 0 {
 		return []FileAnalysisResult{}, nil
+	}
+
+	// Filter files based on cache if enabled
+	filesToProcess := filePaths
+	var cachedResults []FileAnalysisResult
+	
+	if a.useCache && a.cache != nil {
+		filesToProcess = make([]string, 0, numFiles)
+		
+		// Check which files need processing
+		for _, path := range filePaths {
+			changed, err := a.cache.IsFileChanged(path)
+			if err != nil {
+				customlog.Warnf("Error checking cache for %s: %v", path, err)
+				filesToProcess = append(filesToProcess, path)
+				continue
+			}
+			
+			if !changed {
+				// Try to get cached AST
+				ast, found, err := a.cache.GetASTResult(path)
+				if err != nil {
+					customlog.Warnf("Error retrieving cached AST for %s: %v", path, err)
+					filesToProcess = append(filesToProcess, path)
+				} else if found {
+					// Read content for rule checking
+					content, err := os.ReadFile(path)
+					if err != nil {
+						customlog.Warnf("Error reading file for cached analysis %s: %v", path, err)
+						filesToProcess = append(filesToProcess, path)
+					} else {
+						// Apply rules to cached AST
+						result := a.analyzeWithPreParsedAST(path, string(content), ast)
+						result.FromCache = true
+						cachedResults = append(cachedResults, result)
+						a.cacheHits++
+					}
+				} else {
+					filesToProcess = append(filesToProcess, path)
+				}
+			} else {
+				filesToProcess = append(filesToProcess, path)
+			}
+		}
+		
+		customlog.Infof("Using %d cached results, need to process %d files", a.cacheHits, len(filesToProcess))
+	}
+	
+	if len(filesToProcess) == 0 {
+		customlog.Infof("All %d files loaded from cache, no parsing needed", len(cachedResults))
+		return cachedResults, nil
 	}
 
 	// Check if parser supports batch processing
@@ -69,13 +179,38 @@ func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error
 		numWorkers = 8
 	}
 
+	var newResults []FileAnalysisResult
+	var err error
+	
 	if supportsBatch {
-		customlog.Infof("Starting analysis of %d files with batch parsing...", numFiles)
-		return a.analyzeWithBatchParser(filePaths, batchParser, numWorkers)
+		customlog.Infof("Starting analysis of %d files with batch parsing...", len(filesToProcess))
+		newResults, err = a.analyzeWithBatchParser(filesToProcess, batchParser, numWorkers)
+	} else {
+		customlog.Infof("Starting analysis of %d files with %d workers...", len(filesToProcess), numWorkers)
+		newResults, err = a.analyzeWithWorkerPool(filesToProcess, numWorkers)
 	}
-
-	customlog.Infof("Starting analysis of %d files with %d workers...", numFiles, numWorkers)
-	return a.analyzeWithWorkerPool(filePaths, numWorkers)
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	// Save cache if enabled
+	if a.useCache && a.cache != nil {
+		if err := a.cache.Save(); err != nil {
+			customlog.Warnf("Failed to save cache: %v", err)
+		} else {
+			customlog.Debugf("Cache saved successfully")
+		}
+	}
+	
+	// Combine cached and new results
+	allResults := append(cachedResults, newResults...)
+	
+	elapsedTime := time.Since(startTime)
+	customlog.Infof("Analysis completed in %v (%d files, %d from cache)", 
+		elapsedTime, len(allResults), a.cacheHits)
+	
+	return allResults, nil
 }
 
 // analyzeWithBatchParser uses the batch parsing capability for better performance
@@ -125,6 +260,15 @@ func (a *Analyzer) analyzeWithBatchParser(filePaths []string, batchParser BatchP
 	}
 
 	customlog.Debugf("Batch parsed %d files", len(astMap))
+	
+	// Store ASTs in cache if enabled
+	if a.useCache && a.cache != nil {
+		for path, ast := range astMap {
+			if err := a.cache.StoreASTResult(path, ast); err != nil {
+				customlog.Warnf("Failed to cache AST for %s: %v", path, err)
+			}
+		}
+	}
 
 	// 3. Analyze files using the worker pool with pre-parsed ASTs
 	pool := worker.NewPool(numWorkers)
@@ -326,6 +470,13 @@ func (a *Analyzer) analyzeSingleFile(filePath string) FileAnalysisResult {
 	if err != nil {
 		result.Error = fmt.Errorf("failed to parse file: %w", err)
 		return result
+	}
+	
+	// Store AST in cache if enabled
+	if a.useCache && a.cache != nil && err == nil {
+		if err := a.cache.StoreASTResult(filePath, ast); err != nil {
+			customlog.Warnf("Failed to cache AST for %s: %v", filePath, err)
+		}
 	}
 
 	// 3. Apply all registered rules

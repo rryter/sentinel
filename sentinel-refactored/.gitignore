@@ -1,4 +1,5 @@
 node_modules
+.sentinel-cache
 # Rust-related
 /target/
 **/*.rs.bk

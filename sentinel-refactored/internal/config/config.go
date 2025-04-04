@@ -14,6 +14,8 @@ const (
 	DefaultTargetDir     = "."
 	DefaultConfigFile    = "sentinel.yaml"
 	DefaultFollowSymlinks = false
+	DefaultCacheDir      = ".sentinel-cache"
+	DefaultUseCache      = true
 )
 
 // Config defines the application's configuration structure.
@@ -25,6 +27,9 @@ type Config struct {
 	ExcludePatterns []string `yaml:"excludePatterns,omitempty"`
 	ExcludeSuffixes []string `yaml:"excludeSuffixes,omitempty"`
 	LogLevel       string   `yaml:"logLevel,omitempty"` // e.g., "debug", "info", "warn"
+	// Cache options
+	UseCache       bool     `yaml:"useCache,omitempty"`
+	CacheDir       string   `yaml:"cacheDirectory,omitempty"`
 	// Add other configuration fields as needed
 }
 
@@ -38,6 +43,9 @@ func Load(configPath string) (*Config, error) {
 		OutputDir:      DefaultOutputDir,
 		FollowSymlinks: DefaultFollowSymlinks,
 		LogLevel:       "info", // Default log level string
+		// Cache defaults
+		UseCache:       DefaultUseCache,
+		CacheDir:       DefaultCacheDir,
 		// Default exclude patterns/suffixes could be set here or taken from filesystem package
 	}
 

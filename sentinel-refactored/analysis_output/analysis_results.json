@@ -2,5 +2,8 @@
   "totalFilesAnalyzed": 117,
   "totalMatchesFound": 0,
   "matchesByRuleId": {},
-  "filesWithErrors": []
+  "filesWithErrors": [],
+  "cacheEnabled": true,
+  "filesFromCache": 117,
+  "cacheHitRate": 100
 }
