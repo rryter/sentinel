@@ -1,7 +1,12 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::fs;
 use std::time::{Duration, Instant};
 use anyhow::Result;
 use walkdir::WalkDir;
+// Add imports for oxc
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 
 pub mod scanner;
 pub mod metrics;
@@ -98,26 +103,89 @@ impl TypeScriptAnalyzer {
         println!("Found {} TypeScript files to analyze", scan_result.files.len());
         
         if self.verbose {
-            // Additional verbose information can remain here
+            println!("Starting parsing and analysis...");
         }
         
-        // Now parse and analyze each file
+        // Create results directory
+        let results_dir = PathBuf::from("analysis_results");
+        if !results_dir.exists() {
+            if let Err(e) = fs::create_dir_all(&results_dir) {
+                eprintln!("Warning: Failed to create results directory: {}", e);
+            } else if self.verbose {
+                println!("Created results directory: {}", results_dir.display());
+            }
+        }
+        
+        // Timing for parse phase
         let parse_start = Instant::now();
         
+        // Start the overall analysis timer
         let analysis_start = Instant::now();
         
+        let mut parsed_count = 0;
+        let mut error_count = 0;
+        
         for file_path in &scan_result.files {
+            // Create a path object for the current file
+            let file_path_obj = Path::new(file_path);
+            
             match std::fs::read_to_string(file_path) {
-                Ok(_content) => {
-                    // Simple string-based analysis for now
+                Ok(content) => {
+                    // Create a new allocator for each file to avoid memory issues with large codebases
+                    let allocator = Allocator::default();
+                    
+                    // Determine source type from file extension
+                    let source_type = SourceType::from_path(file_path_obj).unwrap_or_default();
+                    
+                    // Parse the file
+                    let parser_result = Parser::new(&allocator, &content, source_type).parse();
+                    
+                    // Handle parsing errors
+                    if !parser_result.errors.is_empty() {
+                        error_count += 1;
+                        if self.verbose {
+                            println!("Errors parsing file: {}", file_path);
+                            for error in &parser_result.errors {
+                                println!("  - {:?}", error);
+                            }
+                        }
+                    } else {
+                        parsed_count += 1;
+                    }
+                    
+                    // Save the AST as JSON
+                    if let Some(file_name) = file_path_obj.file_name() {
+                        let mut output_path = results_dir.clone();
+                        output_path.push(file_name);
+                        output_path.set_extension("json");
+                        
+                        // Use built-in method to create JSON
+                        let ast_json = parser_result.program.to_pretty_estree_ts_json();
+                        
+                        // Write to file
+                        if let Err(e) = fs::write(&output_path, ast_json) {
+                            if self.verbose {
+                                eprintln!("Error writing AST to {}: {}", output_path.display(), e);
+                            }
+                        } else if self.verbose {
+                            println!("Saved AST to {}", output_path.display());
+                        }
+                    }
                 }
-                Err(_e) => {
+                Err(e) => {
+                    error_count += 1;
+                    if self.verbose {
+                        println!("Error reading file {}: {}", file_path, e);
+                    }
                 }
             }
         }
         
-        let analysis_duration = analysis_start.elapsed();
         let parse_duration = parse_start.elapsed();
+        let analysis_duration = analysis_start.elapsed();
+        
+        println!("Successfully parsed {} files ({} errors)", parsed_count, error_count);
+        println!("Parse time: {:?}", parse_duration);
         
         Ok(AnalysisResult {
             scan_result,
