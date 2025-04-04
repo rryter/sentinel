@@ -14,6 +14,16 @@ import (
 	customlog "sentinel-refactored/pkg/log"
 )
 
+// RuleMatch stores essential information about a rule match for caching.
+type RuleMatch struct {
+	RuleID   string `json:"ruleId"`
+	FilePath string `json:"filePath"` // Keep FilePath for potential cross-file analysis context later?
+	Message  string `json:"message"`
+	Line     int    `json:"line"`
+	Column   int    `json:"column"`
+	Severity int    `json:"severity"` // Use int for simpler JSON handling
+}
+
 // FileInfo contains metadata about a file that's been cached
 type FileInfo struct {
 	Path           string    `json:"path"`
@@ -23,6 +33,7 @@ type FileInfo struct {
 	LastAnalyzed   time.Time `json:"lastAnalyzed"`
 	ASTCacheKey    string    `json:"astCacheKey,omitempty"` // Reference to the cache file containing the AST
 	DirCacheKey    string    `json:"dirCacheKey,omitempty"` // Directory-based cache key
+	HasRuleResults bool      `json:"hasRuleResults"`
 }
 
 // CacheIndex represents the main cache index file
@@ -40,6 +51,7 @@ type DirectoryCache struct {
 	DirectoryPath string                        `json:"directoryPath"`
 	LastUpdated   time.Time                     `json:"lastUpdated"`
 	ASTs          map[string]map[string]interface{} `json:"asts"` // filename -> AST
+	RuleResults   map[string][]RuleMatch          `json:"ruleResults"`
 }
 
 // ResultCache manages caching of file analysis results
@@ -253,6 +265,7 @@ func (c *ResultCache) loadDirectoryCache(dirPath string) (*DirectoryCache, error
 			DirectoryPath: dirPath,
 			LastUpdated:   time.Now(),
 			ASTs:          make(map[string]map[string]interface{}),
+			RuleResults:   make(map[string][]RuleMatch),
 		}
 		c.dirCaches[dirPath] = cache
 		return cache, nil
@@ -267,6 +280,7 @@ func (c *ResultCache) loadDirectoryCache(dirPath string) (*DirectoryCache, error
 			DirectoryPath: dirPath,
 			LastUpdated:   time.Now(),
 			ASTs:          make(map[string]map[string]interface{}),
+			RuleResults:   make(map[string][]RuleMatch),
 		}
 		c.dirCaches[dirPath] = cache
 		return cache, nil
@@ -341,6 +355,7 @@ func (c *ResultCache) StoreASTResult(filePath string, ast map[string]interface{}
 		ContentHash:   fileHash,
 		LastAnalyzed:  time.Now(),
 		DirCacheKey:   dirCacheKey,
+		HasRuleResults: false,
 	}
 
 	c.hasChanges = true
@@ -438,4 +453,122 @@ func hashFile(filePath string) (string, error) {
 	}
 
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// GetRuleResults retrieves cached rule match results for a file
+func (c *ResultCache) GetRuleResults(filePath string) ([]RuleMatch, bool, error) {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	fileInfo, exists := c.index.Files[filePath]
+	if !exists {
+		return nil, false, nil // File not indexed
+	}
+
+	// *** Crucial Check: If HasRuleResults is false, we know there's nothing cached ***
+	if !fileInfo.HasRuleResults {
+		return nil, false, nil 
+	}
+
+	// Get directory path
+	dirPath := filepath.Dir(filePath)
+	
+	// Quick checks before loading directory cache
+	dirCacheKey, hasDirCache := c.index.Directories[dirPath]
+	if !hasDirCache || fileInfo.DirCacheKey == "" || fileInfo.DirCacheKey != dirCacheKey {
+		// Mismatch or missing key, cache is invalid for this file's rule results
+		// Set HasRuleResults to false to force reprocessing next time? Maybe too aggressive.
+		// For now, just return not found.
+		return nil, false, nil 
+	}
+
+	// Load directory cache (from memory first, then disk)
+	dirCache, err := c.loadDirectoryCache(dirPath) // Use the existing optimized loadDirectoryCache
+	if err != nil {
+		// Log the error but return false, as we couldn't retrieve the cache
+		customlog.Warnf("Failed to load directory cache for rule results %s: %v", dirPath, err)
+		return nil, false, nil 
+	}
+	
+	// Check if the directory cache's RuleResults map exists
+	if dirCache.RuleResults == nil {
+		// Should not happen if HasRuleResults was true, indicates cache inconsistency
+		customlog.Warnf("Cache inconsistency: FileInfo for %s has HasRuleResults=true, but DirCache RuleResults map is nil", filePath)
+		fileInfo.HasRuleResults = false // Correct the index state
+		c.hasChanges = true          // Mark index as dirty
+		return nil, false, nil
+	}
+
+	// Get the filename part
+	fileName := filepath.Base(filePath)
+	
+	// Get rule results from directory cache
+	results, exists := dirCache.RuleResults[fileName]
+	if !exists {
+		// Should not happen if HasRuleResults was true, indicates cache inconsistency
+		customlog.Warnf("Cache inconsistency: FileInfo for %s has HasRuleResults=true, but no entry for filename %s in DirCache RuleResults", filePath, fileName)
+		fileInfo.HasRuleResults = false // Correct the index state
+		c.hasChanges = true          // Mark index as dirty
+		return nil, false, nil
+	}
+
+	// Success!
+	// customlog.Debugf("Found cached rule results for %s (%d matches)", filePath, len(results)) // Maybe too noisy
+	return results, true, nil
+}
+
+// StoreRuleResults caches rule match results for a file
+func (c *ResultCache) StoreRuleResults(filePath string, matches []RuleMatch) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	fileInfo, exists := c.index.Files[filePath]
+	if !exists {
+		// This can happen if the file was processed but not yet fully indexed (e.g., during initial run)
+		// Or if the file was deleted between analysis and caching.
+		// For now, we just log and skip. Alternatively, we could try to create FileInfo here.
+		customlog.Warnf("Attempted to store rule results for non-indexed file: %s", filePath)
+		return nil // Not a fatal error, just can't cache results for this file now
+		// return fmt.Errorf("file info not found in cache index when storing rule results: %s", filePath)
+	}
+	
+	// If FileInfo exists, but DirCacheKey is missing, something is wrong with AST caching phase.
+	// We need the DirCacheKey to associate rule results with the correct directory cache file.
+	if fileInfo.DirCacheKey == "" {
+		 customlog.Errorf("Cannot store rule results for %s: FileInfo exists but DirCacheKey is missing.", filePath)
+		 return fmt.Errorf("missing DirCacheKey for file %s when storing rule results", filePath)
+	}
+
+	// Get directory path
+	dirPath := filepath.Dir(filePath)
+	fileName := filepath.Base(filePath)
+
+	// Load or get the directory cache (it must exist in memory or disk if AST was stored)
+	dirCache, err := c.loadDirectoryCache(dirPath) 
+	if err != nil {
+		// If we can't load the dir cache where the AST supposedly is, something is very wrong.
+		customlog.Errorf("Failed to load directory cache %s when storing rule results for %s: %v", dirPath, filePath, err)
+		return fmt.Errorf("failed to load directory cache %s for rule results: %w", dirPath, err)
+	}
+
+	// Initialize RuleResults map if not exists
+	if dirCache.RuleResults == nil {
+		dirCache.RuleResults = make(map[string][]RuleMatch)
+	}
+
+	// Store rule results in the directory cache (in memory)
+	dirCache.RuleResults[fileName] = matches
+	c.dirty[dirPath] = true // Mark this directory cache as needing to be saved to disk
+
+	// *** Crucial Update: Mark the file info as having rule results ***
+	if !fileInfo.HasRuleResults {
+		fileInfo.HasRuleResults = true
+		c.hasChanges = true // Mark the main index as dirty because FileInfo changed
+		customlog.Debugf("Marked %s as having cached rule results (%d matches)", filePath, len(matches))
+	} else {
+		// Already marked, potentially overwriting existing results, which is fine.
+		// customlog.Debugf("Updated cached rule results for %s (%d matches)", filePath, len(matches)) // Too noisy
+	}
+
+	return nil
 } 

@@ -113,7 +113,8 @@ type FileAnalysisResult struct {
 func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error) {
 	startTime := time.Now()
 	a.cacheHits = 0
-	
+	ruleResultCacheHits := 0 // Re-add counter
+
 	numFiles := len(filePaths)
 	if numFiles == 0 {
 		return []FileAnalysisResult{}, nil
@@ -122,51 +123,140 @@ func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error
 	// Filter files based on cache if enabled
 	filesToProcess := filePaths
 	var cachedResults []FileAnalysisResult
-	
+
+	cacheCheckStartTime := time.Now()
 	if a.useCache && a.cache != nil {
 		filesToProcess = make([]string, 0, numFiles)
-		
+
 		// Check which files need processing
 		for _, path := range filePaths {
+			pathCheckStart := time.Now()
 			changed, err := a.cache.IsFileChanged(path)
 			if err != nil {
 				customlog.Warnf("Error checking cache for %s: %v", path, err)
 				filesToProcess = append(filesToProcess, path)
 				continue
 			}
-			
+
 			if !changed {
-				// Try to get cached AST
-				ast, found, err := a.cache.GetASTResult(path)
+				// TRUE FAST PATH: File hasn't changed, try to get cached rule results first
+				ruleResultStart := time.Now()
+				cacheMatches, ruleResultsFound, err := a.cache.GetRuleResults(path) // Use GetRuleResults
+				ruleResultDuration := time.Since(ruleResultStart)
+
+				if err != nil {
+					// Log error from GetRuleResults but treat as cache miss
+					customlog.Warnf("Error getting cached rule results for %s: %v. Will re-analyze.", path, err)
+					filesToProcess = append(filesToProcess, path) 
+					continue
+				}
+				
+				if ruleResultsFound {
+					// Convert cache.RuleMatch to rule_interface.Match
+					matches := make([]rule_interface.Match, len(cacheMatches))
+					for i, cm := range cacheMatches {
+						matches[i] = rule_interface.Match{
+							RuleID:   cm.RuleID,
+							FilePath: cm.FilePath, // Use path from cache match
+							Message:  cm.Message,
+							Line:     cm.Line,
+							Column:   cm.Column,
+							Severity: rule_interface.MatchSeverity(cm.Severity), // Convert int back to enum
+						}
+					}
+
+					result := FileAnalysisResult{
+						FilePath:  path,
+						Matches:   matches,
+						Error:     nil,
+						FromCache: true,
+					}
+					cachedResults = append(cachedResults, result)
+					a.cacheHits++
+					ruleResultCacheHits++ // Increment rule result cache hits
+					if ruleResultDuration > 1*time.Millisecond { // Log if lookup took time
+						customlog.Debugf("FAST PATH: Using cached rule results for %s (took %v)",
+							path, ruleResultDuration)
+					}
+					continue // Successfully used rule cache, move to next file
+				}
+
+				// Fallback: Rule results not found, try getting cached AST
+				customlog.Debugf("No cached rule results for %s, checking for cached AST...", path)
+				astStart := time.Now()
+				ast, astFound, err := a.cache.GetASTResult(path)
+				astDuration := time.Since(astStart)
+
 				if err != nil {
 					customlog.Warnf("Error retrieving cached AST for %s: %v", path, err)
 					filesToProcess = append(filesToProcess, path)
-				} else if found {
+				} else if astFound {
 					// Read content for rule checking
+					readStart := time.Now()
 					content, err := os.ReadFile(path)
+					readDuration := time.Since(readStart)
+
 					if err != nil {
 						customlog.Warnf("Error reading file for cached analysis %s: %v", path, err)
 						filesToProcess = append(filesToProcess, path)
 					} else {
 						// Apply rules to cached AST
+						ruleApplyStart := time.Now()
 						result := a.analyzeWithPreParsedAST(path, string(content), ast)
-						result.FromCache = true
+						ruleApplyDuration := time.Since(ruleApplyStart)
+
+						result.FromCache = true // Mark as from cache (AST cache hit)
 						cachedResults = append(cachedResults, result)
-						a.cacheHits++
+						a.cacheHits++ // Increment general cache hits
+
+						// *** Store newly generated rule results in cache for next time ***
+						cacheStoreStart := time.Now()
+						if err := a.storeRuleResultsToCache(path, result.Matches); err != nil { // Call helper
+							customlog.Warnf("Failed to cache rule results for %s after AST analysis: %v", path, err)
+						}
+						cacheStoreDuration := time.Since(cacheStoreStart)
+
+						pathTotalDuration := time.Since(pathCheckStart)
+						if pathTotalDuration > 5*time.Millisecond { // Log if fallback took time
+							customlog.Debugf("Cached AST processing for %s - total: %v (AST get: %v, read: %v, rules: %v, cache store: %v)",
+								path, pathTotalDuration, astDuration, readDuration, ruleApplyDuration, cacheStoreDuration)
+						}
 					}
 				} else {
+					// File unchanged, but no AST found in cache - indicates potential cache issue
+					customlog.Warnf("File %s unchanged but no AST found in cache. Adding to processing list.", path)
 					filesToProcess = append(filesToProcess, path)
 				}
 			} else {
+				// File has changed, need to reprocess
 				filesToProcess = append(filesToProcess, path)
 			}
+		} // End of file processing loop
+
+		cacheCheckDuration := time.Since(cacheCheckStartTime)
+		customlog.Debugf("Cache check phase completed in %v", cacheCheckDuration)
+
+		if len(filesToProcess) == 0 {
+			totalDuration := time.Since(startTime)
+			customlog.Infof("Fast path successful: All %d files loaded from cache in %v (%d rule cache hits), skipping main analysis.",
+				len(cachedResults), totalDuration, ruleResultCacheHits)
+			if err := a.cache.Save(); err != nil { // Save cache index changes
+				 customlog.Warnf("Failed to save cache after fast path: %v", err)
+			}
+			return cachedResults, nil
 		}
-		
-		customlog.Infof("Using %d cached results, need to process %d files", a.cacheHits, len(filesToProcess))
+
+		customlog.Infof("Using %d cached results (%d rule cache hits), need to process %d files",
+			a.cacheHits, ruleResultCacheHits, len(filesToProcess))
 	}
-	
+
 	if len(filesToProcess) == 0 {
-		customlog.Infof("All %d files loaded from cache, no parsing needed", len(cachedResults))
+		customlog.Infof("All %d files loaded from cache, no parsing needed.", len(cachedResults))
+		if a.useCache && a.cache != nil { // Save cache index changes
+			if err := a.cache.Save(); err != nil {
+				 customlog.Warnf("Failed to save cache after empty process list: %v", err)
+			}
+		}
 		return cachedResults, nil
 	}
 
@@ -181,7 +271,9 @@ func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error
 
 	var newResults []FileAnalysisResult
 	var err error
-	
+
+	analysisPhaseStartTime := time.Now()
+
 	if supportsBatch {
 		customlog.Infof("Starting analysis of %d files with batch parsing...", len(filesToProcess))
 		newResults, err = a.analyzeWithBatchParser(filesToProcess, batchParser, numWorkers)
@@ -189,27 +281,56 @@ func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error
 		customlog.Infof("Starting analysis of %d files with %d workers...", len(filesToProcess), numWorkers)
 		newResults, err = a.analyzeWithWorkerPool(filesToProcess, numWorkers)
 	}
-	
+
+	analysisPhaseDuration := time.Since(analysisPhaseStartTime)
+	customlog.Debugf("Main analysis phase completed in %v", analysisPhaseDuration)
+
 	if err != nil {
 		return nil, err
 	}
-	
-	// Save cache if enabled
+
+	// --- Cache Saving Phase ---
+	cacheSaveStartTime := time.Now()
 	if a.useCache && a.cache != nil {
+		// Store rule results for newly analyzed files (that weren't from cache)
+		storeNewResultsStart := time.Now()
+		successfulStores := 0
+		for _, result := range newResults {
+			if result.Error == nil { // Only cache successful analyses
+				if err := a.storeRuleResultsToCache(result.FilePath, result.Matches); err != nil { // Call helper
+					customlog.Warnf("Failed to cache rule results for newly analyzed file %s: %v", result.FilePath, err)
+				} else {
+					successfulStores++
+				}
+			}
+		}
+		storeNewResultsDuration := time.Since(storeNewResultsStart)
+		if successfulStores > 0 {
+			customlog.Debugf("Stored rule results for %d newly analyzed files in %v", successfulStores, storeNewResultsDuration)
+		}
+
+
+		// Save cache index and dirty directories to disk
+		cacheWriteStart := time.Now()
 		if err := a.cache.Save(); err != nil {
 			customlog.Warnf("Failed to save cache: %v", err)
 		} else {
-			customlog.Debugf("Cache saved successfully")
+			cacheWriteDuration := time.Since(cacheWriteStart)
+			if cacheWriteDuration > 50*time.Millisecond { // Log only if saving took time
+				customlog.Debugf("Cache saved successfully in %v", cacheWriteDuration)
+			}
 		}
 	}
-	
+	cacheSaveDuration := time.Since(cacheSaveStartTime)
+	customlog.Debugf("Cache saving phase completed in %v", cacheSaveDuration)
+
 	// Combine cached and new results
 	allResults := append(cachedResults, newResults...)
-	
+
 	elapsedTime := time.Since(startTime)
-	customlog.Infof("Analysis completed in %v (%d files, %d from cache)", 
-		elapsedTime, len(allResults), a.cacheHits)
-	
+	customlog.Infof("Analysis completed in %v (%d files, %d from cache, %d rule cache hits)",
+		elapsedTime, len(allResults), a.cacheHits, ruleResultCacheHits)
+
 	return allResults, nil
 }
 
@@ -495,4 +616,26 @@ func (a *Analyzer) analyzeSingleFile(filePath string) FileAnalysisResult {
 
 	result.Matches = fileMatches
 	return result
+}
+
+// Helper function to convert and store rule results
+func (a *Analyzer) storeRuleResultsToCache(filePath string, matches []rule_interface.Match) error {
+	if !a.useCache || a.cache == nil {
+		return nil // Do nothing if cache is disabled
+	}
+	
+	// Convert rule_interface.Match to cache.RuleMatch
+	cacheMatches := make([]cache.RuleMatch, len(matches))
+	for i, m := range matches {
+		cacheMatches[i] = cache.RuleMatch{
+			RuleID:   m.RuleID,
+			FilePath: m.FilePath,
+			Message:  m.Message,
+			Line:     m.Line,
+			Column:   m.Column,
+			Severity: int(m.Severity), // Convert enum to int
+		}
+	}
+	
+	return a.cache.StoreRuleResults(filePath, cacheMatches)
 } 
