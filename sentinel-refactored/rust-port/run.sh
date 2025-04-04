@@ -12,4 +12,4 @@ cargo build || { echo "Build failed"; exit 1; }
 
 # Run the binary with path argument
 echo "Running typescript-analyzer..."
-./target/debug/typescript-analyzer --path "/home/rryter/projects/my/CSS/packages/mycss-app/src/app" 
+./target/debug/typescript-analyzer --path "/home/rryter/projects/myCSS/packages/mycss-app/src/app" 

@@ -84,13 +84,21 @@ impl TypeScriptAnalyzer {
         find_files(path, extensions, self.verbose)
     }
     
+    /// Get the count of TypeScript files found in the scan result
+    pub fn count_files(&self, scan_result: &ScanResult) -> usize {
+        scan_result.files.len()
+    }
+    
     /// Analyze TypeScript files in a directory
     pub fn analyze_directory(&self, path: &Path, extensions: &[&str]) -> Result<AnalysisResult> {
         // First, scan for files
         let scan_result = self.scan_directory(path, extensions)?;
         
+        // Always print the count of files found
+        println!("Found {} TypeScript files to analyze", scan_result.files.len());
+        
         if self.verbose {
-            println!("Found {} files to analyze", scan_result.files.len());
+            // Additional verbose information can remain here
         }
         
         // Now parse and analyze each file
