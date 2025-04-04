@@ -160,17 +160,17 @@ impl TypeScriptAnalyzer {
                     };
                     
                     // Parse the file with better error handling
-                    let parser_result = Parser::new(&allocator, &content, source_type).parse();
+                    let ParserReturn { program, errors, panicked,..} = Parser::new(&allocator, &content, source_type).parse();
                     
-                    if !parser_result.errors.is_empty() || parser_result.panicked {
+                    if !errors.is_empty() || panicked {
                         error_count.fetch_add(1, Ordering::Relaxed);
                         if self.verbose {
                             println!("Errors parsing file: {}", file_path);
-                            for error in &parser_result.errors {
+                            for error in &errors {
                                 println!("  - {:?}", error);
                             }
                         }
-                    } else if parser_result.program.body.is_empty() {
+                    } else if program.body.is_empty() {
                         // Skip empty programs but don't count as error
                         if self.verbose {
                             println!("Empty program in file: {}", file_path);
