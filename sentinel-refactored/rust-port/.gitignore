@@ -1,0 +1,32 @@
+node_modules
+.sentinel-cache
+# Rust-related
+/target/
+**/*.rs.bk
+Cargo.lock
+*.so
+*.dylib
+*.dll
+
+# Go-related
+/bin/
+/pkg/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build artifacts
+/build/
+/dist/
+
+# Editor-specific
+.idea/
+.vscode/
+*.swp
+*.swo
+
+sentinel
