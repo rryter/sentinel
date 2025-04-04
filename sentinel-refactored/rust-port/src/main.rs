@@ -7,9 +7,13 @@ use typescript_analyzer::{
     rules::{
         RuleRegistry,
         RuleSeverity,
+        initialize as initialize_rules,
         get_all_plugins,
     }
 };
+use crate::config::Config;
+
+mod config;
 
 /// A TypeScript analyzer that scans code and reports on issues
 #[derive(Parser, Debug)]
@@ -59,6 +63,29 @@ struct Args {
 fn main() -> Result<()> {
     let args = Args::parse();
     
+    // Initialize the rule system first
+    initialize_rules();
+
+    // Load configuration from sentinel.yaml
+    let config = match Config::load("sentinel.yaml") {
+        Ok(cfg) => {
+            if args.verbose { // Optionally notify user if config was loaded
+                println!("Loaded configuration from sentinel.yaml");
+            }
+            cfg
+        }
+        Err(e) => {
+            // Only log error if the file was found but couldn't be parsed, or other IO error.
+            // Don't warn if it's simply not found, as that's a normal case.
+            if e.downcast_ref::<std::io::Error>().map_or(true, |io_err| io_err.kind() != std::io::ErrorKind::NotFound) {
+               eprintln!("Warning: Could not load or parse sentinel.yaml: {}. Using default settings.", e);
+            } else if args.verbose { // Optionally notify if using defaults because file not found
+                println!("sentinel.yaml not found. Using default rule settings.");
+            }
+            Config::default()
+        }
+    };
+
     let path = Path::new(&args.path);
     let extensions: Vec<&str> = args.extensions.split(',').collect();
     
@@ -67,16 +94,38 @@ fn main() -> Result<()> {
         // Create registry with rules
         let mut registry = RuleRegistry::new();
         
-        // Set debug mode if requested
-        registry.set_debug_mode(args.rule_debug);
+        // Set debug mode based on config and command-line override
+        registry.set_debug_mode(config.debug.rules || args.rule_debug);
         
         // Register all plugins dynamically
-        registry.register_all_plugins(get_all_plugins());
+        let plugins = get_all_plugins();
+        registry.register_all_plugins(plugins);
         
-        // Enable all rules by default
-        registry.enable_all_rules();
+        // --- Apply Configuration Settings ---
+        // Order: Defaults -> Config File -> Command Line Args
+
+        // 1. Apply settings from config file (sentinel.yaml)
+        if let Some(severity) = config.rules.min_severity {
+            registry.set_min_severity(severity);
+        }
+        for tag in &config.rules.enable_tags {
+            registry.enable_tag(tag);
+        }
+        for tag in &config.rules.disable_tags {
+            registry.disable_tag(tag);
+        }
+        // Note: Explicit enable list in config restricts to *only* those rules (plus tags)
+        // unless overridden by command line. Only apply if non-empty.
+        if !config.rules.enable.is_empty() {
+             for rule_id in &config.rules.enable {
+                registry.enable_rule(rule_id);
+             }
+        }
+        for rule_id in &config.rules.disable {
+            registry.disable_rule(rule_id); // Disables take precedence later
+        }
         
-        // Apply command-line configuration
+        // 2. Apply command-line configuration (overrides config file)
         // Set minimum severity
         match args.severity.to_lowercase().as_str() {
             "error" => registry.set_min_severity(RuleSeverity::Error),
@@ -103,11 +152,27 @@ fn main() -> Result<()> {
             registry.disable_tag(tag);
         }
         
+        // Log final registry state in debug mode
+        if registry.is_debug_mode() {
+            println!("\n==== DEBUG: Final RuleRegistry State ====");
+            println!("{:#?}", registry);
+            println!("========================================\n");
+            // Add a small delay to help visual separation in logs
+            std::thread::sleep(std::time::Duration::from_millis(100)); 
+        }
+
+        // Print enabled rules if verbose mode is on
         if args.verbose {
-            println!("Rule system enabled with {} rules:", registry.enabled_rules().count());
-            for (id, rule) in registry.enabled_rules() {
-                println!("  {} - {} ({:?})", id, rule.description(), rule.severity());
+            let enabled_rules_list: Vec<_> = registry.enabled_rules().collect();
+            println!("--- Enabled Rules ({}) ---", enabled_rules_list.len());
+            if enabled_rules_list.is_empty() {
+                println!("  (No rules enabled based on current configuration)");
+            } else {
+                for (id, rule) in enabled_rules_list {
+                    println!("  - {} ({:?}): {}", id, rule.severity(), rule.description());
+                }
             }
+            println!("-------------------------");
         }
         
         TypeScriptAnalyzer::with_rules(args.verbose, Arc::new(registry))

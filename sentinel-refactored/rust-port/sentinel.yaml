@@ -1,0 +1,46 @@
+# Sentinel Configuration File (sentinel.yaml)
+#
+# Configure the behavior of the Sentinel linter.
+
+rules:
+  # --- Rule Filtering ---
+
+  # Explicitly enable specific rules by their ID.
+  # If this list is non-empty, only rules listed here (or matching enable_tags) will run,
+  # unless they are also explicitly disabled or filtered out by other criteria.
+  enable:
+    - import-rxjs
+    - import-angular-core
+    - import-rxjs-operators
+    # - rule-id-1
+    # - plugin-name/rule-id-2
+
+  # Explicitly disable specific rules by their ID. Takes precedence over enabled rules/tags.
+  disable:
+    # - slow-rule
+    # - experimental/new-feature-rule
+
+  # Enable all rules that have ANY of the specified tags.
+  enable_tags:
+    # - security
+    # - performance
+
+  # Disable all rules that have ANY of the specified tags. Takes precedence over enabled tags.
+  disable_tags:
+    # - style
+    # - deprecated
+
+  # Set the minimum severity level for rules to be enabled.
+  # Rules with severity lower than this will be disabled.
+  # Possible values: Error, Warning, Info (case-insensitive) or leave commented out/null.
+  # min_severity: Warning
+
+# --- Debugging ---
+# Enable verbose debug logging for the rule registry and evaluation process.
+debug:
+  # Enable logging for the rule registry and evaluation process.
+  rules: false
+  # Add other potential components here later if needed, e.g.:
+  # parser: false
+  # config_loading: false
+  # custom_plugins: false

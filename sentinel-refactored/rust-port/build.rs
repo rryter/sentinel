@@ -77,7 +77,7 @@ fn discover_rules(dir_path: &Path) -> Vec<DiscoveryItem> {
                     if let Ok(content) = fs::read_to_string(&path) {
                         let factories = extract_factory_names(&content);
                         if !factories.is_empty() {
-                             println!("cargo:warning=Found factories {:?} in {}", factories, path.display());
+                            // println!("cargo:warning=Found factories {:?} in {}", factories, path.display());
                             items.push(DiscoveryItem::RuleFile {
                                 name: module_name,
                                 path: path.clone(),

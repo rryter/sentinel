@@ -288,8 +288,11 @@ impl TypeScriptAnalyzer {
             
             let results = results_lock.into_inner();
             
+            // Always print the header
+            println!("\nRule Results:");
+
+            // Only calculate and print details if there are matches
             if !results.matches.is_empty() {
-                println!("\nRule Results:");
                 // Group results by rule and severity
                 let mut rule_counts: HashMap<String, (usize, rules::RuleSeverity)> = HashMap::new();
                 

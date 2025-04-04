@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use anyhow::Result;
 use oxc_ast::ast::Program;
+use serde::Deserialize;
 
 // --- Core Rule Definitions ---
 // (If you have non-custom, built-in rules, they would be declared and registered here)
@@ -43,47 +44,8 @@ pub fn get_all_plugins() -> Vec<RulePlugin> {
     plugins
 }
 
-/// Get all built-in rule plugins with debug info
-pub fn get_all_plugins_with_debug() -> Vec<RulePlugin> {
-    println!("Loading all available rule plugins...");
-    let plugins = get_all_plugins();
-    println!("Loaded {} plugins", plugins.len());
-    plugins
-}
-
-/// Get all built-in rules from all plugins
-pub fn get_all_rules() -> Vec<Arc<dyn Rule>> {
-    let mut rules = Vec::new();
-    
-    for plugin in get_all_plugins() {
-        for rule_factory in plugin.rules {
-            rules.push(rule_factory());
-        }
-    }
-    
-    rules
-}
-
-/// Get all built-in rules from all plugins with debug info
-pub fn get_all_rules_with_debug() -> Vec<Arc<dyn Rule>> {
-    println!("Loading all available rules...");
-    let mut rules = Vec::new();
-    
-    for plugin in get_all_plugins() {
-        println!("Loading rules from plugin: {}", plugin.name);
-        for rule_factory in plugin.rules {
-            let rule = rule_factory();
-            println!("  - Loaded rule: {} ({})", rule.id(), rule.description());
-            rules.push(rule);
-        }
-    }
-    
-    println!("Total rules loaded: {}", rules.len());
-    rules
-}
-
 /// Severity level for rule violations
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
 pub enum RuleSeverity {
     /// A critical issue that must be fixed
     Error,
@@ -198,9 +160,7 @@ pub trait Rule: Send + Sync {
     }
     
     /// Get the default severity of violations of this rule
-    fn severity(&self) -> RuleSeverity {
-        RuleSeverity::Warning
-    }
+    fn severity(&self) -> RuleSeverity;
     
     /// Evaluate this rule against a program
     /// 
@@ -270,6 +230,11 @@ impl RuleRegistry {
     /// Enable or disable debug mode for verbose logging
     pub fn set_debug_mode(&mut self, debug: bool) {
         self.debug_mode = debug;
+    }
+    
+    /// Check if debug mode is enabled
+    pub fn is_debug_mode(&self) -> bool {
+        self.debug_mode
     }
     
     /// Register a new rule with the registry
@@ -503,25 +468,28 @@ impl RuleRegistry {
     pub fn evaluate_all(&self, program: &Program, file_path: &str) -> RuleResults {
         let mut results = RuleResults::new();
         
-        if self.debug_mode {
+        // Remove per-file debugging output, but keep summary counts
+        let debug_file_level = false; // Hard-code to false to disable per-file logs
+        
+        if self.debug_mode && debug_file_level {
             println!("Evaluating {} rules against file {}", self.enabled_rules.len(), file_path);
         }
         
         for rule in self.enabled_rules.values() {
-            if self.debug_mode {
+            if self.debug_mode && debug_file_level {
                 println!("  - Evaluating rule: {}", rule.id());
             }
             
             match rule.evaluate(program, file_path) {
                 Ok(rule_match) => {
-                    if self.debug_mode && rule_match.matched {
+                    if self.debug_mode && debug_file_level && rule_match.matched {
                         println!("    * Rule matched: {} ({})", 
                                  rule.id(), rule_match.message.as_deref().unwrap_or("No message"));
                     }
                     results.add_match(rule_match);
                 }
                 Err(err) => {
-                    if self.debug_mode {
+                    if self.debug_mode && debug_file_level {
                         println!("    * Rule evaluation failed: {}", err);
                     }
                     // Create an error match for the rule evaluation failure
@@ -539,7 +507,7 @@ impl RuleRegistry {
             }
         }
         
-        if self.debug_mode {
+        if self.debug_mode && debug_file_level {
             println!("Rule evaluation complete. {} matches found.", 
                      results.matches.iter().filter(|m| m.matched).count());
         }
