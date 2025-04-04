@@ -1,6 +1,6 @@
 {
-  "totalFilesAnalyzed": 943,
-  "totalMatchesFound": 14,
+  "totalFilesAnalyzed": 2052,
+  "totalMatchesFound": 23,
   "matchesByRuleId": {
     "angular-observable-input": [
       {
@@ -114,11 +114,83 @@
         "Line": 0,
         "Column": 0,
         "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'KeypadComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'LogService'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'StructuredContentOverlayContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'FieldKeypadComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'OverlaySearchDoctorComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'OverlaySearchTherapistComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'MapComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'MapMarkerContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'MainNavigationComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
       }
     ]
   },
   "filesWithErrors": [],
   "cacheEnabled": true,
-  "filesFromCache": 943,
+  "filesFromCache": 2052,
   "cacheHitRate": 100
 }

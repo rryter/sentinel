@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -24,15 +25,161 @@ import (
 // Config struct is now defined in internal/config
 // Remove the local definition if it exists
 
-func main() {
-	startTime := time.Now()
+// PerfMetrics tracks performance metrics for different stages of processing
+type PerfMetrics struct {
+	StartTime       time.Time
+	EndTime         time.Time
+	TotalDuration   time.Duration
+	StageTimings    map[string]time.Duration
+	FileCount       int
+	FromCache       int
+	MatchesFound    int
+	MemoryUsageMB   float64
+}
 
-	// Add a defer to ensure we log program termination
+// NewPerfMetrics creates a new performance metrics tracker
+func NewPerfMetrics() *PerfMetrics {
+	return &PerfMetrics{
+		StartTime:    time.Now(),
+		StageTimings: make(map[string]time.Duration),
+	}
+}
+
+// RecordStage records the duration of a processing stage
+func (p *PerfMetrics) RecordStage(name string, duration time.Duration) {
+	p.StageTimings[name] = duration
+}
+
+// StartStage begins timing a new stage and returns a function to end timing
+func (p *PerfMetrics) StartStage(name string) func() {
+	start := time.Now()
+	return func() {
+		p.StageTimings[name] = time.Since(start)
+	}
+}
+
+// Finish completes the metrics collection
+func (p *PerfMetrics) Finish() {
+	p.EndTime = time.Now()
+	p.TotalDuration = p.EndTime.Sub(p.StartTime)
+	
+	// Get memory stats
+	var memStats runtime.MemStats
+	runtime.ReadMemStats(&memStats)
+	p.MemoryUsageMB = float64(memStats.Alloc) / 1024 / 1024
+}
+
+// SaveToFile saves detailed metrics to a CSV file
+func (p *PerfMetrics) SaveToFile() error {
+	timeStr := p.EndTime.Format("2006-01-02 15:04:05")
+	
+	// Get current working directory instead of executable directory
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %w", err)
+	}
+	
+	// Create metrics directory with path relative to working directory
+	metricsDir := filepath.Join(workDir, "metrics")
+	customlog.Debugf("Creating metrics directory at: %s", metricsDir)
+	if err := os.MkdirAll(metricsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create metrics directory: %w", err)
+	}
+	
+	// Define the metrics files with paths relative to working directory
+	summaryFile := filepath.Join(metricsDir, "performance_summary.csv")
+	detailFile := filepath.Join(metricsDir, "performance_details.csv")
+	
+	customlog.Debugf("Will write metrics to: %s and %s", summaryFile, detailFile)
+	
+	// Check if files exist to determine if we need to write headers
+	needsSummaryHeader := false
+	if _, err := os.Stat(summaryFile); os.IsNotExist(err) {
+		needsSummaryHeader = true
+	}
+	
+	needsDetailHeader := false
+	if _, err := os.Stat(detailFile); os.IsNotExist(err) {
+		needsDetailHeader = true
+	}
+	
+	// Open summary file in append mode
+	sumFile, err := os.OpenFile(summaryFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open summary file: %w", err)
+	}
+	defer sumFile.Close()
+	
+	// Write headers if new summary file
+	if needsSummaryHeader {
+		headers := "Timestamp,TotalDuration(ms),FileCount,CachedFiles,MatchesFound,MemoryUsed(MB)\n"
+		if _, err := sumFile.WriteString(headers); err != nil {
+			return fmt.Errorf("failed to write headers to summary file: %w", err)
+		}
+	}
+	
+	// Format summary metrics line
+	summaryLine := fmt.Sprintf("%s,%.2f,%d,%d,%d,%.2f\n", 
+		timeStr, 
+		float64(p.TotalDuration.Milliseconds()),
+		p.FileCount,
+		p.FromCache,
+		p.MatchesFound,
+		p.MemoryUsageMB)
+	
+	// Write to summary file
+	if _, err := sumFile.WriteString(summaryLine); err != nil {
+		return fmt.Errorf("failed to write metrics to summary file: %w", err)
+	}
+	
+	// Open details file in append mode
+	detFile, err := os.OpenFile(detailFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open details file: %w", err)
+	}
+	defer detFile.Close()
+	
+	// Write headers if new details file
+	if needsDetailHeader {
+		headers := "Timestamp,Stage,Duration(ms)\n"
+		if _, err := detFile.WriteString(headers); err != nil {
+			return fmt.Errorf("failed to write headers to details file: %w", err)
+		}
+	}
+	
+	// Write each stage timing to details file
+	for stage, duration := range p.StageTimings {
+		detailLine := fmt.Sprintf("%s,%s,%.2f\n",
+			timeStr,
+			stage,
+			float64(duration.Milliseconds()))
+		
+		if _, err := detFile.WriteString(detailLine); err != nil {
+			return fmt.Errorf("failed to write stage timing to details file: %w", err)
+		}
+	}
+	
+	customlog.Infof("Performance metrics saved to %s and %s", summaryFile, detailFile)
+	return nil
+}
+
+func main() {
+	// Initialize performance metrics
+	metrics := NewPerfMetrics()
+	
+	// Add a defer to ensure we log program termination and save metrics
 	defer func() {
-		customlog.Infof("Program execution terminating after %v", time.Since(startTime))
+		metrics.Finish()
+		customlog.Infof("Program execution terminating after %v", metrics.TotalDuration)
+		
+		// Save execution timings to file
+		if err := metrics.SaveToFile(); err != nil {
+			customlog.Errorf("Failed to save performance metrics: %v", err)
+		}
 	}()
 
 	// --- Configuration Loading --- 
+	configEnd := metrics.StartStage("config_loading")
 	// 1. Define flags
 	configFilePath := flag.String("config", config.DefaultConfigFile, "Path to configuration file (e.g., sentinel.yaml)")
 	// Define flags for overrides, using pointers to distinguish between unset and zero values
@@ -95,13 +242,17 @@ func main() {
 	if *debugFlag { // --debug flag overrides log level to debug
 		cfg.LogLevel = "debug"
 	}
+	configEnd()  // End timing for config loading
 
 	// --- Logging Setup ---
+	loggingEnd := metrics.StartStage("logging_setup") 
 	customlog.SetLevel(customlog.LevelFromString(cfg.LogLevel))
 	customlog.Infof("Effective configuration: %+v", cfg)
 	customlog.Debugf("Config file used: %s", *configFilePath)
+	loggingEnd()  // End timing for logging setup
 
 	// --- Initialization (using cfg values) --- 
+	initEnd := metrics.StartStage("initialization")
 	customlog.Infof("Initializing components...")
 
 	// Initialize Parser (no config needed for adapter currently)
@@ -113,8 +264,10 @@ func main() {
 	// Initialize Rule Registry and Loader
 	registry := rules.NewRuleRegistry()
 	loader := rules.NewRuleLoader(registry)
+	initEnd()  // End timing for initialization
 
 	// Load Rules (using cfg.RulesDir)
+	ruleLoadEnd := metrics.StartStage("rule_loading")
 	customlog.Infof("Loading rules from: %s", cfg.RulesDir)
 	if err := loader.LoadRulesFromDir(cfg.RulesDir); err != nil {
 		customlog.Fatalf("Failed to load rules: %v", err)
@@ -122,14 +275,16 @@ func main() {
 	if registry.Count() == 0 {
 		customlog.Warnf("No rules were loaded. Analysis may not produce results.")
 	}
+	ruleLoadEnd()  // End timing for rule loading
 
 	// Initialize Filesystem Crawler (using cfg values)
+	crawlerInitEnd := metrics.StartStage("crawler_initialization")
 	// Pass config exclude patterns/suffixes if they are populated
 	crawler, err := filesystem.NewCrawler(cfg.TargetDir, cfg.FollowSymlinks, cfg.ExcludePatterns, cfg.ExcludeSuffixes)
 	if err != nil {
 		customlog.Fatalf("Failed to initialize crawler: %v", err)
 	}
-
+	
 	// Initialize Analyzer with cache options from config
 	analyzerOpts := analysis.AnalyzerOptions{
 		UseCache:   cfg.UseCache,
@@ -140,8 +295,10 @@ func main() {
 	if err != nil {
 		customlog.Fatalf("Failed to initialize analyzer: %v", err)
 	}
+	crawlerInitEnd()  // End timing for crawler and analyzer initialization
 
 	// --- Execution (using cfg.TargetDir) --- 
+	findFilesEnd := metrics.StartStage("file_discovery")
 	customlog.Infof("Finding TypeScript files in: %s", cfg.TargetDir)
 	filesToAnalyze, err := crawler.FindTypeScriptFiles()
 	if err != nil {
@@ -152,14 +309,19 @@ func main() {
 		os.Exit(0)
 	}
 	customlog.Infof("Found %d files to analyze.", len(filesToAnalyze))
+	// Store file count in metrics
+	metrics.FileCount = len(filesToAnalyze)
+	findFilesEnd()  // End timing for file discovery
 
 	// Run Analysis
+	analysisEnd := metrics.StartStage("file_analysis")
 	customlog.Debugf("Starting AnalyzeFiles with %d files", len(filesToAnalyze))
 	results, err := analyzer.AnalyzeFiles(filesToAnalyze)
 	if err != nil {
 		customlog.Fatalf("Analysis execution failed: %v", err)
 	}
 	customlog.Debugf("AnalyzeFiles completed with %d results", len(results))
+	analysisEnd()  // End timing for file analysis
 	
 	// Debug the results
 	for i, result := range results {
@@ -176,6 +338,7 @@ func main() {
 	}
 
 	// --- Output (using cfg.OutputDir) --- 
+	resultsProcessingEnd := metrics.StartStage("results_processing")
 	customlog.Infof("Analysis complete. Processing results...")
 
 	// Ensure output directory exists
@@ -192,19 +355,27 @@ func main() {
 		aggregatedResults.TotalFilesAnalyzed, 
 		aggregatedResults.TotalMatchesFound,
 		len(aggregatedResults.MatchesByRuleID))
+		
+	// Record cache and match metrics
+	metrics.FromCache = aggregatedResults.FilesFromCache
+	metrics.MatchesFound = aggregatedResults.TotalMatchesFound
+	resultsProcessingEnd()  // End timing for results processing
 
 	// Print Summary to Console
+	summaryEnd := metrics.StartStage("summary_output")
 	customlog.Debugf("Printing summary")
 	printSummary(aggregatedResults)
+	summaryEnd()  // End timing for summary output
 
 	// Write detailed results to JSON file
+	jsonOutputEnd := metrics.StartStage("json_output")
 	outputPath := filepath.Join(cfg.OutputDir, "analysis_results.json")
 	customlog.Debugf("Writing JSON results to: %s", outputPath)
 	if err := writeResultsJSON(outputPath, aggregatedResults); err != nil {
 		customlog.Errorf("Failed to write results to '%s': %v", outputPath, err)
 	}
-
 	customlog.Infof("Analysis results written to: %s", outputPath)
+	jsonOutputEnd()  // End timing for JSON output writing
 }
 
 // parseFlags is removed as flags are handled directly in main
