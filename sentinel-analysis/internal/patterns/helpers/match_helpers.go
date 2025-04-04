@@ -49,6 +49,8 @@ func ProcessASTNodes(node interface{}, filePath string, maxDepth int, visitor fu
 
 		if depth > maxDepth {
 			patterns.Debug("Maximum recursion depth reached")
+			patterns.Debug("depth: ", depth)
+			patterns.Debug("maxDepth: ", maxDepth)
 			return nodeMatches
 		}
 
