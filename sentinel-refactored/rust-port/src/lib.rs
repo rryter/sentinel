@@ -3,22 +3,26 @@ use std::fs;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use anyhow::{Result, Context};
+use std::collections::HashMap;
+use anyhow::Result;
 use walkdir::WalkDir;
 // Add imports for oxc
 use oxc_allocator::Allocator;
-use oxc_parser::{Parser, ParserReturn};
+use oxc_parser::Parser;
 use oxc_span::SourceType;
 // Rayon for parallel processing
 use rayon::prelude::*;
 // MiMalloc for faster memory allocation
 use mimalloc::MiMalloc;
+// Thread-safe locks for rule results
+use parking_lot::Mutex;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
 pub mod scanner;
 pub mod metrics;
+pub mod rules;
 
 /// Result of scanning a codebase for TypeScript files
 pub struct ScanResult {
@@ -33,6 +37,7 @@ pub struct AnalysisResult {
     pub analysis_duration: Duration,
     pub parsed_count: usize,
     pub error_count: usize,
+    pub rule_results: Option<rules::RuleResults>,
 }
 
 /// Find all files with the given extensions in a directory
@@ -42,7 +47,6 @@ pub fn find_files(
     verbose: bool
 ) -> Result<ScanResult> {
     let start = Instant::now();
-    let mut files = Vec::new();
     
     // Create a pool for parallel walking
     let extensions = extensions.to_vec();
@@ -54,7 +58,7 @@ pub fn find_files(
     // Use parallel iterator for directory walking
     let walker = WalkDir::new(path).follow_links(false).into_iter();
     
-    let mut paths: Vec<_> = walker
+    let paths: Vec<_> = walker
         .filter_map(Result::ok)
         .filter(|entry| {
             let path = entry.path();
@@ -73,9 +77,8 @@ pub fn find_files(
         .collect();
     
     // Sort the file list for deterministic output
-    paths.sort();
-    
-    files = paths;
+    let mut files = paths;
+    files.sort();
     
     let duration = start.elapsed();
     
@@ -92,12 +95,24 @@ pub fn find_files(
 /// Analyze a TypeScript codebase
 pub struct TypeScriptAnalyzer {
     verbose: bool,
+    rule_registry: Option<Arc<rules::RuleRegistry>>,
 }
 
 impl TypeScriptAnalyzer {
     /// Create a new TypeScript analyzer
     pub fn new(verbose: bool) -> Self {
-        Self { verbose }
+        Self { 
+            verbose,
+            rule_registry: None,
+        }
+    }
+    
+    /// Create a new TypeScript analyzer with rules
+    pub fn with_rules(verbose: bool, registry: Arc<rules::RuleRegistry>) -> Self {
+        Self {
+            verbose,
+            rule_registry: Some(registry),
+        }
     }
     
     /// Scan a directory for TypeScript files
@@ -117,6 +132,18 @@ impl TypeScriptAnalyzer {
         
         // Always print the count of files found
         println!("Found {} TypeScript files to analyze", scan_result.files.len());
+        
+        // If there are no files, return early with an empty result
+        if scan_result.files.is_empty() {
+            return Ok(AnalysisResult {
+                scan_result,
+                parse_duration: Duration::default(),
+                analysis_duration: Duration::default(),
+                parsed_count: 0,
+                error_count: 0,
+                rule_results: None,
+            });
+        }
         
         if self.verbose {
             println!("Starting parsing and analysis...");
@@ -142,6 +169,17 @@ impl TypeScriptAnalyzer {
         let parsed_count = Arc::new(AtomicUsize::new(0));
         let error_count = Arc::new(AtomicUsize::new(0));
         
+        // Collect rule results if rules are enabled
+        let rule_results = if self.rule_registry.is_some() {
+            Some(Arc::new(Mutex::new(rules::RuleResults::new())))
+        } else {
+            None
+        };
+        
+        // Clone rule registry for thread safety if it exists
+        let registry_clone = self.rule_registry.clone();
+        let rule_results_clone = rule_results.clone();
+        
         // Process files in parallel using Rayon
         scan_result.files.par_iter().for_each(|file_path| {
             // Create a path object for the current file
@@ -160,17 +198,17 @@ impl TypeScriptAnalyzer {
                     };
                     
                     // Parse the file with better error handling
-                    let ParserReturn { program, errors, panicked,..} = Parser::new(&allocator, &content, source_type).parse();
+                    let parser_result = Parser::new(&allocator, &content, source_type).parse();
                     
-                    if !errors.is_empty() || panicked {
+                    if !parser_result.errors.is_empty() || parser_result.panicked {
                         error_count.fetch_add(1, Ordering::Relaxed);
                         if self.verbose {
                             println!("Errors parsing file: {}", file_path);
-                            for error in &errors {
+                            for error in &parser_result.errors {
                                 println!("  - {:?}", error);
                             }
                         }
-                    } else if program.body.is_empty() {
+                    } else if parser_result.program.body.is_empty() {
                         // Skip empty programs but don't count as error
                         if self.verbose {
                             println!("Empty program in file: {}", file_path);
@@ -178,8 +216,19 @@ impl TypeScriptAnalyzer {
                     } else {
                         parsed_count.fetch_add(1, Ordering::Relaxed);
                         
-                        // Optionally save AST to file (in a real implementation,
-                        // you might want to parallelize this I/O operation as well)
+                        // Apply rules if enabled
+                        if let (Some(registry), Some(results)) = (&registry_clone, &rule_results_clone) {
+                            let file_results = registry.evaluate_all(&parser_result.program, file_path);
+                            
+                            if !file_results.matches.is_empty() {
+                                let mut results_write = results.lock();
+                                for rule_match in file_results.matches {
+                                    results_write.add_match(rule_match);
+                                }
+                            }
+                        }
+                        
+                        // Optionally save AST to file
                         if self.verbose {
                             if let Some(file_name) = file_path_obj.file_name() {
                                 if let Some(file_name_str) = file_name.to_str() {
@@ -205,6 +254,10 @@ impl TypeScriptAnalyzer {
             }
         });
         
+        // Drop the clones to ensure they don't prevent unwrapping
+        drop(registry_clone);
+        drop(rule_results_clone);
+        
         let parse_duration = parse_start.elapsed();
         let analysis_duration = analysis_start.elapsed();
         
@@ -216,12 +269,65 @@ impl TypeScriptAnalyzer {
         println!("Parse time: {:?}", parse_duration);
         println!("Files per second: {:.2}", scan_result.files.len() as f64 / parse_duration.as_secs_f64());
         
+        // Get final rule results if applicable
+        let final_rule_results = if let Some(results) = rule_results {
+            let results_lock = match Arc::try_unwrap(results) {
+                Ok(lock) => lock,
+                Err(_) => {
+                    eprintln!("Warning: Could not get exclusive access to rule results");
+                    return Ok(AnalysisResult {
+                        scan_result,
+                        parse_duration,
+                        analysis_duration,
+                        parsed_count: final_parsed_count,
+                        error_count: final_error_count,
+                        rule_results: None,
+                    });
+                }
+            };
+            
+            let results = results_lock.into_inner();
+            
+            if !results.matches.is_empty() {
+                println!("\nRule Results:");
+                // Group results by rule and severity
+                let mut rule_counts: HashMap<String, (usize, rules::RuleSeverity)> = HashMap::new();
+                
+                for rule_match in &results.matches {
+                    if rule_match.matched {
+                        let entry = rule_counts.entry(rule_match.rule_id.clone())
+                            .or_insert((0, rule_match.severity));
+                        entry.0 += 1;
+                    }
+                }
+                
+                // Print summary grouped by severity
+                for severity in [rules::RuleSeverity::Error, rules::RuleSeverity::Warning, rules::RuleSeverity::Info] {
+                    let matches = rule_counts.iter()
+                        .filter(|(_, (_, s))| *s == severity)
+                        .collect::<Vec<_>>();
+                    
+                    if !matches.is_empty() {
+                        println!("  {} {:?} findings:", matches.len(), severity);
+                        for (rule_id, (count, _)) in matches {
+                            println!("    {}: {} matches", rule_id, count);
+                        }
+                    }
+                }
+            }
+            
+            Some(results)
+        } else {
+            None
+        };
+        
         Ok(AnalysisResult {
             scan_result,
             parse_duration,
             analysis_duration,
             parsed_count: final_parsed_count,
             error_count: final_error_count,
+            rule_results: final_rule_results,
         })
     }
 } 

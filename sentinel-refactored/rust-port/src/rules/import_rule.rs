@@ -1,0 +1,125 @@
+use std::sync::Arc;
+use std::collections::HashMap;
+use anyhow::Result;
+use oxc_ast::ast::{Program, ModuleDeclaration};
+use crate::rules::{Rule, RuleMatch, RuleSeverity, SourceLocation};
+
+/// Rule that checks for imports of specific modules
+pub struct ImportRule {
+    id: String,
+    description: String,
+    module_name: String,
+    tags: Vec<String>,
+    severity: RuleSeverity,
+}
+
+impl ImportRule {
+    pub fn new(id: String, description: String, module_name: String) -> Self {
+        Self {
+            id,
+            description,
+            module_name,
+            tags: vec!["imports".to_string()],
+            severity: RuleSeverity::Warning,
+        }
+    }
+    
+    /// Set tags for this rule
+    pub fn with_tags(mut self, tags: Vec<&str>) -> Self {
+        self.tags = tags.into_iter().map(|s| s.to_string()).collect();
+        self
+    }
+    
+    /// Set severity for this rule
+    pub fn with_severity(mut self, severity: RuleSeverity) -> Self {
+        self.severity = severity;
+        self
+    }
+}
+
+impl Rule for ImportRule {
+    fn id(&self) -> &str {
+        &self.id
+    }
+    
+    fn description(&self) -> &str {
+        &self.description
+    }
+    
+    fn tags(&self) -> Vec<&str> {
+        self.tags.iter().map(|s| s.as_str()).collect()
+    }
+    
+    fn severity(&self) -> RuleSeverity {
+        self.severity
+    }
+    
+    fn evaluate(&self, program: &Program, file_path: &str) -> Result<RuleMatch> {
+        let mut matched = false;
+        let mut message = None;
+        let mut location = None;
+        
+        // Loop through all statements looking for import declarations
+        for stmt in &program.body {
+            // Check if this is a ModuleDeclaration
+            if let Some(module_decl) = stmt.as_module_declaration() {
+                // Check if it's specifically an ImportDeclaration
+                if let ModuleDeclaration::ImportDeclaration(import_decl) = module_decl {
+                    // Check the source string
+                    let src_str = import_decl.source.value.as_str();
+                    if src_str == self.module_name {
+                        matched = true;
+                        message = Some(format!("Found import of module '{}'", self.module_name));
+                        
+                        // Get location information from the import
+                        let span = import_decl.span;
+                        location = Some(SourceLocation {
+                            line: 1, // We don't have line/column info in this version of oxc_span
+                            column: 1,
+                            start: span.start as usize,
+                            end: span.end as usize,
+                        });
+                        
+                        break;
+                    }
+                }
+            }
+        }
+        
+        Ok(RuleMatch {
+            rule_id: self.id.clone(),
+            file_path: file_path.to_string(),
+            matched,
+            severity: self.severity,
+            message,
+            location,
+            metadata: HashMap::new(),
+        })
+    }
+}
+
+/// Create a rule that checks for imports of 'rxjs'
+pub fn create_rxjs_import_rule() -> Arc<dyn Rule> {
+    Arc::new(
+        ImportRule::new(
+            "import-rxjs".to_string(),
+            "Detects imports from 'rxjs' module".to_string(),
+            "rxjs".to_string(),
+        )
+        .with_tags(vec!["rxjs", "imports", "dependencies"])
+        .with_severity(RuleSeverity::Info)
+    )
+}
+
+/// Create a rule that checks for imports of '@angular/core'
+pub fn create_angular_core_import_rule() -> Arc<dyn Rule> {
+    Arc::new(
+        ImportRule::new(
+            "import-angular-core".to_string(),
+            "Detects imports from '@angular/core' module".to_string(),
+            "@angular/core".to_string(),
+        )
+        .with_tags(vec!["angular", "imports", "dependencies"])
+        .with_severity(RuleSeverity::Warning)
+    )
+} 
