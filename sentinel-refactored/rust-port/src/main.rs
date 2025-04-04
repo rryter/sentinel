@@ -7,8 +7,7 @@ use typescript_analyzer::{
     rules::{
         RuleRegistry,
         RuleSeverity,
-        create_rxjs_import_rule,
-        create_angular_core_import_rule,
+        get_all_plugins,
     }
 };
 
@@ -31,6 +30,10 @@ struct Args {
     /// Enable rules-based analysis
     #[arg(short, long)]
     rules: bool,
+    
+    /// Enable verbose rule debugging output
+    #[arg(long)]
+    rule_debug: bool,
     
     /// Minimum severity level to report (error, warning, info)
     #[arg(short, long, default_value = "warning")]
@@ -64,9 +67,11 @@ fn main() -> Result<()> {
         // Create registry with rules
         let mut registry = RuleRegistry::new();
         
-        // Register our example rules
-        registry.register(create_rxjs_import_rule());
-        registry.register(create_angular_core_import_rule());
+        // Set debug mode if requested
+        registry.set_debug_mode(args.rule_debug);
+        
+        // Register all plugins dynamically
+        registry.register_all_plugins(get_all_plugins());
         
         // Enable all rules by default
         registry.enable_all_rules();

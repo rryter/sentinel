@@ -6,12 +6,104 @@ use oxc_ast::ast::Program;
 // Define rule modules
 mod import_rule;
 
-// Re-export rule constructors for easy access
-pub use import_rule::{
-    ImportRule,
-    create_rxjs_import_rule,
-    create_angular_core_import_rule,
-};
+/// Macro to declare and automatically export rule factories
+#[macro_export]
+macro_rules! register_rules {
+    ( $( $module:ident :: $factory:ident ),* ) => {
+        $(
+            pub use $module::$factory;
+        )*
+        
+        // Get all rule factories in a vec
+        pub fn get_rule_factories() -> Vec<RuleFactory> {
+            vec![
+                $(
+                    $factory,
+                )*
+            ]
+        }
+    };
+}
+
+// Use the register_rules macro to automatically export all rule factories
+register_rules!(
+    import_rule::create_rxjs_import_rule,
+    import_rule::create_angular_core_import_rule,
+    import_rule::create_rxjs_operators_import_rule
+);
+
+// Re-export the ImportRule struct for those who need to import it directly
+pub use import_rule::ImportRule;
+
+/// Type for rule factory functions
+pub type RuleFactory = fn() -> Arc<dyn Rule>;
+
+/// Rule plugin to encapsulate related rules
+pub struct RulePlugin {
+    /// Name of the plugin
+    pub name: String,
+    /// Description of the plugin
+    pub description: String,
+    /// List of rule factory functions provided by this plugin
+    pub rules: Vec<RuleFactory>,
+}
+
+/// Create a rule plugin for import-related rules
+pub fn create_import_rule_plugin() -> RulePlugin {
+    RulePlugin {
+        name: "import-rules".to_string(),
+        description: "Rules that check for various import patterns".to_string(),
+        rules: get_rule_factories(),
+    }
+}
+
+/// Get all built-in rule plugins
+pub fn get_all_plugins() -> Vec<RulePlugin> {
+    let plugins = vec![
+        create_import_rule_plugin(),
+        // Additional plugins can be added here
+    ];
+    plugins
+}
+
+/// Get all built-in rule plugins with debug info
+pub fn get_all_plugins_with_debug() -> Vec<RulePlugin> {
+    println!("Loading all available rule plugins...");
+    let plugins = get_all_plugins();
+    println!("Loaded {} plugins", plugins.len());
+    plugins
+}
+
+/// Get all built-in rules from all plugins
+pub fn get_all_rules() -> Vec<Arc<dyn Rule>> {
+    let mut rules = Vec::new();
+    
+    for plugin in get_all_plugins() {
+        for rule_factory in plugin.rules {
+            rules.push(rule_factory());
+        }
+    }
+    
+    rules
+}
+
+/// Get all built-in rules from all plugins with debug info
+pub fn get_all_rules_with_debug() -> Vec<Arc<dyn Rule>> {
+    println!("Loading all available rules...");
+    let mut rules = Vec::new();
+    
+    for plugin in get_all_plugins() {
+        println!("Loading rules from plugin: {}", plugin.name);
+        for rule_factory in plugin.rules {
+            let rule = rule_factory();
+            println!("  - Loaded rule: {} ({})", rule.id(), rule.description());
+            rules.push(rule);
+        }
+    }
+    
+    println!("Total rules loaded: {}", rules.len());
+    rules
+}
 
 /// Severity level for rule violations
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -162,6 +254,9 @@ pub struct RuleRegistry {
     
     /// Minimum severity level to enable
     min_severity: Option<RuleSeverity>,
+    
+    /// Debug mode for verbose logging
+    debug_mode: bool,
 }
 
 // Manually implement Debug for RuleRegistry
@@ -175,6 +270,7 @@ impl std::fmt::Debug for RuleRegistry {
             .field("enabled_tags", &self.enabled_tags)
             .field("disabled_tags", &self.disabled_tags)
             .field("min_severity", &self.min_severity)
+            .field("debug_mode", &self.debug_mode)
             .finish()
     }
 }
@@ -190,14 +286,52 @@ impl RuleRegistry {
             enabled_tags: HashSet::new(),
             disabled_tags: HashSet::new(),
             min_severity: None,
+            debug_mode: false,
         }
+    }
+    
+    /// Enable or disable debug mode for verbose logging
+    pub fn set_debug_mode(&mut self, debug: bool) {
+        self.debug_mode = debug;
     }
     
     /// Register a new rule with the registry
     pub fn register(&mut self, rule: Arc<dyn Rule>) {
         let rule_id = rule.id().to_string();
+        if self.debug_mode {
+            println!("Registering rule: {} - {}", rule_id, rule.description());
+        }
         self.available_rules.insert(rule_id.clone(), rule);
         self.update_enabled_rules();
+    }
+    
+    /// Register a plugin with the registry
+    pub fn register_plugin(&mut self, plugin: &RulePlugin) {
+        if self.debug_mode {
+            println!("Registering plugin: {} - {}", plugin.name, plugin.description);
+            println!("  Contains {} rules", plugin.rules.len());
+        }
+        
+        for rule_factory in &plugin.rules {
+            let rule = rule_factory();
+            if self.debug_mode {
+                println!("  - Adding rule: {} ({})", rule.id(), rule.description());
+            }
+            self.register(rule);
+        }
+    }
+    
+    /// Register all rules from multiple plugins
+    pub fn register_all_plugins(&mut self, plugins: Vec<RulePlugin>) {
+        if self.debug_mode {
+            println!("Registering {} plugins", plugins.len());
+        }
+        for plugin in plugins {
+            self.register_plugin(&plugin);
+        }
+        if self.debug_mode {
+            println!("Finished registering all plugins");
+        }
     }
     
     /// Register multiple rules at once
@@ -285,43 +419,106 @@ impl RuleRegistry {
     fn update_enabled_rules(&mut self) {
         self.enabled_rules.clear();
         
-        for (id, rule) in &self.available_rules {
-            // Skip explicitly disabled rules
-            if self.disabled_rule_ids.contains(id) {
-                continue;
-            }
+        if self.debug_mode {
+            println!("Updating enabled rules. Available rules: {}", self.available_rules.len());
+            println!("Filters: min_severity={:?}, enabled_tags={:?}, disabled_tags={:?}",
+                     self.min_severity, self.enabled_tags, self.disabled_tags);
             
-            // Check for explicit enablement
-            let explicitly_enabled = self.enabled_rule_ids.contains(id);
+            let mut enabled_count = 0;
+            let mut filtered_out = 0;
             
-            // If we have explicit enables and this rule isn't in the list, skip it
-            // (unless it was specifically enabled)
-            if !self.enabled_rule_ids.is_empty() && !explicitly_enabled {
-                continue;
-            }
-            
-            // Check tag filters
-            let rule_tags: HashSet<_> = rule.tags().into_iter().map(|s| s.to_string()).collect();
-            
-            // Skip if it has any disabled tags
-            if !self.disabled_tags.is_empty() && !self.disabled_tags.is_disjoint(&rule_tags) {
-                continue;
-            }
-            
-            // Skip if we have enabled tags and it doesn't have any of them
-            if !self.enabled_tags.is_empty() && self.enabled_tags.is_disjoint(&rule_tags) {
-                continue;
-            }
-            
-            // Check severity filter
-            if let Some(min_severity) = self.min_severity {
-                if !rule.severity().is_at_least(min_severity) {
+            for (id, rule) in &self.available_rules {
+                // Skip explicitly disabled rules
+                if self.disabled_rule_ids.contains(id) {
+                    println!("  - Rule {} is explicitly disabled", id);
+                    filtered_out += 1;
                     continue;
                 }
+                
+                // Check for explicit enablement
+                let explicitly_enabled = self.enabled_rule_ids.contains(id);
+                
+                // If we have explicit enables and this rule isn't in the list, skip it
+                // (unless it was specifically enabled)
+                if !self.enabled_rule_ids.is_empty() && !explicitly_enabled {
+                    println!("  - Rule {} is not in explicitly enabled list", id);
+                    filtered_out += 1;
+                    continue;
+                }
+                
+                // Check tag filters
+                let rule_tags: HashSet<_> = rule.tags().into_iter().map(|s| s.to_string()).collect();
+                
+                // Skip if it has any disabled tags
+                if !self.disabled_tags.is_empty() && !self.disabled_tags.is_disjoint(&rule_tags) {
+                    println!("  - Rule {} has disabled tags: {:?}", id, rule_tags);
+                    filtered_out += 1;
+                    continue;
+                }
+                
+                // Skip if we have enabled tags and it doesn't have any of them
+                if !self.enabled_tags.is_empty() && self.enabled_tags.is_disjoint(&rule_tags) {
+                    println!("  - Rule {} doesn't have any enabled tags: {:?}", id, rule_tags);
+                    filtered_out += 1;
+                    continue;
+                }
+                
+                // Check severity filter
+                if let Some(min_severity) = self.min_severity {
+                    if !rule.severity().is_at_least(min_severity) {
+                        println!("  - Rule {} severity {:?} doesn't meet minimum {:?}", 
+                                 id, rule.severity(), min_severity);
+                        filtered_out += 1;
+                        continue;
+                    }
+                }
+                
+                // Rule passed all filters, so enable it
+                println!("  + Enabling rule: {} ({:?})", id, rule.severity());
+                self.enabled_rules.insert(id.clone(), rule.clone());
+                enabled_count += 1;
             }
             
-            // Rule passed all filters, so enable it
-            self.enabled_rules.insert(id.clone(), rule.clone());
+            println!("Rules enabled: {}, filtered out: {}", enabled_count, filtered_out);
+        } else {
+            // Non-debug version without excessive logging
+            for (id, rule) in &self.available_rules {
+                // Skip explicitly disabled rules
+                if self.disabled_rule_ids.contains(id) {
+                    continue;
+                }
+                
+                // Check for explicit enablement
+                let explicitly_enabled = self.enabled_rule_ids.contains(id);
+                
+                // If we have explicit enables and this rule isn't in the list, skip it
+                if !self.enabled_rule_ids.is_empty() && !explicitly_enabled {
+                    continue;
+                }
+                
+                // Check tag filters
+                let rule_tags: HashSet<_> = rule.tags().into_iter().map(|s| s.to_string()).collect();
+                
+                // Skip if it has any disabled tags
+                if !self.disabled_tags.is_empty() && !self.disabled_tags.is_disjoint(&rule_tags) {
+                    continue;
+                }
+                
+                // Skip if we have enabled tags and it doesn't have any of them
+                if !self.enabled_tags.is_empty() && self.enabled_tags.is_disjoint(&rule_tags) {
+                    continue;
+                }
+                
+                // Check severity filter
+                if let Some(min_severity) = self.min_severity {
+                    if !rule.severity().is_at_least(min_severity) {
+                        continue;
+                    }
+                }
+                
+                // Rule passed all filters, so enable it
+                self.enabled_rules.insert(id.clone(), rule.clone());
+            }
         }
     }
     
@@ -329,12 +526,27 @@ impl RuleRegistry {
     pub fn evaluate_all(&self, program: &Program, file_path: &str) -> RuleResults {
         let mut results = RuleResults::new();
         
+        if self.debug_mode {
+            println!("Evaluating {} rules against file {}", self.enabled_rules.len(), file_path);
+        }
+        
         for rule in self.enabled_rules.values() {
+            if self.debug_mode {
+                println!("  - Evaluating rule: {}", rule.id());
+            }
+            
             match rule.evaluate(program, file_path) {
                 Ok(rule_match) => {
+                    if self.debug_mode && rule_match.matched {
+                        println!("    * Rule matched: {} ({})", 
+                                 rule.id(), rule_match.message.as_deref().unwrap_or("No message"));
+                    }
                     results.add_match(rule_match);
                 }
                 Err(err) => {
+                    if self.debug_mode {
+                        println!("    * Rule evaluation failed: {}", err);
+                    }
                     // Create an error match for the rule evaluation failure
                     let error_match = RuleMatch {
                         rule_id: rule.id().to_string(),
@@ -348,6 +560,11 @@ impl RuleRegistry {
                     results.add_match(error_match);
                 }
             }
+        }
+        
+        if self.debug_mode {
+            println!("Rule evaluation complete. {} matches found.", 
+                     results.matches.iter().filter(|m| m.matched).count());
         }
         
         results

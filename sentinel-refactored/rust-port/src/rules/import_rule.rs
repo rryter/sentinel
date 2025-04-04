@@ -107,7 +107,7 @@ pub fn create_rxjs_import_rule() -> Arc<dyn Rule> {
             "rxjs".to_string(),
         )
         .with_tags(vec!["rxjs", "imports", "dependencies"])
-        .with_severity(RuleSeverity::Info)
+        .with_severity(RuleSeverity::Warning)
     )
 }
 
@@ -120,6 +120,19 @@ pub fn create_angular_core_import_rule() -> Arc<dyn Rule> {
             "@angular/core".to_string(),
         )
         .with_tags(vec!["angular", "imports", "dependencies"])
+        .with_severity(RuleSeverity::Warning)
+    )
+}
+
+/// Create a rule that checks for imports of 'rxjs/operators'
+pub fn create_rxjs_operators_import_rule() -> Arc<dyn Rule> {
+    Arc::new(
+        ImportRule::new(
+            "import-rxjs-operators".to_string(),
+            "Detects imports from 'rxjs/operators' module".to_string(),
+            "rxjs/operators".to_string(),
+        )
+        .with_tags(vec!["rxjs", "imports", "dependencies"])
         .with_severity(RuleSeverity::Warning)
     )
 } 
