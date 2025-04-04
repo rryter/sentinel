@@ -3,42 +3,18 @@ use std::sync::Arc;
 use anyhow::Result;
 use oxc_ast::ast::Program;
 
-// Define rule modules
-mod import_rule;
+// --- Core Rule Definitions ---
+// (If you have non-custom, built-in rules, they would be declared and registered here)
 
-/// Macro to declare and automatically export rule factories
-#[macro_export]
-macro_rules! register_rules {
-    ( $( $module:ident :: $factory:ident ),* ) => {
-        $(
-            pub use $module::$factory;
-        )*
-        
-        // Get all rule factories in a vec
-        pub fn get_rule_factories() -> Vec<RuleFactory> {
-            vec![
-                $(
-                    $factory,
-                )*
-            ]
-        }
-    };
-}
-
-// Use the register_rules macro to automatically export all rule factories
-register_rules!(
-    import_rule::create_rxjs_import_rule,
-    import_rule::create_angular_core_import_rule,
-    import_rule::create_rxjs_operators_import_rule
-);
-
-// Re-export the ImportRule struct for those who need to import it directly
-pub use import_rule::ImportRule;
+// --- Custom Rules Module ---
+// This module will handle the dynamic discovery via build script
+pub mod custom;
 
 /// Type for rule factory functions
 pub type RuleFactory = fn() -> Arc<dyn Rule>;
 
 /// Rule plugin to encapsulate related rules
+#[derive(Debug, Clone)]
 pub struct RulePlugin {
     /// Name of the plugin
     pub name: String,
@@ -48,21 +24,22 @@ pub struct RulePlugin {
     pub rules: Vec<RuleFactory>,
 }
 
-/// Create a rule plugin for import-related rules
-pub fn create_import_rule_plugin() -> RulePlugin {
-    RulePlugin {
-        name: "import-rules".to_string(),
-        description: "Rules that check for various import patterns".to_string(),
-        rules: get_rule_factories(),
-    }
+/// Initialize the rule system (mainly for custom rules now)
+pub fn initialize() {
+    custom::initialize(); // Initialize the dynamic custom rules part
 }
 
-/// Get all built-in rule plugins
+/// Get all rule plugins (built-in + custom)
 pub fn get_all_plugins() -> Vec<RulePlugin> {
-    let plugins = vec![
-        create_import_rule_plugin(),
-        // Additional plugins can be added here
-    ];
+    let mut plugins = Vec::new();
+
+    // Add built-in plugins here if any
+
+    // Add custom plugins discovered dynamically
+    if let Ok(custom_plugins) = custom::get_all_custom_plugins() {
+        plugins.extend(custom_plugins);
+    }
+
     plugins
 }
 
