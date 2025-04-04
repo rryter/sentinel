@@ -1,17 +1,6 @@
 {
   "totalFilesAnalyzed": 117,
-  "totalMatchesFound": 1,
-  "matchesByRuleId": {
-    "angular-observable-input": [
-      {
-        "RuleID": "angular-observable-input",
-        "FilePath": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding/user-validation/page/onboarding-user-validation-page.component.ts",
-        "Message": "Avoid using Observable for @Input property 'test'.",
-        "Line": 58,
-        "Column": 3,
-        "Severity": 1
-      }
-    ]
-  },
+  "totalMatchesFound": 0,
+  "matchesByRuleId": {},
   "filesWithErrors": []
 }
