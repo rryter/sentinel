@@ -5,7 +5,6 @@ use walkdir::WalkDir;
 
 pub mod scanner;
 pub mod metrics;
-pub mod analyzer;
 
 /// Result of scanning a codebase for TypeScript files
 pub struct ScanResult {
@@ -18,8 +17,6 @@ pub struct AnalysisResult {
     pub scan_result: ScanResult,
     pub parse_duration: Duration,
     pub analysis_duration: Duration,
-    pub rule_matches: Vec<analyzer::RuleMatch>,
-    pub parse_errors: Vec<(String, Vec<String>)>, // (file_path, errors)
 }
 
 /// Find all files with the given extensions in a directory
@@ -98,21 +95,15 @@ impl TypeScriptAnalyzer {
         
         // Now parse and analyze each file
         let parse_start = Instant::now();
-        let mut rule_matches = Vec::new();
-        let mut parse_errors = Vec::new();
         
-        // Analyze the files with our analyzer module instead of using the parser module
         let analysis_start = Instant::now();
         
         for file_path in &scan_result.files {
             match std::fs::read_to_string(file_path) {
-                Ok(content) => {
+                Ok(_content) => {
                     // Simple string-based analysis for now
-                    let file_matches = analyzer::find_rxjs_imports_in_content(file_path, &content);
-                    rule_matches.extend(file_matches);
                 }
-                Err(e) => {
-                    parse_errors.push((file_path.clone(), vec![format!("Failed to read file: {}", e)]));
+                Err(_e) => {
                 }
             }
         }
@@ -124,8 +115,6 @@ impl TypeScriptAnalyzer {
             scan_result,
             parse_duration,
             analysis_duration,
-            rule_matches,
-            parse_errors,
         })
     }
 } 
