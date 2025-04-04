@@ -16,3 +16,11 @@ oxc_allocator = "0.62.0"
 oxc_parser = "0.62.0"
 oxc_ast = "0.62.0"
 oxc_span = "0.62.0"
+# For parallel processing
+rayon = "1.8"
+# For faster memory allocation
+mimalloc = { version = "0.1", default-features = false }
+# For a global allocator wrapper
+once_cell = "1.18"
+# For async file I/O (optional)
+tokio = { version = "1", features = ["full"] }
