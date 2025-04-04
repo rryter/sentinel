@@ -263,10 +263,10 @@ func (a *Analyzer) AnalyzeFiles(filePaths []string) ([]FileAnalysisResult, error
 	// Check if parser supports batch processing
 	batchParser, supportsBatch := a.parser.(BatchParser)
 
-	// Determine number of workers
-	numWorkers := runtime.NumCPU()
-	if numWorkers > 8 {
-		numWorkers = 8
+	// Determine number of workers - scale with CPU count for I/O bound operations
+	numWorkers := runtime.NumCPU() * 4
+	if numWorkers > 32 {
+		numWorkers = 32
 	}
 
 	var newResults []FileAnalysisResult
