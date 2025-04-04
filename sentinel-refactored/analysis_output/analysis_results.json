@@ -1,9 +1,124 @@
 {
-  "totalFilesAnalyzed": 117,
-  "totalMatchesFound": 0,
-  "matchesByRuleId": {},
+  "totalFilesAnalyzed": 943,
+  "totalMatchesFound": 14,
+  "matchesByRuleId": {
+    "angular-observable-input": [
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'CallbackAppointmentDetailsOverlayContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'BasicInsuranceMutationCareProviderOverlayContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'TherapistSearchService'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'TherapistSearchOverlayContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'TherapistSearchOverlayPageComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'DoctorSearchService'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'DoctorMutationSelectionOverlayContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'DoctorMutationOverlayPageComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'LoginPageComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'OnboardingAccountContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'OnboardingMobileNumberContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'OnboardingMobileVerificationContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'OnboardingUserValidationContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      },
+      {
+        "RuleID": "angular-observable-input",
+        "FilePath": "",
+        "Message": "Avoid using Observable for @Input property 'AddressMutationSearchContainerComponent'. Use signals or async pipe instead.",
+        "Line": 0,
+        "Column": 0,
+        "Severity": 1
+      }
+    ]
+  },
   "filesWithErrors": [],
   "cacheEnabled": true,
-  "filesFromCache": 117,
+  "filesFromCache": 943,
   "cacheHitRate": 100
 }

@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
+	"regexp"
+	"strings"
 
 	"sentinel-refactored/internal/astutil"
 	"sentinel-refactored/pkg/rule_interface"
@@ -59,30 +62,156 @@ func (r *AngularObservableInputRule) Check(filePath string, fileContent string, 
 
 	debugLog(fmt.Sprintf("Checking file: %s", filePath))
 	
-	// Save AST for debugging
-	astJson, _ := json.MarshalIndent(ast, "", "  ")
-	os.WriteFile("/tmp/ast.json", astJson, 0644)
-	debugLog("Saved AST to /tmp/ast.json")
-
-	// DEBUG: Get program structure
-	program, ok := ast["program"].(map[string]interface{})
-	if !ok {
-		debugLog("AST does not have expected program structure")
+	// Debugging the AST structure
+	astType := reflect.TypeOf(ast).String()
+	debugLog(fmt.Sprintf("AST type: %s", astType))
+	
+	for key, value := range ast {
+		debugLog(fmt.Sprintf("Top-level key: %s (type: %T)", key, value))
+	}
+	
+	// Check for imports - either through program.body or direct body
+	var bodyArray []interface{}
+	
+	if program, hasProgramNode := ast["program"].(map[string]interface{}); hasProgramNode {
+		// Original ESTree AST structure
+		debugLog("AST has program node (ESTree structure)")
+		if body, ok := program["body"].([]interface{}); ok {
+			bodyArray = body
+		}
+	} else if body, hasBodyArray := ast["body"].([]interface{}); hasBodyArray {
+		// Oxc native AST structure
+		debugLog("AST has direct body array (Oxc native structure)")
+		bodyArray = body
 	} else {
-		body, ok := program["body"].([]interface{})
-		if !ok || len(body) == 0 {
-			debugLog("Program body is empty or not an array")
-		} else {
-			debugLog(fmt.Sprintf("Program has %d top-level nodes", len(body)))
+		debugLog("AST does not have expected structure (no program.body or body)")
+		// Dump AST for debugging
+		if data, err := json.MarshalIndent(ast, "", "  "); err == nil {
+			debugLog(fmt.Sprintf("AST dump: %s", string(data[:500]))) // First 500 chars to avoid huge logs
+		}
+		return matches, nil
+	}
+	
+	debugLog(fmt.Sprintf("Body array has %d elements", len(bodyArray)))
+	
+	// Look for Observable imports
+	hasObservableImport := false
+	hasOfImport := false
+	
+	for _, node := range bodyArray {
+		nodeMap, ok := node.(map[string]interface{})
+		if !ok {
+			// Oxc might have serialized differently
+			nodeStr, isStr := node.(string)
+			if !isStr {
+				continue
+			}
+			if strings.Contains(nodeStr, "ImportDeclaration") && 
+			   (strings.Contains(nodeStr, "Observable") || strings.Contains(nodeStr, "rxjs")) {
+				hasObservableImport = true
+				debugLog("Found Observable import via string matching")
+			}
+			if strings.Contains(nodeStr, "ImportDeclaration") && 
+			   (strings.Contains(nodeStr, "of") || strings.Contains(nodeStr, "rxjs")) {
+				hasOfImport = true
+				debugLog("Found 'of' import via string matching")
+			}
+			continue
+		}
+		
+		nodeType := astutil.GetNodeType(nodeMap)
+		if nodeType == "ImportDeclaration" {
+			source, hasSource := astutil.GetMapProperty(nodeMap, "source")
+			if !hasSource {
+				continue
+			}
+			
+			if value, ok := astutil.GetStringProperty(source, "value"); ok && value == "rxjs" {
+				specifiers, ok := astutil.GetArrayProperty(nodeMap, "specifiers")
+				if !ok {
+					continue
+				}
+				
+				for _, spec := range specifiers {
+					specMap, ok := spec.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					
+					imported, ok := astutil.GetMapProperty(specMap, "imported")
+					if !ok {
+						continue
+					}
+					
+					if name, ok := astutil.GetStringProperty(imported, "name"); ok {
+						if name == "Observable" {
+							hasObservableImport = true
+							debugLog("Found Observable import")
+						}
+						if name == "of" {
+							hasOfImport = true
+							debugLog("Found 'of' import")
+						}
+					}
+				}
+			}
 		}
 	}
-
-	visitor := func(node map[string]interface{}) bool {
+	
+	debugLog(fmt.Sprintf("Import check: Observable=%v, of=%v", hasObservableImport, hasOfImport))
+	
+	// If no Observable import, skip further analysis
+	if !hasObservableImport && !hasOfImport {
+		debugLog("No Observable imports found, skipping further analysis")
+		return matches, nil
+	}
+	
+	// DEBUG dump - only for target file
+	if strings.Contains(filePath, "test-observable-input.ts") {
+		astJson, _ := json.MarshalIndent(ast, "", "  ")
+		os.WriteFile("/tmp/ast-target.json", astJson, 0644)
+		debugLog("Saved full AST to /tmp/ast-target.json for debugging")
+	}
+	
+	// Process AST to find components
+	// Now traverse the rest of the AST to find @Input properties
+	processStringNode := func(node string) {
+		if strings.Contains(node, "PropertyDefinition") && 
+		   strings.Contains(node, "Input") && 
+		   strings.Contains(node, "Observable") {
+			
+			debugLog(fmt.Sprintf("Found potential Observable @Input via string matching: %s", 
+				node[:min(100, len(node))]))
+			
+			// Try to extract property name using regex
+			re := regexp.MustCompile(`name: "([^"]+)"`)
+			nameMatches := re.FindStringSubmatch(node)
+			propertyName := "<unknown>"
+			if len(nameMatches) > 1 {
+				propertyName = nameMatches[1]
+			}
+			
+			message := fmt.Sprintf("Avoid using Observable for @Input property '%s'. Use signals or async pipe instead.", propertyName)
+			
+			// Create a simple match without precise location
+			match := rule_interface.Match{
+				RuleID:   r.ID(),
+				Message:  message,
+				Severity: rule_interface.SeverityWarning,
+			}
+			
+			matches = append(matches, match)
+			debugLog(fmt.Sprintf("MATCH FOUND: %s", message))
+		}
+	}
+	
+	processNode := func(node map[string]interface{}) bool {
 		nodeType := astutil.GetNodeType(node)
 		
-		// Debug all property definitions
+		// Process only property definitions
 		if nodeType == "PropertyDefinition" {
 			propertyName := astutil.GetNodeName(node)
+			
 			debugLog(fmt.Sprintf("Found PropertyDefinition: %s", propertyName))
 			
 			// Check decorator
@@ -93,14 +222,22 @@ func (r *AngularObservableInputRule) Check(filePath string, fileContent string, 
 			isObservable := r.isObservableType(node)
 			debugLog(fmt.Sprintf("  Is Observable type: %v", isObservable))
 			
+			// Check initializer (may be initialized to Observable value)
+			hasObservableInit := r.hasObservableInitializer(node)
+			debugLog(fmt.Sprintf("  Has Observable initializer: %v", hasObservableInit))
+			
 			// Full property debug
-			debugJSON("  Property node", node)
-
-			if hasInput && isObservable {
+			if propertyName == "observableInput" || propertyName == "observableWithInit" || 
+			   propertyName == "test" {
+				debugJSON("  Property node", node)
+			}
+			
+			// Check for property with both initializer and type
+			if hasInput && (isObservable || hasObservableInit) {
 				if propertyName == "" {
 					propertyName = "<unknown>"
 				}
-				message := fmt.Sprintf("Avoid using Observable for @Input property '%s'.", propertyName)
+				message := fmt.Sprintf("Avoid using Observable for @Input property '%s'. Use signals or async pipe instead.", propertyName)
 				
 				match := astutil.CreateMatch(r, node, fileContent, filePath, message, rule_interface.SeverityWarning)
 				matches = append(matches, match)
@@ -109,11 +246,26 @@ func (r *AngularObservableInputRule) Check(filePath string, fileContent string, 
 		}
 		return true // Continue traversal
 	}
-
-	astutil.Traverse(ast, visitor)
+	
+	// Process all nodes in the AST
+	for _, node := range bodyArray {
+		if nodeMap, ok := node.(map[string]interface{}); ok {
+			astutil.Traverse(nodeMap, processNode)
+		} else if nodeStr, ok := node.(string); ok {
+			processStringNode(nodeStr)
+		}
+	}
+	
 	debugLog(fmt.Sprintf("Checking complete. Found %d matches", len(matches)))
-
 	return matches, nil
+}
+
+// min is a helper to get the minimum of two ints
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // --- Rule Specific Logic --- 
@@ -231,4 +383,38 @@ func (r *AngularObservableInputRule) isObservableType(node map[string]interface{
 // The name convention is important (CreateRule + PascalCase Rule Name without .go).
 func CreateRule() rule_interface.Rule {
 	return &AngularObservableInputRule{}
+}
+
+// hasObservableInitializer checks if the property is initialized with an observable value
+func (r *AngularObservableInputRule) hasObservableInitializer(node map[string]interface{}) bool {
+	initializer, ok := astutil.GetMapProperty(node, "value")
+	if !ok {
+		return false
+	}
+	
+	// Check for of(...) calls which return Observable
+	if astutil.GetNodeType(initializer) == "CallExpression" {
+		callee, ok := astutil.GetMapProperty(initializer, "callee")
+		if !ok {
+			return false
+		}
+		
+		if calleeName, ok := astutil.GetStringProperty(callee, "name"); ok && calleeName == "of" {
+			return true
+		}
+	}
+	
+	// Check for new Observable(...) construction
+	if astutil.GetNodeType(initializer) == "NewExpression" {
+		callee, ok := astutil.GetMapProperty(initializer, "callee")
+		if !ok {
+			return false
+		}
+		
+		if calleeName, ok := astutil.GetStringProperty(callee, "name"); ok && calleeName == "Observable" {
+			return true
+		}
+	}
+	
+	return false
 } 
