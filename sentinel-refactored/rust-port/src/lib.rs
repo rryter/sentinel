@@ -16,6 +16,7 @@ use rayon::prelude::*;
 use mimalloc::MiMalloc;
 // Thread-safe locks for rule results
 use parking_lot::Mutex;
+use colored::*;  // Import the colored crate
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -265,9 +266,31 @@ impl TypeScriptAnalyzer {
         let final_parsed_count = parsed_count.load(Ordering::Relaxed);
         let final_error_count = error_count.load(Ordering::Relaxed);
         
-        println!("Successfully parsed {} files ({} errors)", final_parsed_count, final_error_count);
-        println!("Parse time: {:?}", parse_duration);
-        println!("Files per second: {:.2}", scan_result.files.len() as f64 / parse_duration.as_secs_f64());
+        println!("Successfully parsed {} files ({} errors)", 
+            final_parsed_count.to_string().green().bold(), 
+            if final_error_count > 0 { final_error_count.to_string().red().bold() } else { final_error_count.to_string().green() }
+        );
+        
+        // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
+        let duration_str = if parse_duration.as_secs() > 0 {
+            format!("{:.3}s", parse_duration.as_secs_f64())
+        } else {
+            format!("{}ms", parse_duration.as_millis())
+        };
+        
+        println!("Parse time: {}", duration_str.cyan());
+        
+        // Debug info
+        let duration_nanos = parse_duration.as_nanos();
+        let duration_seconds = duration_nanos as f64 / 1_000_000_000.0;
+        
+        // Only show files per second if we have a meaningful duration
+        if duration_seconds >= 0.001 { // At least 1 millisecond
+            let files_per_second = (final_parsed_count as f64 / duration_seconds).round() as u32;
+            println!("Files per second: {}", files_per_second.to_string().cyan().bold());
+        } else {
+            println!("Files per second: {}", "N/A (duration too small)".cyan());
+        }
         
         // Get final rule results if applicable
         let final_rule_results = if let Some(results) = rule_results {
@@ -288,8 +311,8 @@ impl TypeScriptAnalyzer {
             
             let results = results_lock.into_inner();
             
-            // Always print the header
-            println!("\nRule Results:");
+            // Always print the header with color
+            println!("\n{}", "Rule Results:".bold());
 
             // Only calculate and print details if there are matches
             if !results.matches.is_empty() {
@@ -304,6 +327,11 @@ impl TypeScriptAnalyzer {
                     }
                 }
                 
+                // Initialize counters for the total summary
+                let mut total_errors = 0;
+                let mut total_warnings = 0;
+                let mut total_info = 0;
+                
                 // Print summary grouped by severity
                 for severity in [rules::RuleSeverity::Error, rules::RuleSeverity::Warning, rules::RuleSeverity::Info] {
                     let matches = rule_counts.iter()
@@ -311,12 +339,50 @@ impl TypeScriptAnalyzer {
                         .collect::<Vec<_>>();
                     
                     if !matches.is_empty() {
-                        println!("  {} {:?} findings:", matches.len(), severity);
+                        // Update the totals
+                        match severity {
+                            rules::RuleSeverity::Error => total_errors = matches.len(),
+                            rules::RuleSeverity::Warning => total_warnings = matches.len(),
+                            rules::RuleSeverity::Info => total_info = matches.len(),
+                        }
+                        
+                        // Print severity header with appropriate color
+                        let severity_str = match severity {
+                            rules::RuleSeverity::Error => format!("{} Error findings:", matches.len()).red().bold(),
+                            rules::RuleSeverity::Warning => format!("{} Warning findings:", matches.len()).yellow().bold(),
+                            rules::RuleSeverity::Info => format!("{} Info findings:", matches.len()).blue().bold(),
+                        };
+                        println!("  {}", severity_str);
+                        
+                        // Print individual rule results with their counts
                         for (rule_id, (count, _)) in matches {
-                            println!("    {}: {} matches", rule_id, count);
+                            // Color the rule ID based on severity
+                            let colored_rule_id = match severity {
+                                rules::RuleSeverity::Error => rule_id.red(),
+                                rules::RuleSeverity::Warning => rule_id.yellow(),
+                                rules::RuleSeverity::Info => rule_id.blue(),
+                            };
+                            println!("    {}: {} matches", colored_rule_id, count.to_string().bold());
                         }
                     }
                 }
+                
+                // Print a summary line at the end if we have multiple severity types
+                if total_errors + total_warnings + total_info > 1 {
+                    let mut summary = vec![];
+                    if total_errors > 0 {
+                        summary.push(format!("{} errors", total_errors).red().bold().to_string());
+                    }
+                    if total_warnings > 0 {
+                        summary.push(format!("{} warnings", total_warnings).yellow().bold().to_string());
+                    }
+                    if total_info > 0 {
+                        summary.push(format!("{} info", total_info).blue().bold().to_string());
+                    }
+                    println!("\n  Summary: {}", summary.join(", "));
+                }
+            } else {
+                println!("  {}", "No rule violations found.".green().bold());
             }
             
             Some(results)

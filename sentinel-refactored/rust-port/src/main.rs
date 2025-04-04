@@ -2,6 +2,7 @@ use std::path::Path;
 use std::sync::Arc;
 use anyhow::Result;
 use clap::Parser;
+use colored::*;
 use typescript_analyzer::{
     TypeScriptAnalyzer,
     rules::{
@@ -9,7 +10,7 @@ use typescript_analyzer::{
         RuleSeverity,
         initialize as initialize_rules,
         get_all_plugins,
-    }
+    },
 };
 use crate::config::Config;
 
@@ -31,9 +32,9 @@ struct Args {
     #[arg(short, long, default_value = "ts,tsx")]
     extensions: String,
     
-    /// Enable rules-based analysis
-    #[arg(short, long)]
-    rules: bool,
+    /// Disable rules-based analysis
+    #[arg(long)]
+    no_rules: bool,
     
     /// Enable verbose rule debugging output
     #[arg(long)]
@@ -90,7 +91,7 @@ fn main() -> Result<()> {
     let extensions: Vec<&str> = args.extensions.split(',').collect();
     
     // Create analyzer, optionally with rules
-    let analyzer = if args.rules {
+    let analyzer = if !args.no_rules {
         // Create registry with rules
         let mut registry = RuleRegistry::new();
         
@@ -164,15 +165,29 @@ fn main() -> Result<()> {
         // Print enabled rules if verbose mode is on
         if args.verbose {
             let enabled_rules_list: Vec<_> = registry.enabled_rules().collect();
-            println!("--- Enabled Rules ({}) ---", enabled_rules_list.len());
+            println!("\n{}", format!("--- Enabled Rules ({}) ---", enabled_rules_list.len()).cyan().bold());
             if enabled_rules_list.is_empty() {
-                println!("  (No rules enabled based on current configuration)");
+                println!("  {}", "(No rules enabled based on current configuration)".yellow());
             } else {
                 for (id, rule) in enabled_rules_list {
-                    println!("  - {} ({:?}): {}", id, rule.severity(), rule.description());
+                    // Color based on rule severity
+                    let colored_id = match rule.severity() {
+                        RuleSeverity::Error => id.red().bold(),
+                        RuleSeverity::Warning => id.yellow().bold(),
+                        RuleSeverity::Info => id.blue().bold(),
+                    };
+                    println!("  - {} ({}): {}", 
+                        colored_id,
+                        match rule.severity() {
+                            RuleSeverity::Error => "ERROR".red(),
+                            RuleSeverity::Warning => "WARNING".yellow(),
+                            RuleSeverity::Info => "INFO".blue(),
+                        },
+                        rule.description()
+                    );
                 }
             }
-            println!("-------------------------");
+            println!("{}", "-------------------------".cyan());
         }
         
         TypeScriptAnalyzer::with_rules(args.verbose, Arc::new(registry))
@@ -185,11 +200,27 @@ fn main() -> Result<()> {
     // Run the analysis
     let result = analyzer.analyze_directory(path, &extensions)?;
     
-    println!("\nAnalysis complete:");
-    println!("  Files scanned: {}", result.scan_result.files.len());
-    println!("  Files parsed: {}", result.parsed_count);
-    println!("  Parse errors: {}", result.error_count);
-    println!("  Analysis time: {:?}", result.analysis_duration);
+    println!("\n{}", "Analysis complete:".bold());
+    println!("  Files scanned: {}", result.scan_result.files.len().to_string().cyan().bold());
+    println!("  Files parsed: {}", result.parsed_count.to_string().green().bold());
+    
+    // Show parse errors as red if there are any
+    let error_count_str = if result.error_count > 0 {
+        result.error_count.to_string().red().bold()
+    } else {
+        result.error_count.to_string().green()
+    };
+    println!("  Parse errors: {}", error_count_str);
+    
+    // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
+    let duration_str = if result.analysis_duration.as_secs() > 0 {
+        format!("{:.3}s", result.analysis_duration.as_secs_f64())
+    } else {
+        format!("{}ms", result.analysis_duration.as_millis())
+    };
+    
+    // Display analysis duration
+    println!("  Analysis time: {}", duration_str.cyan());
     
     Ok(())
 }
