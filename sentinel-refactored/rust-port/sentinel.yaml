@@ -10,8 +10,8 @@ rules:
   # unless they are also explicitly disabled or filtered out by other criteria.
   enable:
     - import-rxjs
-    - import-angular-core
     - import-rxjs-operators
+    - angular-decorators
     # - rule-id-1
     # - plugin-name/rule-id-2
 

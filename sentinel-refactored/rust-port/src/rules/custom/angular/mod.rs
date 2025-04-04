@@ -1,1 +1,1 @@
-// RxJS custom rules module 
+// Angular custom rules module
