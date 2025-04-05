@@ -184,6 +184,15 @@ impl RuleResults {
         
         // Create the output file
         let path = Path::new(file_path);
+        
+        // Ensure the parent directory exists
+        if let Some(parent) = path.parent() {
+            if !parent.exists() {
+                std::fs::create_dir_all(parent)?;
+                println!("Created directory: {}", parent.display());
+            }
+        }
+        
         let mut file = File::create(path)?;
         
         // Write the JSON to the file

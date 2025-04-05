@@ -34,7 +34,8 @@ rules:
   # Possible values: Error, Warning, Info (case-insensitive) or leave commented out/null.
   # min_severity: Warning
 
-export_json: "./results/findings.json"
+  # Export rule findings to a JSON file
+  export_json: "./results/findings.json"
 
 # --- Debugging ---
 # Enable verbose debug logging for the rule registry and evaluation process.
