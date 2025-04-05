@@ -50,9 +50,23 @@ impl AnalysisMetrics {
     }
     
     /// Print a summary of the metrics
-    pub fn print_summary(&self) {
+    pub fn print_summary(&self, file_paths: Option<&[String]>) {
         println!("\n--- Analysis Metrics ---");
         println!("Files scanned: {}", self.file_count);
+        
+        // Print file paths if provided
+        if let Some(paths) = file_paths {
+            if !paths.is_empty() {
+                println!("File paths:");
+                for path in paths.iter().take(10) {
+                    println!("  - {}", path);
+                }
+                if paths.len() > 10 {
+                    println!("  ... and {} more files", paths.len() - 10);
+                }
+            }
+        }
+        
         println!("Total lines: {}", self.total_lines);
         println!("Total size: {} bytes", self.total_size);
         println!("Scan duration: {:?}", self.scan_duration);
