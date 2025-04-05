@@ -25,6 +25,9 @@ pub struct RuleConfig {
     #[serde(default)]
     pub disable_tags: HashSet<String>,
     pub min_severity: Option<RuleSeverity>, // Need to handle deserialization carefully if case-insensitive
+    
+    /// Path to export rule findings to a JSON file (if specified)
+    pub export_json: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Default, Clone)]
