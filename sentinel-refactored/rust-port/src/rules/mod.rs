@@ -7,6 +7,7 @@ use serde::Serialize;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use oxc_span;
 
 // --- Core Rule Definitions ---
 // (If you have non-custom, built-in rules, they would be declared and registered here)
@@ -92,6 +93,16 @@ pub struct SourceLocation {
     pub start: usize,
     /// End offset in the source text
     pub end: usize,
+}
+
+/// Helper function to create a SourceLocation from an oxc span
+pub fn create_source_location(span: &oxc_span::Span) -> SourceLocation {
+    SourceLocation {
+        line: 1, // We don't have line information from the span
+        column: 1, // We don't have column information from the span
+        start: span.start as usize,
+        end: span.end as usize,
+    }
 }
 
 /// Result of evaluating a rule against a source file

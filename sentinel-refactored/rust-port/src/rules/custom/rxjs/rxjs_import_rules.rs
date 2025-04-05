@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use anyhow::Result;
 use oxc_ast::ast::{Program, ModuleDeclaration};
-use crate::rules::{Rule, RuleMatch, RuleSeverity, SourceLocation}; 
+use crate::rules::{Rule, RuleMatch, RuleSeverity, create_source_location}; 
 
 // Copied from original import_rule.rs
 /// Rule that checks for imports of specific modules
@@ -56,13 +56,7 @@ impl Rule for ImportRule {
                     if src_str == self.module_name {
                         matched = true;
                         message = Some(format!("Found import of module '{}'", self.module_name));
-                        let span = import_decl.span;
-                        // Note: Location detail might depend on oxc capabilities
-                        location = Some(SourceLocation {
-                            line: 1, column: 1, // Placeholder if oxc doesn't provide easily
-                            start: span.start as usize,
-                            end: span.end as usize,
-                        });
+                        location = Some(create_source_location(&import_decl.span));
                         break;
                     }
                 }

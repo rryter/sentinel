@@ -2,8 +2,9 @@ use std::sync::Arc;
 use std::collections::{HashMap, HashSet};
 use anyhow::Result;
 use oxc_ast::ast::{Program, Decorator, Expression};
+use oxc_span::Span;
 use oxc_ast_visit::{Visit, walk}; // Make sure you have this import for the trait
-use crate::rules::{Rule, RuleMatch, RuleSeverity};
+use crate::rules::{Rule, RuleMatch, RuleSeverity, create_source_location};
 
 /// Rule that detects Angular property decorators like @Input, @Output, etc.
 pub struct AngularDecoratorDetectionRule {
@@ -54,6 +55,7 @@ impl AngularDecoratorDetectionRule {
 struct DecoratorFinder<'a> {
     target_decorator_names: &'a HashSet<String>,
     found_decorators: Vec<String>, // Only store the decorator names, not references
+    decorator_spans: Vec<Span>,    // Store spans for location information
     debug_mode: bool,
 }
 
@@ -62,6 +64,7 @@ impl<'a> DecoratorFinder<'a> {
         Self {
             target_decorator_names: target_names,
             found_decorators: Vec::new(),
+            decorator_spans: Vec::new(),
             debug_mode,
         }
     }
@@ -114,9 +117,10 @@ impl<'a> Visit<'a> for DecoratorFinder<'a> {
                 if self.debug_mode {
                     println!("Matched target decorator: @{}", name);
                 }
-                // Only store the name, not the reference
+                // Store the name and the span
                 if !self.found_decorators.contains(&name) {
                     self.found_decorators.push(name);
+                    self.decorator_spans.push(decorator.span);
                 }
             }
         }
@@ -159,8 +163,12 @@ impl Rule for AngularDecoratorDetectionRule {
             None
         };
         
-        // For now, we don't specify a precise location
-        let location = None;
+        // Set location using the first found decorator's span
+        let location = if !finder.decorator_spans.is_empty() {
+            Some(create_source_location(&finder.decorator_spans[0]))
+        } else {
+            None
+        };
         
         // Return the match result
         Ok(RuleMatch {
@@ -175,6 +183,15 @@ impl Rule for AngularDecoratorDetectionRule {
                 if matched {
                     metadata.insert("found_decorators".to_string(), 
                                    finder.found_decorators.join(","));
+                    
+                    // Add all locations as metadata for multiple occurrences
+                    if finder.decorator_spans.len() > 1 {
+                        let additional_locations = finder.decorator_spans.iter().skip(1)
+                            .map(|span| format!("{}:{}", span.start as usize, span.end as usize))
+                            .collect::<Vec<_>>()
+                            .join(";");
+                        metadata.insert("additional_locations".to_string(), additional_locations);
+                    }
                 }
                 metadata
             },

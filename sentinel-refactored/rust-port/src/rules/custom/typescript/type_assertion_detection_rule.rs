@@ -2,8 +2,9 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use anyhow::Result;
 use oxc_ast::ast::{Program, TSAsExpression, TSTypeAssertion, TSType, TSNonNullExpression, TSSatisfiesExpression};
+use oxc_span::Span;
 use oxc_ast_visit::{Visit, walk};
-use crate::rules::{Rule, RuleMatch, RuleSeverity};
+use crate::rules::{Rule, RuleMatch, RuleSeverity, create_source_location};
 
 /// Rule that detects TypeScript type assertions/castings in various forms
 pub struct TypeScriptAssertionDetectionRule {
@@ -71,6 +72,7 @@ impl AssertionType {
 // Visitor struct for finding TypeScript assertions
 struct AssertionFinder {
     found_assertions: Vec<AssertionType>,
+    spans: Vec<Span>,
     debug_mode: bool,
 }
 
@@ -78,17 +80,17 @@ impl AssertionFinder {
     fn new(debug_mode: bool) -> Self {
         Self {
             found_assertions: Vec::new(),
+            spans: Vec::new(),
             debug_mode,
         }
     }
     
-    fn add_assertion(&mut self, assertion_type: AssertionType) {
-        if !self.found_assertions.contains(&assertion_type) {
-            if self.debug_mode {
-                println!("Found assertion: {:?}", assertion_type);
-            }
-            self.found_assertions.push(assertion_type);
+    fn add_assertion(&mut self, assertion_type: AssertionType, span: Span) {
+        if self.debug_mode {
+            println!("Found assertion: {:?} at span: {:?}", assertion_type, span);
         }
+        self.found_assertions.push(assertion_type);
+        self.spans.push(span);
     }
     
     // Helper to check if a type might be 'const'
@@ -112,9 +114,9 @@ impl<'a> Visit<'a> for AssertionFinder {
         let is_const = self.is_likely_const_type(&node.type_annotation);
         
         if is_const {
-            self.add_assertion(AssertionType::AsConstAssertion);
+            self.add_assertion(AssertionType::AsConstAssertion, node.span);
         } else {
-            self.add_assertion(AssertionType::AsExpression);
+            self.add_assertion(AssertionType::AsExpression, node.span);
         }
         
         // Continue traversing the expression
@@ -127,7 +129,7 @@ impl<'a> Visit<'a> for AssertionFinder {
         if self.debug_mode {
             println!("Found TypeScript type assertion (<Type>expr)");
         }
-        self.add_assertion(AssertionType::AngleBracketAssertion);
+        self.add_assertion(AssertionType::AngleBracketAssertion, node.span);
         
         // Continue traversing the expression
         walk::walk_expression(self, &node.expression);
@@ -139,7 +141,7 @@ impl<'a> Visit<'a> for AssertionFinder {
         if self.debug_mode {
             println!("Found non-null assertion (expr!)");
         }
-        self.add_assertion(AssertionType::NonNullAssertion);
+        self.add_assertion(AssertionType::NonNullAssertion, node.span);
         
         // Continue traversing the expression
         walk::walk_expression(self, &node.expression);
@@ -150,7 +152,7 @@ impl<'a> Visit<'a> for AssertionFinder {
         if self.debug_mode {
             println!("Found satisfies expression");
         }
-        self.add_assertion(AssertionType::SatisfiesAssertion);
+        self.add_assertion(AssertionType::SatisfiesAssertion, node.span);
         
         // Continue traversing
         walk::walk_expression(self, &node.expression);
@@ -205,8 +207,12 @@ impl Rule for TypeScriptAssertionDetectionRule {
             None
         };
         
-        // For now, we don't specify a precise location
-        let location = None;
+        // Set the location to the first found assertion span, using the common helper
+        let location = if !finder.spans.is_empty() {
+            Some(create_source_location(&finder.spans[0]))
+        } else {
+            None
+        };
         
         // Return the match result
         Ok(RuleMatch {
@@ -223,6 +229,15 @@ impl Rule for TypeScriptAssertionDetectionRule {
                         .map(|assertion_type| assertion_type.as_str().to_string())
                         .collect();
                     metadata.insert("found_assertion_types".to_string(), assertion_types.join(","));
+                    
+                    // Add all locations as metadata for multiple occurrences
+                    if finder.spans.len() > 1 {
+                        let additional_locations = finder.spans.iter().skip(1)
+                            .map(|span| format!("{}:{}", span.start as usize, span.end as usize))
+                            .collect::<Vec<_>>()
+                            .join(";");
+                        metadata.insert("additional_locations".to_string(), additional_locations);
+                    }
                 }
                 metadata
             },
