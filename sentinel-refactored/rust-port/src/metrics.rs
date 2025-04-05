@@ -54,6 +54,7 @@ impl AnalysisMetrics {
         println!("\n--- Analysis Metrics ---");
         println!("Files scanned: {}", self.file_count);
         
+        
         // Print file paths if provided
         if let Some(paths) = file_paths {
             if !paths.is_empty() {
