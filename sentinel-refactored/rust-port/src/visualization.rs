@@ -121,9 +121,9 @@ pub fn generate_slowest_rules_chart(
     // Use the most recent run
     let latest_run = &performance_data[performance_data.len() - 1];
     
-    // Sort rules by execution time and take top N
+    // Sort rules by normalized execution time and take top N
     let mut top_rules = latest_run.rules.clone();
-    top_rules.sort_by(|a, b| b.total_execution_time_ms.partial_cmp(&a.total_execution_time_ms).unwrap());
+    top_rules.sort_by(|a, b| b.normalized_execution_time_ms.partial_cmp(&a.normalized_execution_time_ms).unwrap());
     top_rules.truncate(top_n);
     
     // Reverse for bottom-to-top drawing
@@ -132,23 +132,23 @@ pub fn generate_slowest_rules_chart(
     // Create color gradient
     let color_gradient = colorous::VIRIDIS;
     
-    // Set up the drawing area
-    let root = BitMapBackend::new(output_path, (800, 600))
+    // Set up the drawing area with Full HD resolution
+    let root = BitMapBackend::new(output_path, (1920, 1080))
         .into_drawing_area();
     root.fill(&WHITE)?;
     
     let max_time = top_rules.iter()
-        .map(|r| r.total_execution_time_ms)
+        .map(|r| r.normalized_execution_time_ms)
         .fold(0.0, f64::max) * 1.1; // Add 10% margin
     
     let mut chart = ChartBuilder::on(&root)
-        .margin(10)
+        .margin(30) // Increased margin for better spacing
         .caption(
-            format!("Top {} Slowest Rules ({})", top_n, latest_run.timestamp),
-            ("sans-serif", 22),
+            format!("Top {} Slowest Rules - Normalized ({})", top_n, latest_run.timestamp),
+            ("sans-serif", 40), // Increased font size
         )
-        .set_label_area_size(LabelAreaPosition::Left, 200) // Space for rule IDs
-        .set_label_area_size(LabelAreaPosition::Bottom, 40)
+        .set_label_area_size(LabelAreaPosition::Left, 400) // Increased space for rule IDs
+        .set_label_area_size(LabelAreaPosition::Bottom, 80) // Increased bottom margin
         .build_cartesian_2d(
             0.0..max_time,
             0..top_rules.len(),
@@ -156,16 +156,17 @@ pub fn generate_slowest_rules_chart(
     
     chart.configure_mesh()
         .disable_y_mesh()
-        .x_desc("Execution Time (ms)")
+        .x_desc("Normalized Execution Time (ms)")
         .y_desc("Rule")
         .y_labels(top_rules.len())
+        .label_style(("sans-serif", 20)) // Increased label font size
         .x_label_formatter(&|v| format!("{:.2}", v))
         .y_label_formatter(&|idx| {
             if *idx < top_rules.len() {
                 // Truncate long rule IDs
                 let id = &top_rules[*idx].rule_id;
-                if id.len() > 25 {
-                    format!("{}...", &id[0..22])
+                if id.len() > 35 { // Allow longer rule IDs with higher resolution
+                    format!("{}...", &id[0..32])
                 } else {
                     id.clone()
                 }
@@ -173,6 +174,7 @@ pub fn generate_slowest_rules_chart(
                 "".to_string()
             }
         })
+        .axis_desc_style(("sans-serif", 24)) // Increased axis description font size
         .draw()?;
     
     // Draw bars
@@ -184,18 +186,19 @@ pub fn generate_slowest_rules_chart(
         
         chart.draw_series(std::iter::once(
             Rectangle::new(
-                [(0.0, idx), (rule.total_execution_time_ms, idx + 1)],
+                [(0.0, idx), (rule.normalized_execution_time_ms, idx + 1)],
                 color.filled(),
             )
         ))?
-        .label(format!("{}: {:.2}ms", rule.rule_id, rule.total_execution_time_ms))
-        .legend(move |(x, y)| Rectangle::new([(x, y - 5), (x + 10, y + 5)], color.filled()));
+        .label(format!("{}: {:.2}ms", rule.rule_id, rule.normalized_execution_time_ms))
+        .legend(move |(x, y)| Rectangle::new([(x, y - 5), (x + 15, y + 5)], color.filled()));
     }
     
     chart.configure_series_labels()
         .position(SeriesLabelPosition::UpperRight)
         .background_style(WHITE.filled())
         .border_style(&BLACK)
+        .label_font(("sans-serif", 18)) // Increased legend font size
         .draw()?;
     
     Ok(())
@@ -210,8 +213,8 @@ pub fn generate_performance_trend_chart(
         return Err(anyhow::anyhow!("Insufficient performance data for trend analysis"));
     }
     
-    // Set up the drawing area
-    let root = BitMapBackend::new(output_path, (800, 600))
+    // Set up the drawing area with Full HD resolution
+    let root = BitMapBackend::new(output_path, (1920, 1080))
         .into_drawing_area();
     root.fill(&WHITE)?;
     
@@ -226,15 +229,16 @@ pub fn generate_performance_trend_chart(
         })
         .collect();
     
+    // Use normalized time as the primary y-axis scale
     let max_time = performance_data.iter()
-        .map(|run| run.total_execution_time_ms)
+        .map(|run| run.normalized_execution_time_ms)
         .fold(0.0, f64::max) * 1.1; // Add 10% margin
     
     let mut chart = ChartBuilder::on(&root)
-        .margin(10)
-        .caption("Performance Trend Over Time", ("sans-serif", 22))
-        .set_label_area_size(LabelAreaPosition::Left, 60)
-        .set_label_area_size(LabelAreaPosition::Bottom, 40)
+        .margin(30) // Increased margin
+        .caption("Performance Trend Over Time (Normalized)", ("sans-serif", 40)) // Increased title font
+        .set_label_area_size(LabelAreaPosition::Left, 120) // Increased left margin
+        .set_label_area_size(LabelAreaPosition::Bottom, 80) // Increased bottom margin
         .build_cartesian_2d(
             0..performance_data.len(),
             0.0..max_time,
@@ -251,33 +255,45 @@ pub fn generate_performance_trend_chart(
         })
         .x_desc("Date")
         .y_desc("Execution Time (ms)")
+        .label_style(("sans-serif", 20)) // Increased label font size
+        .axis_desc_style(("sans-serif", 24)) // Increased axis description font size
         .draw()?;
     
-    // Draw total execution time series
-    chart.draw_series(LineSeries::new(
-        performance_data.iter().enumerate()
-            .map(|(idx, run)| (idx, run.total_execution_time_ms)),
-        &RED,
-    ))?
-    .label("Total Execution Time (ms)")
-    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
-    
-    // Draw normalized execution time series
+    // Draw normalized execution time series first, with prominent color and thickness
     chart.draw_series(LineSeries::new(
         performance_data.iter().enumerate()
             .map(|(idx, run)| (idx, run.normalized_execution_time_ms)),
-        &BLUE,
+        RED.stroke_width(4), // Increased line thickness and using RED for primary metric
     ))?
     .label("Normalized Execution Time (ms)")
-    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 30, y)], RED.stroke_width(4)));
+    
+    // Draw total execution time series as secondary
+    chart.draw_series(LineSeries::new(
+        performance_data.iter().enumerate()
+            .map(|(idx, run)| (idx, run.total_execution_time_ms)),
+        BLUE.mix(0.7).stroke_width(2), // Reduced prominence 
+    ))?
+    .label("Total Execution Time (ms)")
+    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 30, y)], BLUE.mix(0.7).stroke_width(2)));
     
     chart.configure_series_labels()
         .position(SeriesLabelPosition::UpperLeft)
         .background_style(WHITE.filled())
         .border_style(&BLACK)
+        .label_font(("sans-serif", 18)) // Increased legend font size
         .draw()?;
     
     Ok(())
+}
+
+/// Calculate files per second metrics using normalized execution time
+fn calculate_normalized_fps(run: &PerformanceRunInfo) -> f64 {
+    if run.normalized_execution_time_ms > 0.0 {
+        run.file_count as f64 / (run.normalized_execution_time_ms / 1000.0)
+    } else {
+        0.0
+    }
 }
 
 /// Generate a chart showing files processed per second
@@ -289,8 +305,8 @@ pub fn generate_files_per_second_chart(
         return Err(anyhow::anyhow!("Insufficient performance data for trend analysis"));
     }
     
-    // Set up the drawing area
-    let root = BitMapBackend::new(output_path, (800, 600))
+    // Set up the drawing area with Full HD resolution
+    let root = BitMapBackend::new(output_path, (1920, 1080))
         .into_drawing_area();
     root.fill(&WHITE)?;
     
@@ -305,8 +321,13 @@ pub fn generate_files_per_second_chart(
         })
         .collect();
     
-    let max_fps = performance_data.iter()
-        .map(|run| run.files_per_second)
+    // Calculate normalized files per second for each run
+    let normalized_fps: Vec<f64> = performance_data.iter()
+        .map(calculate_normalized_fps)
+        .collect();
+    
+    let max_fps = normalized_fps.iter()
+        .copied()
         .fold(0.0, f64::max) * 1.1; // Add 10% margin
     
     // Calculate max file count for scale
@@ -317,10 +338,10 @@ pub fn generate_files_per_second_chart(
     
     // Use i32 instead of usize for x-axis to match Rectangle expectations
     let mut chart = ChartBuilder::on(&root)
-        .margin(10)
-        .caption("Files Processed Per Second", ("sans-serif", 22))
-        .set_label_area_size(LabelAreaPosition::Left, 60)
-        .set_label_area_size(LabelAreaPosition::Bottom, 40)
+        .margin(30) // Increased margin
+        .caption("Normalized Files Processed Per Second", ("sans-serif", 40)) // Increased title font
+        .set_label_area_size(LabelAreaPosition::Left, 120) // Increased left margin
+        .set_label_area_size(LabelAreaPosition::Bottom, 80) // Increased bottom margin
         .build_cartesian_2d(
             0i32..(performance_data.len() as i32),
             0.0..max_fps,
@@ -337,35 +358,38 @@ pub fn generate_files_per_second_chart(
             }
         })
         .x_desc("Date")
-        .y_desc("Files Per Second")
+        .y_desc("Files Per Second (normalized)")
+        .label_style(("sans-serif", 20)) // Increased label font size
+        .axis_desc_style(("sans-serif", 24)) // Increased axis description font size
         .draw()?;
     
-    // Draw files per second as bars
+    // Draw files per second as bars with increased opacity
     chart.draw_series(
         performance_data.iter().enumerate().map(|(idx, run)| {
             let idx = idx as i32; // Convert usize to i32
-            let color = Palette99::pick(3);
+            let color = Palette99::pick(3).mix(0.8); // Increased color opacity
             Rectangle::new(
-                [(idx, 0.0), (idx + 1, run.files_per_second)],
+                [(idx, 0.0), (idx + 1, calculate_normalized_fps(run))],
                 color.filled(),
             )
         })
     )?
-    .label("Files Per Second");
+    .label("Files Per Second (normalized)");
     
-    // Draw a line chart for file count directly in the same chart
+    // Draw a line chart for file count directly in the same chart with thicker line
     chart.draw_series(LineSeries::new(
         performance_data.iter().enumerate()
             .map(|(idx, run)| (idx as i32, (run.file_count as f64 / max_file_count as f64) * max_fps)),
-        &GREEN,
+        GREEN.stroke_width(3), // Increased line thickness
     ))?
     .label("File Count (scaled)")
-    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
+    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 30, y)], GREEN.stroke_width(3)));
     
     chart.configure_series_labels()
         .position(SeriesLabelPosition::UpperLeft)
         .background_style(WHITE.filled())
         .border_style(&BLACK)
+        .label_font(("sans-serif", 18)) // Increased legend font size
         .draw()?;
     
     Ok(())
