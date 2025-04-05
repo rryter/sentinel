@@ -3,6 +3,10 @@ use std::sync::Arc;
 use anyhow::Result;
 use oxc_ast::ast::Program;
 use serde::Deserialize;
+use serde::Serialize;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
 
 // --- Core Rule Definitions ---
 // (If you have non-custom, built-in rules, they would be declared and registered here)
@@ -44,8 +48,8 @@ pub fn get_all_plugins() -> Vec<RulePlugin> {
     plugins
 }
 
-/// Severity level for rule violations
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+/// Severity level for rule matches
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 pub enum RuleSeverity {
     /// A critical issue that must be fixed
     Error,
@@ -53,10 +57,23 @@ pub enum RuleSeverity {
     Warning,
 }
 
+// Implement Serialize manually for RuleSeverity
+impl serde::Serialize for RuleSeverity {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            RuleSeverity::Error => serializer.serialize_str("error"),
+            RuleSeverity::Warning => serializer.serialize_str("warning"),
+        }
+    }
+}
+
 impl RuleSeverity {
-    /// Returns true if this severity is at least as severe as the given level
+    /// Check if this severity level is at least as severe as the given level
     pub fn is_at_least(&self, level: RuleSeverity) -> bool {
-        match (self, level) {
+        match (*self, level) {
             (RuleSeverity::Error, _) => true,
             (RuleSeverity::Warning, RuleSeverity::Error) => false,
             (RuleSeverity::Warning, _) => true,
@@ -65,7 +82,7 @@ impl RuleSeverity {
 }
 
 /// Information about where in the source code a rule match occurred
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SourceLocation {
     /// Line number (1-based)
     pub line: usize,
@@ -78,7 +95,7 @@ pub struct SourceLocation {
 }
 
 /// Result of evaluating a rule against a source file
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct RuleMatch {
     /// ID of the rule that produced this match
     pub rule_id: String,
@@ -97,12 +114,15 @@ pub struct RuleMatch {
 }
 
 /// Collection of rule evaluation results
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct RuleResults {
     /// All individual rule matches
     pub matches: Vec<RuleMatch>,
     /// Count of matches by rule ID
     pub counts: HashMap<String, usize>,
+    /// Timestamp when the analysis was performed
+    #[serde(skip)]
+    timestamp: String,
 }
 
 impl RuleResults {
@@ -111,6 +131,7 @@ impl RuleResults {
         Self {
             matches: Vec::new(),
             counts: HashMap::new(),
+            timestamp: chrono::Utc::now().to_rfc3339(),
         }
     }
     
@@ -139,6 +160,28 @@ impl RuleResults {
         self.matches.iter()
             .filter(|m| m.matched && m.severity.is_at_least(severity))
             .collect()
+    }
+    
+    /// Export all rule findings to a JSON file
+    pub fn export_to_json(&self, file_path: &str) -> Result<()> {
+        let output = serde_json::json!({
+            "timestamp": self.timestamp,
+            "total_findings": self.matches.iter().filter(|m| m.matched).count(),
+            "findings_by_rule": self.counts,
+            "findings": self.matches.iter().filter(|m| m.matched).collect::<Vec<_>>(),
+        });
+        
+        // Create the output file
+        let path = Path::new(file_path);
+        let mut file = File::create(path)?;
+        
+        // Write the JSON to the file
+        let formatted_json = serde_json::to_string_pretty(&output)?;
+        file.write_all(formatted_json.as_bytes())?;
+        
+        println!("Rule findings exported to: {}", file_path);
+        
+        Ok(())
     }
 }
 

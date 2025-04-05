@@ -13,6 +13,7 @@ use typescript_analyzer::{
     },
 };
 use crate::config::Config;
+use std::collections::HashMap;
 
 mod config;
 
@@ -59,6 +60,10 @@ struct Args {
     /// Disable rules with specific tag
     #[arg(long)]
     disable_tag: Vec<String>,
+
+    /// Export rule findings to a JSON file
+    #[arg(long, value_name = "FILE")]
+    export_json: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -198,48 +203,96 @@ fn main() -> Result<()> {
     println!("  {}", path.display().to_string().cyan().bold());
     
     // Run the analysis
-    let result = analyzer.analyze_directory(path, &extensions)?;
+    let results = analyzer.analyze_directory(path, &extensions)?;
+    
+    // Check if we have rule results
+    if let Some(rule_results) = &results.rule_results {
+        // Display a summary of the findings
+        let error_count = rule_results.matches_with_min_severity(RuleSeverity::Error).len();
+        let warning_count = rule_results.matches_with_min_severity(RuleSeverity::Warning).len();
+        
+        // Print results
+        println!("\n{}", "Rule Results:".bold());
+        
+        // Only show errors section if there are errors
+        if error_count > 0 {
+            println!("  {} Error findings:", error_count.to_string().red().bold());
+            // Group by rule ID
+            let mut error_findings = HashMap::new();
+            for m in rule_results.matches_with_min_severity(RuleSeverity::Error) {
+                *error_findings.entry(&m.rule_id).or_insert(0) += 1;
+            }
+            
+            // Print each rule ID with its count
+            for (rule_id, count) in error_findings.iter() {
+                println!("    {}: {} matches", rule_id.red().bold(), count);
+            }
+        }
+        
+        // Only show warnings section if there are warnings
+        if warning_count - error_count > 0 {
+            println!("  {} Warning findings:", (warning_count - error_count).to_string().yellow().bold());
+            // Group by rule ID
+            let mut warning_findings = HashMap::new();
+            for m in rule_results.matches_with_min_severity(RuleSeverity::Warning) {
+                if m.severity == RuleSeverity::Warning {
+                    *warning_findings.entry(&m.rule_id).or_insert(0) += 1;
+                }
+            }
+            
+            // Print each rule ID with its count
+            for (rule_id, count) in warning_findings.iter() {
+                println!("    {}: {} matches", rule_id.yellow().bold(), count);
+            }
+        }
+        
+        // Summary line
+        println!("\n  Summary: {} errors, {} warnings\n", 
+            error_count.to_string().red().bold(), 
+            (warning_count - error_count).to_string().yellow().bold()
+        );
+        
+        // Export to JSON if requested
+        if let Some(export_path) = &args.export_json {
+            if let Err(e) = rule_results.export_to_json(export_path) {
+                eprintln!("Error exporting results to JSON: {}", e);
+            }
+        }
+    } else if !args.no_rules {
+        // If rules were enabled but no results were found
+        println!("\n{}", "Rule Results:".bold());
+        println!("  No rule matches found.");
+        println!("\n  Summary: {} errors, {} warnings\n", "0".green(), "0".green());
+    }
     
     println!("\n{}", "Analysis complete:".bold());
-    println!("  Files scanned: {}", result.scan_result.files.len().to_string().cyan().bold());
-    
-    // // Show file paths (up to 10, with a count if there are more)
-    // if !result.scan_result.files.is_empty() {
-    //     println!("  File paths:");
-    //     for path in result.scan_result.files.iter().take(10) {
-    //         println!("    - {}", path.cyan());
-    //     }
-    //     if result.scan_result.files.len() > 10 {
-    //         println!("    ... and {} more files", result.scan_result.files.len() - 10);
-    //     }
-    // }
-    
-    println!("  Files parsed: {}", result.parsed_count.to_string().green().bold());
+    println!("  Files scanned: {}", results.scan_result.files.len().to_string().cyan().bold());
+    println!("  Files parsed: {}", results.parsed_count.to_string().green().bold());
     
     // Show parse errors as red if there are any
-    let error_count_str = if result.error_count > 0 {
-        result.error_count.to_string().red().bold()
+    let error_count_str = if results.error_count > 0 {
+        results.error_count.to_string().red().bold()
     } else {
-        result.error_count.to_string().green()
+        results.error_count.to_string().green()
     };
     println!("  Parse errors: {}", error_count_str);
     
     // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
-    let duration_str = if result.analysis_duration.as_secs() > 0 {
-        format!("{:.3}s", result.analysis_duration.as_secs_f64())
+    let duration_str = if results.analysis_duration.as_secs() > 0 {
+        format!("{:.3}s", results.analysis_duration.as_secs_f64())
     } else {
-        format!("{}ms", result.analysis_duration.as_millis())
+        format!("{}ms", results.analysis_duration.as_millis())
     };
     
     // Display analysis duration
     println!("  Analysis time: {}", duration_str.cyan());
     
     // Display files per second if available
-    if let Some(files_per_second) = result.files_per_second {
+    if let Some(files_per_second) = results.files_per_second {
         println!("  Files per second: {}", files_per_second.to_string().cyan().bold());
     } else {
         println!("  Files per second: {}", "N/A (duration too small)".cyan());
     }
-    
+
     Ok(())
 }

@@ -20,7 +20,7 @@ impl TypeScriptAssertionDetectionRule {
             id: "typescript-assertion-detection".to_string(),
             description: "Detects TypeScript type assertions (as Type, <Type>, etc.)".to_string(),
             tags: vec!["typescript".to_string(), "type-safety".to_string(), "assertions".to_string()],
-            severity: RuleSeverity::Warning,
+            severity: RuleSeverity::Error,
             debug_mode: false,
         }
     }
@@ -239,7 +239,7 @@ pub fn create_typescript_assertion_detection_rule() -> Arc<dyn Rule> {
     Arc::new(
         TypeScriptAssertionDetectionRule::new()
             .with_tags(vec!["typescript", "type-safety", "assertions"])
-            .with_severity(RuleSeverity::Warning)
+            .with_severity(RuleSeverity::Error)
             .with_debug_mode(debug_mode)
     )
 } 

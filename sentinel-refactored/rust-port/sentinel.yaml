@@ -38,7 +38,7 @@ rules:
 # Enable verbose debug logging for the rule registry and evaluation process.
 debug:
   # Enable logging for the rule registry and evaluation process.
-  rules: false
+  rules: true
   # Add other potential components here later if needed, e.g.:
   # parser: false
   # config_loading: false

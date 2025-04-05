@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use anyhow::Result;
 use oxc_ast::ast::{Program, ModuleDeclaration};
-use crate::rules::{Rule, RuleMatch, RuleSeverity, SourceLocation}; // Adjusted path
+use crate::rules::{Rule, RuleMatch, RuleSeverity, SourceLocation}; 
 
 // Copied from original import_rule.rs
 /// Rule that checks for imports of specific modules
