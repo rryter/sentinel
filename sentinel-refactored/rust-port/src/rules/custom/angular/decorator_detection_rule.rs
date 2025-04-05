@@ -1,11 +1,11 @@
 use std::sync::Arc;
 use std::collections::HashMap;
 use anyhow::Result;
-use oxc_ast::ast::{Program};
+use oxc_ast::ast::{Program, ModuleDeclaration, Statement, Declaration, Expression, Decorator, ClassElement};
 use crate::rules::{Rule, RuleMatch, RuleSeverity};
 
 /// Rule that detects Angular property decorators like @Input, @Output, etc.
-pub struct AngularDecoratorRule {
+pub struct AngularDecoratorDetectionRule {
     id: String,
     description: String,
     decorator_names: Vec<String>,
@@ -13,10 +13,10 @@ pub struct AngularDecoratorRule {
     severity: RuleSeverity,
 }
 
-impl AngularDecoratorRule {
+impl AngularDecoratorDetectionRule {
     pub fn new() -> Self {
         Self {
-            id: "angular-decorators".to_string(),
+            id: "angular-decorators-detection".to_string(),
             description: "Detects Angular property decorators (@Input, @Output, @ViewChild, etc.)".to_string(),
             decorator_names: vec![
                 "Input".to_string(),
@@ -42,7 +42,7 @@ impl AngularDecoratorRule {
     }
 }
 
-impl Rule for AngularDecoratorRule {
+impl Rule for AngularDecoratorDetectionRule {
     fn id(&self) -> &str { &self.id }
     fn description(&self) -> &str { &self.description }
     fn tags(&self) -> Vec<&str> { self.tags.iter().map(|s| s.as_str()).collect() }
@@ -52,43 +52,45 @@ impl Rule for AngularDecoratorRule {
         let mut matched = false;
         let mut message = None;
         let location = None;
-        let found_decorators: Vec<String> = Vec::new();
+        let mut found_decorators = Vec::new();
         
         // Check if the file imports Angular core (necessary for decorators)
         let mut imports_angular = false;
         
         for stmt in &program.body {
             if let Some(module_decl) = stmt.as_module_declaration() {
-                match module_decl {
-                    oxc_ast::ast::ModuleDeclaration::ImportDeclaration(import_decl) => {
-                        if import_decl.source.value == "@angular/core" {
-                            imports_angular = true;
-                            break;
-                        }
-                    },
-                    _ => {}
+                if let ModuleDeclaration::ImportDeclaration(import_decl) = module_decl {
+                    let src_str = import_decl.source.value.as_str();
+                    if src_str == "@angular/core" {
+                        imports_angular = true;
+                        break;
+                    }
                 }
             }
         }
         
         // Only proceed if we have Angular imports
         if imports_angular {
-            // Since we don't have complete AST type information, we'll use a simplified approach
-            // In a real implementation, we'd iterate through class declarations and their elements
-            // to find decorators with names matching our target decorators
+            // 1. Find class declarations and their decorators
+            for stmt in &program.body {
+                self.process_statement(stmt, &mut found_decorators);
+            }
             
-            // Placeholder: In a more complete implementation, we would:
-            // 1. Find class declarations
-            // 2. For each class, examine its elements (properties/methods)
-            // 3. Check for decorators on those elements
-            // 4. Check if decorator names match our target list
-            
-            // For demonstration purposes, we'll just mark that Angular imports were found
-            matched = imports_angular;
-            message = Some(format!(
-                "This file imports Angular Core and may contain property decorators ({}).",
-                self.decorator_names.join(", @")
-            ));
+            // Check if we found any decorators
+            if !found_decorators.is_empty() {
+                matched = true;
+                message = Some(format!(
+                    "Found Angular property decorators: @{}",
+                    found_decorators.join(", @")
+                ));
+            } else {
+                // We found Angular imports but no decorators
+                matched = true; // Still match since we found Angular imports
+                message = Some(format!(
+                    "This file imports Angular Core but no property decorators ({}) were found.",
+                    self.decorator_names.join(", @")
+                ));
+            }
         }
         
         Ok(RuleMatch {
@@ -112,10 +114,67 @@ impl Rule for AngularDecoratorRule {
     }
 }
 
+impl AngularDecoratorDetectionRule {
+    // Process a statement to find class declarations and their decorators
+    fn process_statement(&self, stmt: &Statement, found_decorators: &mut Vec<String>) {
+        if let Some(decl) = stmt.as_declaration() {
+            if let Declaration::ClassDeclaration(class_decl) = decl {
+                // Look through each class member
+                for member in &class_decl.body.body {
+                    // Class elements can be properties, methods, etc.
+                    match member {
+                        ClassElement::PropertyDefinition(prop_def) => {
+                            for decorator in &prop_def.decorators {
+                                self.check_decorator(decorator, found_decorators);
+                            }
+                        },
+                        ClassElement::MethodDefinition(method_def) => {
+                            for decorator in &method_def.decorators {
+                                self.check_decorator(decorator, found_decorators);
+                            }
+                        },
+                        // Other class element types can be added here if needed
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    
+    // Check if a decorator matches our target list
+    fn check_decorator(&self, decorator: &Decorator, found_decorators: &mut Vec<String>) {
+        if let Some(name) = self.extract_decorator_name(decorator) {
+            if self.decorator_names.contains(&name) && !found_decorators.contains(&name) {
+                found_decorators.push(name);
+            }
+        }
+    }
+    
+    // Extract decorator name from decorator expression
+    fn extract_decorator_name(&self, decorator: &Decorator) -> Option<String> {
+        match &decorator.expression {
+            // Simple case: @Input
+            Expression::Identifier(ident) => Some(ident.name.to_string()),
+            
+            // Call expression case: @Input() or @Input('propName')
+            Expression::CallExpression(call_expr) => {
+                if let Expression::Identifier(ident) = &call_expr.callee {
+                    Some(ident.name.to_string())
+                } else {
+                    None
+                }
+            },
+            
+            // For other types of expressions, we'll ignore them for now
+            _ => None
+        }
+    }
+}
+
 /// Create a rule that detects Angular property decorators
-pub fn create_angular_decorator_rule() -> Arc<dyn Rule> {
+pub fn create_angular_decorator_detection_rule() -> Arc<dyn Rule> {
     Arc::new(
-        AngularDecoratorRule::new()
+        AngularDecoratorDetectionRule::new()
             .with_tags(vec!["angular", "components", "decorators"])
             .with_severity(RuleSeverity::Warning)
     )
