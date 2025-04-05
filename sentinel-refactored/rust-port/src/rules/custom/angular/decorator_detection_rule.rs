@@ -59,11 +59,14 @@ impl Rule for AngularDecoratorRule {
         
         for stmt in &program.body {
             if let Some(module_decl) = stmt.as_module_declaration() {
-                if let oxc_ast::ast::ModuleDeclaration::ImportDeclaration(import_decl) = module_decl {
-                    if import_decl.source.value == "@angular/core" {
-                        imports_angular = true;
-                        break;
-                    }
+                match module_decl {
+                    oxc_ast::ast::ModuleDeclaration::ImportDeclaration(import_decl) => {
+                        if import_decl.source.value == "@angular/core" {
+                            imports_angular = true;
+                            break;
+                        }
+                    },
+                    _ => {}
                 }
             }
         }

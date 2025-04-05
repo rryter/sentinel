@@ -9,9 +9,7 @@ rules:
   # If this list is non-empty, only rules listed here (or matching enable_tags) will run,
   # unless they are also explicitly disabled or filtered out by other criteria.
   enable:
-    - import-rxjs
-    - import-rxjs-operators
-    - angular-decorators
+    - import-count
     # - rule-id-1
     # - plugin-name/rule-id-2
 
@@ -22,6 +20,7 @@ rules:
 
   # Enable all rules that have ANY of the specified tags.
   enable_tags:
+    - general
     # - security
     # - performance
 
@@ -39,7 +38,7 @@ rules:
 # Enable verbose debug logging for the rule registry and evaluation process.
 debug:
   # Enable logging for the rule registry and evaluation process.
-  rules: false
+  rules: true
   # Add other potential components here later if needed, e.g.:
   # parser: false
   # config_loading: false
