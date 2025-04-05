@@ -78,14 +78,15 @@ impl Rule for AngularDecoratorDetectionRule {
             
             // Check if we found any decorators
             if !found_decorators.is_empty() {
+                // Mark as matched when we find Angular property decorators (this generates a warning)
                 matched = true;
                 message = Some(format!(
                     "Found Angular property decorators: @{}",
                     found_decorators.join(", @")
                 ));
             } else {
-                // We found Angular imports but no decorators
-                matched = true; // Still match since we found Angular imports
+                // We found Angular imports but no decorators - don't generate a warning
+                matched = false;
                 message = Some(format!(
                     "This file imports Angular Core but no property decorators ({}) were found.",
                     self.decorator_names.join(", @")
