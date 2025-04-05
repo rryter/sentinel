@@ -8,6 +8,9 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use oxc_span;
+use std::time::{Duration, Instant};
+use parking_lot::Mutex;
+use num_cpus;
 
 // --- Core Rule Definitions ---
 // (If you have non-custom, built-in rules, they would be declared and registered here)
@@ -253,6 +256,9 @@ pub struct RuleRegistry {
     
     /// Debug mode for verbose logging
     debug_mode: bool,
+    
+    /// Performance metrics for rules
+    performance_report: Arc<Mutex<RulePerformanceReport>>,
 }
 
 // Manually implement Debug for RuleRegistry
@@ -283,6 +289,7 @@ impl RuleRegistry {
             disabled_tags: HashSet::new(),
             min_severity: None,
             debug_mode: false,
+            performance_report: Arc::new(Mutex::new(RulePerformanceReport::new())),
         }
     }
     
@@ -523,6 +530,17 @@ impl RuleRegistry {
         }
     }
     
+    /// Get a clone of the performance report
+    pub fn performance_report(&self) -> RulePerformanceReport {
+        self.performance_report.lock().clone()
+    }
+    
+    /// Export performance data to a JSON file
+    pub fn export_performance_to_json(&self, file_path: &str) -> Result<()> {
+        let report = self.performance_report.lock().clone();
+        report.export_to_json(file_path)
+    }
+    
     /// Evaluate all enabled rules against a program
     pub fn evaluate_all(&self, program: &Program, file_path: &str) -> RuleResults {
         let mut results = RuleResults::new();
@@ -539,17 +557,33 @@ impl RuleRegistry {
                 println!("  - Evaluating rule: {}", rule.id());
             }
             
-            match rule.evaluate(program, file_path) {
+            // Start timing the rule evaluation
+            let start_time = Instant::now();
+            let rule_result = rule.evaluate(program, file_path);
+            let duration = start_time.elapsed();
+            
+            // Track performance metrics
+            match &rule_result {
                 Ok(rule_match) => {
+                    // Update performance metrics
+                    let mut report = self.performance_report.lock();
+                    report.add_rule_execution(rule.id(), duration, rule_match.matched);
+                    drop(report); // Explicitly drop the lock
+                    
                     if self.debug_mode && debug_file_level && rule_match.matched {
-                        println!("    * Rule matched: {} ({})", 
-                                 rule.id(), rule_match.message.as_deref().unwrap_or("No message"));
+                        println!("    * Rule matched: {} ({}) in {:?}", 
+                                 rule.id(), rule_match.message.as_deref().unwrap_or("No message"), duration);
                     }
-                    results.add_match(rule_match);
+                    results.add_match(rule_match.clone());
                 }
                 Err(err) => {
+                    // Still track performance even if the rule failed
+                    let mut report = self.performance_report.lock();
+                    report.add_rule_execution(rule.id(), duration, false);
+                    drop(report); // Explicitly drop the lock
+                    
                     if self.debug_mode && debug_file_level {
-                        println!("    * Rule evaluation failed: {}", err);
+                        println!("    * Rule evaluation failed: {} in {:?}", err, duration);
                     }
                     // Create an error match for the rule evaluation failure
                     let error_match = RuleMatch {
@@ -572,6 +606,182 @@ impl RuleRegistry {
         }
         
         results
+    }
+}
+
+/// Performance metrics for a single rule
+#[derive(Debug, Clone, Serialize)]
+pub struct RulePerformanceMetrics {
+    /// ID of the rule
+    pub rule_id: String,
+    /// Total execution time for this rule across all files
+    pub total_execution_time: Duration,
+    /// Number of files this rule has been evaluated against
+    pub file_count: usize,
+    /// Number of files where this rule found issues
+    pub match_count: usize,
+}
+
+impl RulePerformanceMetrics {
+    /// Create new metrics for a rule
+    pub fn new(rule_id: String) -> Self {
+        Self {
+            rule_id,
+            total_execution_time: Duration::default(),
+            file_count: 0,
+            match_count: 0,
+        }
+    }
+    
+    /// Add timing data for a single rule evaluation
+    pub fn add_execution(&mut self, duration: Duration, matched: bool) {
+        self.total_execution_time += duration;
+        self.file_count += 1;
+        if matched {
+            self.match_count += 1;
+        }
+    }
+    
+    /// Get the average execution time per file
+    pub fn average_execution_time(&self) -> Duration {
+        if self.file_count == 0 {
+            Duration::default()
+        } else {
+            self.total_execution_time / self.file_count as u32
+        }
+    }
+    
+    /// Convert duration to milliseconds for serialization
+    pub fn execution_time_ms(&self) -> f64 {
+        self.total_execution_time.as_secs_f64() * 1000.0
+    }
+    
+    /// Convert average duration to milliseconds for serialization
+    pub fn average_execution_time_ms(&self) -> f64 {
+        self.average_execution_time().as_secs_f64() * 1000.0
+    }
+}
+
+/// Collection of performance metrics for all rules
+#[derive(Debug, Default, Serialize, Clone)]
+pub struct RulePerformanceReport {
+    /// Performance metrics by rule ID
+    pub metrics: HashMap<String, RulePerformanceMetrics>,
+    /// Total execution time across all rules
+    pub total_execution_time: Duration,
+    /// Total number of file evaluations
+    pub total_evaluations: usize,
+    /// Number of cores used for normalization (automatically detected)
+    pub core_count: usize,
+    /// Timestamp when the report was created
+    #[serde(skip)]
+    timestamp: String,
+}
+
+impl RulePerformanceReport {
+    /// Create a new empty performance report
+    pub fn new() -> Self {
+        Self {
+            metrics: HashMap::new(),
+            total_execution_time: Duration::default(),
+            total_evaluations: 0,
+            core_count: num_cpus::get(),
+            timestamp: chrono::Utc::now().to_rfc3339(),
+        }
+    }
+    
+    /// Add performance data for a rule evaluation
+    pub fn add_rule_execution(&mut self, rule_id: &str, duration: Duration, matched: bool) {
+        let metric = self.metrics
+            .entry(rule_id.to_string())
+            .or_insert_with(|| RulePerformanceMetrics::new(rule_id.to_string()));
+        
+        metric.add_execution(duration, matched);
+        self.total_execution_time += duration;
+        self.total_evaluations += 1;
+    }
+    
+    /// Get normalized total execution time accounting for parallelism
+    pub fn normalized_execution_time(&self) -> Duration {
+        if self.core_count <= 1 {
+            self.total_execution_time
+        } else {
+            // Estimate the wall-clock time by dividing by number of cores
+            // This is a rough approximation of actual parallelism benefit
+            self.total_execution_time / self.core_count as u32
+        }
+    }
+
+    /// Get normalized execution time in milliseconds
+    pub fn normalized_execution_time_ms(&self) -> f64 {
+        self.normalized_execution_time().as_secs_f64() * 1000.0
+    }
+    
+    /// Get the top N slowest rules by total execution time
+    pub fn top_slowest_rules(&self, n: usize) -> Vec<&RulePerformanceMetrics> {
+        let mut metrics: Vec<&RulePerformanceMetrics> = self.metrics.values().collect();
+        metrics.sort_by(|a, b| b.total_execution_time.cmp(&a.total_execution_time));
+        metrics.truncate(n);
+        metrics
+    }
+    
+    /// Export performance data to a JSON file
+    pub fn export_to_json(&self, file_path: &str) -> Result<()> {
+        // Prepare data for charting libraries
+        let rule_performance_data: Vec<serde_json::Value> = self.metrics.values()
+            .map(|metric| {
+                serde_json::json!({
+                    "ruleId": metric.rule_id,
+                    "totalExecutionTimeMs": metric.execution_time_ms(),
+                    "averageExecutionTimeMs": metric.average_execution_time_ms(),
+                    "fileCount": metric.file_count,
+                    "matchCount": metric.match_count,
+                    // Add normalized times per rule (approximation)
+                    "normalizedExecutionTimeMs": metric.execution_time_ms() / self.core_count as f64,
+                })
+            })
+            .collect();
+        
+        let output = serde_json::json!({
+            "timestamp": self.timestamp,
+            "coreCount": self.core_count,
+            "totalExecutionTimeMs": self.total_execution_time.as_secs_f64() * 1000.0,
+            "normalizedExecutionTimeMs": self.normalized_execution_time_ms(),
+            "totalEvaluations": self.total_evaluations,
+            "parallelExecution": true,
+            "executionTimeExplanation": "totalExecutionTimeMs represents the cumulative time across all CPU cores. normalizedExecutionTimeMs provides an estimate of wall-clock time by accounting for parallel execution.",
+            "topSlowestRules": self.top_slowest_rules(10).iter().map(|m| {
+                serde_json::json!({
+                    "ruleId": m.rule_id,
+                    "totalExecutionTimeMs": m.execution_time_ms(),
+                    "averageExecutionTimeMs": m.average_execution_time_ms(),
+                    "normalizedExecutionTimeMs": m.execution_time_ms() / self.core_count as f64,
+                    "fileCount": m.file_count,
+                    "matchCount": m.match_count,
+                })
+            }).collect::<Vec<_>>(),
+            "rulePerformance": rule_performance_data,
+        });
+        
+        // Ensure the parent directory exists
+        let path = Path::new(file_path);
+        if let Some(parent) = path.parent() {
+            if !parent.exists() {
+                std::fs::create_dir_all(parent)?;
+                println!("Created directory: {}", parent.display());
+            }
+        }
+        
+        // Create the output file
+        let mut file = File::create(path)?;
+        
+        // Write the JSON to the file
+        let formatted_json = serde_json::to_string_pretty(&output)?;
+        file.write_all(formatted_json.as_bytes())?;
+        
+        println!("Rule performance data exported to: {}", file_path);
+        
+        Ok(())
     }
 }
 

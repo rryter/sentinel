@@ -1,0 +1,93 @@
+{
+  "coreCount": 24,
+  "executionTimeExplanation": "totalExecutionTimeMs represents the cumulative time across all CPU cores. normalizedExecutionTimeMs provides an estimate of wall-clock time by accounting for parallel execution.",
+  "normalizedExecutionTimeMs": 6.613952,
+  "parallelExecution": true,
+  "rulePerformance": [
+    {
+      "averageExecutionTimeMs": 0.018803,
+      "fileCount": 2953,
+      "matchCount": 399,
+      "normalizedExecutionTimeMs": 2.313632875,
+      "ruleId": "angular-decorators-detection",
+      "totalExecutionTimeMs": 55.527189
+    },
+    {
+      "averageExecutionTimeMs": 0.029947,
+      "fileCount": 2953,
+      "matchCount": 901,
+      "normalizedExecutionTimeMs": 3.6847887499999996,
+      "ruleId": "typescript-assertion-detection",
+      "totalExecutionTimeMs": 88.43493
+    },
+    {
+      "averageExecutionTimeMs": 0.001257,
+      "fileCount": 2953,
+      "matchCount": 236,
+      "normalizedExecutionTimeMs": 0.15470929166666667,
+      "ruleId": "import-rxjs-operators",
+      "totalExecutionTimeMs": 3.713023
+    },
+    {
+      "averageExecutionTimeMs": 0.00053,
+      "fileCount": 2953,
+      "matchCount": 517,
+      "normalizedExecutionTimeMs": 0.065256875,
+      "ruleId": "import-rxjs",
+      "totalExecutionTimeMs": 1.566165
+    },
+    {
+      "averageExecutionTimeMs": 0.003214,
+      "fileCount": 2953,
+      "matchCount": 588,
+      "normalizedExecutionTimeMs": 0.39556449999999993,
+      "ruleId": "import-count",
+      "totalExecutionTimeMs": 9.493547999999999
+    }
+  ],
+  "timestamp": "2025-04-05T12:56:54.499206383+00:00",
+  "topSlowestRules": [
+    {
+      "averageExecutionTimeMs": 0.029947,
+      "fileCount": 2953,
+      "matchCount": 901,
+      "normalizedExecutionTimeMs": 3.6847887499999996,
+      "ruleId": "typescript-assertion-detection",
+      "totalExecutionTimeMs": 88.43493
+    },
+    {
+      "averageExecutionTimeMs": 0.018803,
+      "fileCount": 2953,
+      "matchCount": 399,
+      "normalizedExecutionTimeMs": 2.313632875,
+      "ruleId": "angular-decorators-detection",
+      "totalExecutionTimeMs": 55.527189
+    },
+    {
+      "averageExecutionTimeMs": 0.003214,
+      "fileCount": 2953,
+      "matchCount": 588,
+      "normalizedExecutionTimeMs": 0.39556449999999993,
+      "ruleId": "import-count",
+      "totalExecutionTimeMs": 9.493547999999999
+    },
+    {
+      "averageExecutionTimeMs": 0.001257,
+      "fileCount": 2953,
+      "matchCount": 236,
+      "normalizedExecutionTimeMs": 0.15470929166666667,
+      "ruleId": "import-rxjs-operators",
+      "totalExecutionTimeMs": 3.713023
+    },
+    {
+      "averageExecutionTimeMs": 0.00053,
+      "fileCount": 2953,
+      "matchCount": 517,
+      "normalizedExecutionTimeMs": 0.065256875,
+      "ruleId": "import-rxjs",
+      "totalExecutionTimeMs": 1.566165
+    }
+  ],
+  "totalEvaluations": 14765,
+  "totalExecutionTimeMs": 158.734855
+}

@@ -40,6 +40,8 @@ pub struct AnalysisResult {
     pub error_count: usize,
     pub rule_results: Option<rules::RuleResults>,
     pub files_per_second: Option<u32>,
+    /// Reference to the analyzer that produced this result
+    pub analyzer: Option<Arc<TypeScriptAnalyzer>>,
 }
 
 /// Find all files with the given extensions in a directory
@@ -95,6 +97,7 @@ pub fn find_files(
 }
 
 /// Analyze a TypeScript codebase
+#[derive(Clone)]
 pub struct TypeScriptAnalyzer {
     verbose: bool,
     rule_registry: Option<Arc<rules::RuleRegistry>>,
@@ -127,6 +130,11 @@ impl TypeScriptAnalyzer {
         scan_result.files.len()
     }
     
+    /// Get access to the rule registry
+    pub fn rule_registry(&self) -> Option<&Arc<rules::RuleRegistry>> {
+        self.rule_registry.as_ref()
+    }
+    
     /// Analyze TypeScript files in a directory
     pub fn analyze_directory(&self, path: &Path, extensions: &[&str]) -> Result<AnalysisResult> {
         // First, scan for files
@@ -143,6 +151,7 @@ impl TypeScriptAnalyzer {
                 error_count: 0,
                 rule_results: None,
                 files_per_second: None,
+                analyzer: Some(Arc::new(self.clone())),
             });
         }
         
@@ -296,6 +305,7 @@ impl TypeScriptAnalyzer {
                         error_count: final_error_count,
                         rule_results: None,
                         files_per_second,
+                        analyzer: Some(Arc::new(self.clone())),
                     });
                 }
             };
@@ -382,6 +392,7 @@ impl TypeScriptAnalyzer {
             error_count: final_error_count,
             rule_results: final_rule_results,
             files_per_second,
+            analyzer: Some(Arc::new(self.clone())),
         })
     }
 } 

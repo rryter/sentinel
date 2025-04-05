@@ -28,6 +28,9 @@ pub struct RuleConfig {
     
     /// Path to export rule findings to a JSON file (if specified)
     pub export_json: Option<String>,
+    
+    /// Path to export rule performance data to a JSON file (if specified)
+    pub export_performance_json: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Default, Clone)]

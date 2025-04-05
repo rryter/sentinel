@@ -63,6 +63,10 @@ struct Args {
     /// Export rule findings to a JSON file
     #[arg(long, value_name = "FILE")]
     export_json: Option<String>,
+    
+    /// Export rule performance data to a JSON file
+    #[arg(long, value_name = "FILE")]
+    export_performance_json: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -211,6 +215,20 @@ fn main() -> Result<()> {
         if let Some(export_path) = export_path {
             if let Err(e) = rule_results.export_to_json(export_path) {
                 eprintln!("Error exporting results to JSON: {}", e);
+            }
+        }
+        
+        // Export performance data if requested
+        if let Some(analyzer) = results.analyzer.as_ref() {
+            if let Some(registry) = analyzer.rule_registry() {
+                let performance_path = args.export_performance_json.as_ref()
+                    .or(config.rules.export_performance_json.as_ref());
+                
+                if let Some(performance_path) = performance_path {
+                    if let Err(e) = registry.export_performance_to_json(performance_path) {
+                        eprintln!("Error exporting performance data to JSON: {}", e);
+                    }
+                }
             }
         }
     } else if !args.no_rules {

@@ -30,3 +30,5 @@ tokio = { version = "1", features = ["full"] }
 parking_lot = "0.12.3"
 log = "0.4.27"
 serde_yaml = "0.9"
+num_cpus = "1.16.0"
+sysinfo = "0.30.5"

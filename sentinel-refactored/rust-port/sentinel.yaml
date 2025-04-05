@@ -37,6 +37,9 @@ rules:
   # Export rule findings to a JSON file
   export_json: "./results/findings.json"
 
+  # Export rule performance data to a JSON file
+  export_performance_json: "./results/performance.json"
+
 # --- Debugging ---
 # Enable verbose debug logging for the rule registry and evaluation process.
 debug:
