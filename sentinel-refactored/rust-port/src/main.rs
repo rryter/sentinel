@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::sync::Arc;
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use colored::*;
 use typescript_analyzer::{
     TypeScriptAnalyzer,
@@ -15,11 +15,18 @@ use typescript_analyzer::{
 use crate::config::Config;
 
 mod config;
+mod performance;
+mod visualization;
+mod reporter;
 
 /// A TypeScript analyzer that scans code and reports on issues
 #[derive(Parser, Debug)]
 #[command(author, version, about = "TypeScript analyzer with rule-based AST analysis")]
 struct Args {
+    /// Optional subcommand
+    #[command(subcommand)]
+    command: Option<Commands>,
+    
     /// Path to the directory to analyze
     #[arg(default_value = ".")]
     path: String,
@@ -69,8 +76,46 @@ struct Args {
     export_performance_json: Option<String>,
 }
 
-fn main() -> Result<()> {
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Generate visualizations for performance data
+    Visualize {
+        /// Path to the performance JSON file
+        #[clap(short, long, default_value = "./results/performance.json")]
+        input: String,
+
+        /// Directory to output visualization images
+        #[clap(short, long, default_value = "./results/charts")]
+        output_dir: String,
+    },
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
+    
+    // Check if a subcommand was specified
+    if let Some(cmd) = &args.command {
+        match cmd {
+            Commands::Visualize { input, output_dir } => {
+                println!("Generating visualizations from: {}", input);
+                
+                let input_path = Path::new(input);
+                let output_path = Path::new(output_dir);
+                
+                return match visualization::visualize_performance(input_path, output_path) {
+                    Ok(_) => {
+                        println!("Visualizations generated successfully in: {}", output_dir);
+                        Ok(())
+                    },
+                    Err(e) => {
+                        eprintln!("Failed to generate visualizations: {}", e);
+                        // Convert anyhow Error to a type that implements std::error::Error
+                        Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
+                    }
+                };
+            }
+        }
+    }
     
     // Initialize the rule system first
     initialize_rules();

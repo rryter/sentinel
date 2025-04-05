@@ -202,6 +202,7 @@ impl RuleResults {
         let formatted_json = serde_json::to_string_pretty(&output)?;
         file.write_all(formatted_json.as_bytes())?;
         
+        println!("");
         println!("Rule findings exported to: {}", file_path);
         
         Ok(())

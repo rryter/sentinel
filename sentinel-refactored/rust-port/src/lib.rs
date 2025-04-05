@@ -24,6 +24,8 @@ static GLOBAL: MiMalloc = MiMalloc;
 pub mod scanner;
 pub mod metrics;
 pub mod rules;
+pub mod visualization;
+pub mod performance;
 
 /// Result of scanning a codebase for TypeScript files
 pub struct ScanResult {
