@@ -39,6 +39,7 @@ pub struct AnalysisResult {
     pub parsed_count: usize,
     pub error_count: usize,
     pub rule_results: Option<rules::RuleResults>,
+    pub files_per_second: Option<u32>,
 }
 
 /// Find all files with the given extensions in a directory
@@ -143,6 +144,7 @@ impl TypeScriptAnalyzer {
                 parsed_count: 0,
                 error_count: 0,
                 rule_results: None,
+                files_per_second: None,
             });
         }
         
@@ -266,6 +268,11 @@ impl TypeScriptAnalyzer {
         let final_parsed_count = parsed_count.load(Ordering::Relaxed);
         let final_error_count = error_count.load(Ordering::Relaxed);
         
+        println!("Successfully parsed {} files ({} errors)", 
+            final_parsed_count.to_string().green().bold(), 
+            if final_error_count > 0 { final_error_count.to_string().red().bold() } else { final_error_count.to_string().green() }
+        );
+        
         // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
         let duration_str = if parse_duration.as_secs() > 0 {
             format!("{:.3}s", parse_duration.as_secs_f64())
@@ -275,17 +282,17 @@ impl TypeScriptAnalyzer {
         
         println!("Parse time: {}", duration_str.cyan());
         
-        // Debug info
+        // Calculate files per second for the result return value
         let duration_nanos = parse_duration.as_nanos();
         let duration_seconds = duration_nanos as f64 / 1_000_000_000.0;
         
-        // Only show files per second if we have a meaningful duration
-        if duration_seconds >= 0.001 { // At least 1 millisecond
-            let files_per_second = (final_parsed_count as f64 / duration_seconds).round() as u32;
-            println!("Files per second: {}", files_per_second.to_string().cyan().bold());
+        // Calculate files per second if we have a meaningful duration
+        let files_per_second = if duration_seconds >= 0.001 { // At least 1 millisecond
+            let fps = (final_parsed_count as f64 / duration_seconds).round() as u32;
+            Some(fps)
         } else {
-            println!("Files per second: {}", "N/A (duration too small)".cyan());
-        }
+            None
+        };
         
         // Get final rule results if applicable
         let final_rule_results = if let Some(results) = rule_results {
@@ -300,6 +307,7 @@ impl TypeScriptAnalyzer {
                         parsed_count: final_parsed_count,
                         error_count: final_error_count,
                         rule_results: None,
+                        files_per_second,
                     });
                 }
             };
@@ -385,6 +393,7 @@ impl TypeScriptAnalyzer {
             parsed_count: final_parsed_count,
             error_count: final_error_count,
             rule_results: final_rule_results,
+            files_per_second,
         })
     }
 } 

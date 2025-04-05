@@ -219,5 +219,12 @@ fn main() -> Result<()> {
     // Display analysis duration
     println!("  Analysis time: {}", duration_str.cyan());
     
+    // Display files per second if available
+    if let Some(files_per_second) = result.files_per_second {
+        println!("  Files per second: {}", files_per_second.to_string().cyan().bold());
+    } else {
+        println!("  Files per second: {}", "N/A (duration too small)".cyan());
+    }
+    
     Ok(())
 }
