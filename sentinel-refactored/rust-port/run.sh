@@ -15,5 +15,4 @@ PROJECT_PATH=${1:-"/home/rryter/projects/myCSS/packages/mycss-app/src/app"}
 shift 2>/dev/null || true  # Remove first argument if it exists, silently continue if not
 
 # Run the binary with path argument and remaining arguments
-echo "Running typescript-analyzer..."
 ./target/debug/typescript-analyzer "$PROJECT_PATH" "$@"

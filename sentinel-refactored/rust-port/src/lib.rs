@@ -266,11 +266,6 @@ impl TypeScriptAnalyzer {
         let final_parsed_count = parsed_count.load(Ordering::Relaxed);
         let final_error_count = error_count.load(Ordering::Relaxed);
         
-        println!("Successfully parsed {} files ({} errors)", 
-            final_parsed_count.to_string().green().bold(), 
-            if final_error_count > 0 { final_error_count.to_string().red().bold() } else { final_error_count.to_string().green() }
-        );
-        
         // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
         let duration_str = if parse_duration.as_secs() > 0 {
             format!("{:.3}s", parse_duration.as_secs_f64())

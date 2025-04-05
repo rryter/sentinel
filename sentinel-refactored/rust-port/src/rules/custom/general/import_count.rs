@@ -50,6 +50,7 @@ impl Rule for ImportCountRule {
     
     fn evaluate(&self, program: &Program, file_path: &str) -> Result<RuleMatch> {
         let mut import_count = 0;
+        let mut message = None;
         let location = None; // Location finding might be complex, starting without it
 
         for stmt in &program.body {
@@ -70,97 +71,50 @@ impl Rule for ImportCountRule {
             }
         }
 
-        // Create appropriate rule match based on thresholds
+        let mut matched = false;
+        let mut rule_severity = RuleSeverity::Warning; // Default severity
+
+        // Determine severity based on thresholds
         if import_count >= self.error_threshold {
-            // For errors, use a distinct rule ID
-            let rule_id = format!("{}-error", self.id);
-            let message = Some(format!(
+            matched = true;
+            rule_severity = RuleSeverity::Error;
+            message = Some(format!(
                 "Found {} import statements, exceeding the error threshold of {}.",
                 import_count, self.error_threshold
             ));
-            
-            Ok(RuleMatch {
-                rule_id,
-                file_path: file_path.to_string(),
-                matched: true,
-                severity: RuleSeverity::Error,
-                message,
-                location,
-                metadata: {
-                    let mut metadata = HashMap::new();
-                    metadata.insert(
-                        "import_count".to_string(), 
-                        import_count.to_string()
-                    );
-                    metadata.insert(
-                        "warning_threshold".to_string(),
-                        self.warning_threshold.to_string()
-                    );
-                    metadata.insert(
-                        "error_threshold".to_string(),
-                        self.error_threshold.to_string()
-                    );
-                    metadata
-                },
-            })
         } else if import_count >= self.warning_threshold {
-            // For warnings, use the original rule ID
-            let message = Some(format!(
+            matched = true;
+            rule_severity = RuleSeverity::Warning;
+            message = Some(format!(
                 "Found {} import statements, exceeding the warning threshold of {}.",
                 import_count, self.warning_threshold
             ));
-            
-            Ok(RuleMatch {
-                rule_id: self.id.clone(),
-                file_path: file_path.to_string(),
-                matched: true,
-                severity: RuleSeverity::Warning,
-                message,
-                location,
-                metadata: {
-                    let mut metadata = HashMap::new();
-                    metadata.insert(
-                        "import_count".to_string(), 
-                        import_count.to_string()
-                    );
-                    metadata.insert(
-                        "warning_threshold".to_string(),
-                        self.warning_threshold.to_string()
-                    );
-                    metadata.insert(
-                        "error_threshold".to_string(),
-                        self.error_threshold.to_string()
-                    );
-                    metadata
-                },
-            })
-        } else {
-            // No thresholds exceeded
-            Ok(RuleMatch {
-                rule_id: self.id.clone(),
-                file_path: file_path.to_string(),
-                matched: false,
-                severity: RuleSeverity::Warning,
-                message: None,
-                location,
-                metadata: {
-                    let mut metadata = HashMap::new();
-                    metadata.insert(
-                        "import_count".to_string(), 
-                        import_count.to_string()
-                    );
-                    metadata.insert(
-                        "warning_threshold".to_string(),
-                        self.warning_threshold.to_string()
-                    );
-                    metadata.insert(
-                        "error_threshold".to_string(),
-                        self.error_threshold.to_string()
-                    );
-                    metadata
-                },
-            })
         }
+        
+        Ok(RuleMatch {
+            rule_id: self.id.clone(),
+            file_path: file_path.to_string(),
+            matched,
+            severity: rule_severity,
+            message,
+            location,
+            metadata: {
+                let mut metadata = HashMap::new();
+                metadata.insert(
+                    "import_count".to_string(), 
+                    import_count.to_string()
+                );
+                metadata.insert(
+                    "warning_threshold".to_string(),
+                    self.warning_threshold.to_string()
+                );
+                metadata.insert(
+                    "error_threshold".to_string(),
+                    self.error_threshold.to_string()
+                );
+                metadata
+            },
+        })
     }
 }
 

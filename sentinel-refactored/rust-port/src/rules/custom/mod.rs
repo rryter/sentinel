@@ -23,7 +23,6 @@ pub fn register_factory_fn(rule_id: String, factory: RuleFactory) {
 /// Initialize the custom rules system by running the generated registration code
 pub fn initialize() {
     // Add any non-rule-discovery initialization here if necessary
-    println!("Custom rules module initialized.");
 }
 
 /// Get all registered custom rule factories
