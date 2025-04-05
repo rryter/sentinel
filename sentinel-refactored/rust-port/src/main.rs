@@ -131,7 +131,6 @@ fn main() -> Result<()> {
         match args.severity.to_lowercase().as_str() {
             "error" => registry.set_min_severity(RuleSeverity::Error),
             "warning" => registry.set_min_severity(RuleSeverity::Warning),
-            "info" => registry.set_min_severity(RuleSeverity::Info),
             _ => {}
         }
         
@@ -174,14 +173,12 @@ fn main() -> Result<()> {
                     let colored_id = match rule.severity() {
                         RuleSeverity::Error => id.red().bold(),
                         RuleSeverity::Warning => id.yellow().bold(),
-                        RuleSeverity::Info => id.blue().bold(),
                     };
                     println!("  - {} ({}): {}", 
                         colored_id,
                         match rule.severity() {
                             RuleSeverity::Error => "ERROR".red(),
                             RuleSeverity::Warning => "WARNING".yellow(),
-                            RuleSeverity::Info => "INFO".blue(),
                         },
                         rule.description()
                     );

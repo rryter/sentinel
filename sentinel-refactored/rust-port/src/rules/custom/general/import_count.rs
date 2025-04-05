@@ -9,9 +9,8 @@ pub struct ImportCountRule {
     id: String,
     description: String,
     tags: Vec<String>,
-    severity: RuleSeverity,
-    // Optional: Add a threshold field if you want to trigger the rule only above a certain count
-    threshold: usize, 
+    warning_threshold: usize, 
+    error_threshold: usize,
 }
 
 impl ImportCountRule {
@@ -20,8 +19,8 @@ impl ImportCountRule {
             id: "import-count".to_string(),
             description: "Counts the number of import statements in a file.".to_string(),
             tags: vec!["general".to_string(), "imports".to_string(), "metrics".to_string()],
-            severity: RuleSeverity::Info, // Default severity, can be changed
-            threshold: 10, // Example threshold
+            warning_threshold: 10,
+            error_threshold: 20,
         }
     }
     
@@ -30,14 +29,13 @@ impl ImportCountRule {
         self
     }
     
-    pub fn with_severity(mut self, severity: RuleSeverity) -> Self {
-        self.severity = severity;
+    pub fn with_warning_threshold(mut self, threshold: usize) -> Self {
+        self.warning_threshold = threshold;
         self
     }
 
-    // Optional: Add a method to configure the threshold
-    pub fn with_threshold(mut self, threshold: usize) -> Self {
-        self.threshold = threshold;
+    pub fn with_error_threshold(mut self, threshold: usize) -> Self {
+        self.error_threshold = threshold;
         self
     }
 }
@@ -46,11 +44,12 @@ impl Rule for ImportCountRule {
     fn id(&self) -> &str { &self.id }
     fn description(&self) -> &str { &self.description }
     fn tags(&self) -> Vec<&str> { self.tags.iter().map(|s| s.as_str()).collect() }
-    fn severity(&self) -> RuleSeverity { self.severity }
+    
+    // The base severity is now determined dynamically in evaluate()
+    fn severity(&self) -> RuleSeverity { RuleSeverity::Warning }
     
     fn evaluate(&self, program: &Program, file_path: &str) -> Result<RuleMatch> {
         let mut import_count = 0;
-        let mut message = None;
         let location = None; // Location finding might be complex, starting without it
 
         for stmt in &program.body {
@@ -71,43 +70,97 @@ impl Rule for ImportCountRule {
             }
         }
 
-        println!("import_count: {}", import_count);
-        println!("threshold: {}", self.threshold);
-
-        // let matched = import_count > 0; // Simple match: true if any imports exist
-        // Or, match based on a threshold:
-        let matched = import_count > self.threshold;
-
-        if matched {
-             // message = Some(format!("Found {} import statement(s).", import_count));
-             // If using a threshold:
-             message = Some(format!(
-                "Found {} import statements, exceeding the threshold of {}.",
-                import_count, self.threshold
-             ));
+        // Create appropriate rule match based on thresholds
+        if import_count >= self.error_threshold {
+            // For errors, use a distinct rule ID
+            let rule_id = format!("{}-error", self.id);
+            let message = Some(format!(
+                "Found {} import statements, exceeding the error threshold of {}.",
+                import_count, self.error_threshold
+            ));
+            
+            Ok(RuleMatch {
+                rule_id,
+                file_path: file_path.to_string(),
+                matched: true,
+                severity: RuleSeverity::Error,
+                message,
+                location,
+                metadata: {
+                    let mut metadata = HashMap::new();
+                    metadata.insert(
+                        "import_count".to_string(), 
+                        import_count.to_string()
+                    );
+                    metadata.insert(
+                        "warning_threshold".to_string(),
+                        self.warning_threshold.to_string()
+                    );
+                    metadata.insert(
+                        "error_threshold".to_string(),
+                        self.error_threshold.to_string()
+                    );
+                    metadata
+                },
+            })
+        } else if import_count >= self.warning_threshold {
+            // For warnings, use the original rule ID
+            let message = Some(format!(
+                "Found {} import statements, exceeding the warning threshold of {}.",
+                import_count, self.warning_threshold
+            ));
+            
+            Ok(RuleMatch {
+                rule_id: self.id.clone(),
+                file_path: file_path.to_string(),
+                matched: true,
+                severity: RuleSeverity::Warning,
+                message,
+                location,
+                metadata: {
+                    let mut metadata = HashMap::new();
+                    metadata.insert(
+                        "import_count".to_string(), 
+                        import_count.to_string()
+                    );
+                    metadata.insert(
+                        "warning_threshold".to_string(),
+                        self.warning_threshold.to_string()
+                    );
+                    metadata.insert(
+                        "error_threshold".to_string(),
+                        self.error_threshold.to_string()
+                    );
+                    metadata
+                },
+            })
+        } else {
+            // No thresholds exceeded
+            Ok(RuleMatch {
+                rule_id: self.id.clone(),
+                file_path: file_path.to_string(),
+                matched: false,
+                severity: RuleSeverity::Warning,
+                message: None,
+                location,
+                metadata: {
+                    let mut metadata = HashMap::new();
+                    metadata.insert(
+                        "import_count".to_string(), 
+                        import_count.to_string()
+                    );
+                    metadata.insert(
+                        "warning_threshold".to_string(),
+                        self.warning_threshold.to_string()
+                    );
+                    metadata.insert(
+                        "error_threshold".to_string(),
+                        self.error_threshold.to_string()
+                    );
+                    metadata
+                },
+            })
         }
-        
-        Ok(RuleMatch {
-            rule_id: self.id.clone(),
-            file_path: file_path.to_string(),
-            matched,
-            severity: self.severity,
-            message,
-            location,
-            metadata: {
-                let mut metadata = HashMap::new();
-                metadata.insert(
-                    "import_count".to_string(), 
-                    import_count.to_string()
-                );
-                // Optionally add threshold to metadata
-                metadata.insert(
-                    "threshold".to_string(),
-                    self.threshold.to_string()
-                );
-                metadata
-            },
-        })
     }
 }
 
@@ -115,8 +168,8 @@ impl Rule for ImportCountRule {
 pub fn create_import_count_rule() -> Arc<dyn Rule> {
     Arc::new(
         ImportCountRule::new()
-            .with_threshold(10) // Explicitly set the desired threshold
+            .with_warning_threshold(10)
+            .with_error_threshold(20)
             .with_tags(vec!["general", "imports", "metrics"])
-            .with_severity(RuleSeverity::Info) // Set desired severity
     )
 }

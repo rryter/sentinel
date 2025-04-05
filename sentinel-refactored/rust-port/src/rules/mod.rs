@@ -51,8 +51,6 @@ pub enum RuleSeverity {
     Error,
     /// An issue that should be addressed but isn't critical
     Warning,
-    /// Informational findings that might be useful
-    Info,
 }
 
 impl RuleSeverity {
@@ -62,8 +60,6 @@ impl RuleSeverity {
             (RuleSeverity::Error, _) => true,
             (RuleSeverity::Warning, RuleSeverity::Error) => false,
             (RuleSeverity::Warning, _) => true,
-            (RuleSeverity::Info, RuleSeverity::Info) => true,
-            (RuleSeverity::Info, _) => false,
         }
     }
 }

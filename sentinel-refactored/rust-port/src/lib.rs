@@ -330,10 +330,9 @@ impl TypeScriptAnalyzer {
                 // Initialize counters for the total summary
                 let mut total_errors = 0;
                 let mut total_warnings = 0;
-                let mut total_info = 0;
                 
                 // Print summary grouped by severity
-                for severity in [rules::RuleSeverity::Error, rules::RuleSeverity::Warning, rules::RuleSeverity::Info] {
+                for severity in [rules::RuleSeverity::Error, rules::RuleSeverity::Warning] {
                     let matches = rule_counts.iter()
                         .filter(|(_, (_, s))| *s == severity)
                         .collect::<Vec<_>>();
@@ -343,14 +342,12 @@ impl TypeScriptAnalyzer {
                         match severity {
                             rules::RuleSeverity::Error => total_errors = matches.len(),
                             rules::RuleSeverity::Warning => total_warnings = matches.len(),
-                            rules::RuleSeverity::Info => total_info = matches.len(),
                         }
                         
                         // Print severity header with appropriate color
                         let severity_str = match severity {
                             rules::RuleSeverity::Error => format!("{} Error findings:", matches.len()).red().bold(),
                             rules::RuleSeverity::Warning => format!("{} Warning findings:", matches.len()).yellow().bold(),
-                            rules::RuleSeverity::Info => format!("{} Info findings:", matches.len()).blue().bold(),
                         };
                         println!("  {}", severity_str);
                         
@@ -360,7 +357,6 @@ impl TypeScriptAnalyzer {
                             let colored_rule_id = match severity {
                                 rules::RuleSeverity::Error => rule_id.red(),
                                 rules::RuleSeverity::Warning => rule_id.yellow(),
-                                rules::RuleSeverity::Info => rule_id.blue(),
                             };
                             println!("    {}: {} matches", colored_rule_id, count.to_string().bold());
                         }
@@ -368,16 +364,13 @@ impl TypeScriptAnalyzer {
                 }
                 
                 // Print a summary line at the end if we have multiple severity types
-                if total_errors + total_warnings + total_info > 1 {
+                if total_errors + total_warnings > 1 {
                     let mut summary = vec![];
                     if total_errors > 0 {
                         summary.push(format!("{} errors", total_errors).red().bold().to_string());
                     }
                     if total_warnings > 0 {
                         summary.push(format!("{} warnings", total_warnings).yellow().bold().to_string());
-                    }
-                    if total_info > 0 {
-                        summary.push(format!("{} info", total_info).blue().bold().to_string());
                     }
                     println!("\n  Summary: {}", summary.join(", "));
                 }

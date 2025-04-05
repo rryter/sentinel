@@ -9,7 +9,6 @@ rules:
   # If this list is non-empty, only rules listed here (or matching enable_tags) will run,
   # unless they are also explicitly disabled or filtered out by other criteria.
   enable:
-    - import-count
     # - rule-id-1
     # - plugin-name/rule-id-2
 
@@ -21,6 +20,7 @@ rules:
   # Enable all rules that have ANY of the specified tags.
   enable_tags:
     - general
+    - angular
     # - security
     # - performance
 
