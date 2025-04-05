@@ -203,16 +203,16 @@ fn main() -> Result<()> {
     println!("\n{}", "Analysis complete:".bold());
     println!("  Files scanned: {}", result.scan_result.files.len().to_string().cyan().bold());
     
-    // Show file paths (up to 10, with a count if there are more)
-    if !result.scan_result.files.is_empty() {
-        println!("  File paths:");
-        for path in result.scan_result.files.iter().take(10) {
-            println!("    - {}", path.cyan());
-        }
-        if result.scan_result.files.len() > 10 {
-            println!("    ... and {} more files", result.scan_result.files.len() - 10);
-        }
-    }
+    // // Show file paths (up to 10, with a count if there are more)
+    // if !result.scan_result.files.is_empty() {
+    //     println!("  File paths:");
+    //     for path in result.scan_result.files.iter().take(10) {
+    //         println!("    - {}", path.cyan());
+    //     }
+    //     if result.scan_result.files.len() > 10 {
+    //         println!("    ... and {} more files", result.scan_result.files.len() - 10);
+    //     }
+    // }
     
     println!("  Files parsed: {}", result.parsed_count.to_string().green().bold());
     

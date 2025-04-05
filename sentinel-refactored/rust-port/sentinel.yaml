@@ -19,8 +19,8 @@ rules:
 
   # Enable all rules that have ANY of the specified tags.
   enable_tags:
-    - general
-    - angular
+    # - general
+    # - angular
     # - security
     # - performance
 
