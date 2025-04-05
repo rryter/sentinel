@@ -11,7 +11,7 @@ echo "Building typescript-analyzer..."
 cargo build || { echo "Build failed"; exit 1; }
 
 # Set default path, but allow it to be overridden by the first argument
-PROJECT_PATH=${1:-"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding/confirmation/page"}
+PROJECT_PATH=${1:-"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/onboarding"}
 shift 2>/dev/null || true  # Remove first argument if it exists, silently continue if not
 
 # Run the binary with path argument and remaining arguments
