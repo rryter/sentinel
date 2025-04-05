@@ -79,33 +79,65 @@ pub fn load_performance_data(file_path: &Path) -> Result<PerformanceRunInfo> {
 }
 
 /// Loads multiple performance data sets from a directory, filtering by a prefix pattern
-pub fn load_performance_history(dir_path: &Path, prefix: &str) -> Result<Vec<PerformanceRunInfo>> {
-    let mut results = Vec::new();
+pub fn load_performance_history(dir: &Path, prefix: &str) -> Result<Vec<PerformanceRunInfo>> {
+    let mut history = Vec::new();
     
-    if !dir_path.exists() || !dir_path.is_dir() {
-        return Ok(results);
+    if !dir.exists() || !dir.is_dir() {
+        return Ok(history); // Return empty history if directory doesn't exist
     }
     
-    for entry in fs::read_dir(dir_path)? {
-        let entry = entry?;
-        let path = entry.path();
-        
-        if path.is_file() {
-            if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
-                if file_name.starts_with(prefix) && file_name.ends_with(".json") {
-                    match load_performance_data(&path) {
-                        Ok(info) => results.push(info),
-                        Err(e) => eprintln!("Warning: Failed to load performance data from {}: {}", path.display(), e),
+    // Read the directory entries
+    let entries = fs::read_dir(dir)
+        .with_context(|| format!("Failed to read directory: {}", dir.display()))?;
+    
+    println!("Searching for performance data files in: {}", dir.display());
+    
+    // Track unique timestamps to prevent duplicates
+    let mut seen_timestamps = std::collections::HashSet::new();
+    
+    // Filter for JSON files that match our pattern
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            
+            // Only consider JSON files
+            if path.extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+            
+            // Check if filename starts with our prefix (includes timestamped files)
+            let file_name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+            let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+            
+            // Match both formats: 
+            // - prefix.json (the "latest" file)
+            // - prefix_YYYYMMDD_HHMMSS.json (timestamped files)
+            if stem == prefix || stem.starts_with(&format!("{}_", prefix)) {
+                println!("  Found potential performance file: {}", file_name);
+                
+                match load_performance_data(&path) {
+                    Ok(run_info) => {
+                        // Skip duplicates based on timestamp
+                        if seen_timestamps.insert(run_info.timestamp.clone()) {
+                            println!("    Adding performance data from {} (timestamp: {})", 
+                                     file_name, run_info.timestamp);
+                            history.push(run_info);
+                        } else {
+                            println!("    Skipping duplicate timestamp: {}", run_info.timestamp);
+                        }
+                    },
+                    Err(e) => {
+                        eprintln!("Warning: Failed to load performance data from {}: {}", path.display(), e);
                     }
                 }
             }
         }
     }
     
-    // Sort by timestamp
-    results.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+    // Sort by timestamp (should be ISO 8601 format)
+    history.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
     
-    Ok(results)
+    Ok(history)
 }
 
 /// Generate a horizontal bar chart showing the top N slowest rules
@@ -437,7 +469,7 @@ pub fn generate_performance_dashboard(
     Ok(())
 }
 
-/// Generate all performance charts from the latest performance data and history
+/// Generate visualizations from performance data
 pub fn visualize_performance(
     json_path: &Path,
     output_dir: &Path,
@@ -447,18 +479,33 @@ pub fn visualize_performance(
     
     // Try to load historical data from the same directory
     let history_dir = json_path.parent().unwrap_or(Path::new("."));
-    let file_name = json_path.file_name().and_then(|n| n.to_str()).unwrap_or("performance");
-    let file_prefix = file_name.split('.').next().unwrap_or("performance");
     
-    let mut all_data = load_performance_history(history_dir, file_prefix)?;
+    // Get the base file name without timestamp or extension for finding related files
+    // For both "performance.json" and "performance_20230504_120000.json" we want "performance"
+    let file_name = json_path.file_name().and_then(|n| n.to_str()).unwrap_or("performance");
+    let prefix = if let Some(pos) = file_name.find('_') {
+        // If filename contains underscore, assume it's a timestamped file
+        // and extract the base prefix (e.g., "performance" from "performance_20230504_120000.json")
+        &file_name[0..pos]
+    } else {
+        // Otherwise just use the filename without extension
+        file_name.split('.').next().unwrap_or("performance")
+    };
+    
+    println!("Looking for historical performance data with prefix: {}", prefix);
+    
+    // Load all historical data (including timestamped files)
+    let mut all_data = load_performance_history(history_dir, prefix)?;
     
     // Add the latest data if it's not already included
     if all_data.is_empty() || all_data.last().unwrap().timestamp != latest_data.timestamp {
         all_data.push(latest_data);
     }
     
+    println!("Found {} performance data points", all_data.len());
+    
     // Generate the dashboard
-    generate_performance_dashboard(&all_data, output_dir, file_prefix)?;
+    generate_performance_dashboard(&all_data, output_dir, prefix)?;
     
     Ok(())
 } 

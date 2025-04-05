@@ -764,23 +764,48 @@ impl RulePerformanceReport {
             "rulePerformance": rule_performance_data,
         });
         
+        // Create a timestamped filename
+        let timestamp_str = chrono::Local::now()
+            .format("%Y%m%d_%H%M%S")
+            .to_string();
+        
+        // Convert original path from str to PathBuf for manipulation
+        let orig_path = Path::new(file_path);
+        
+        // Extract directory, stem and extension from the original path
+        let dir = orig_path.parent().unwrap_or(Path::new("."));
+        let stem = orig_path.file_stem().and_then(|s| s.to_str()).unwrap_or("performance");
+        let ext = orig_path.extension().and_then(|s| s.to_str()).unwrap_or("json");
+        
+        // Create the new filename with timestamp
+        let timestamped_filename = format!("{}_{}.{}", stem, timestamp_str, ext);
+        let timestamped_path = dir.join(timestamped_filename);
+        
+        // Also create a symlink/copy to the latest file
+        let latest_filename = format!("{}.{}", stem, ext); // Original filename format
+        let latest_path = dir.join(latest_filename);
+        
         // Ensure the parent directory exists
-        let path = Path::new(file_path);
-        if let Some(parent) = path.parent() {
-            if !parent.exists() {
-                std::fs::create_dir_all(parent)?;
-                println!("Created directory: {}", parent.display());
-            }
+        if !dir.exists() {
+            std::fs::create_dir_all(dir)?;
+            println!("Created directory: {}", dir.display());
         }
         
-        // Create the output file
-        let mut file = File::create(path)?;
+        // Create the output file with the timestamped name
+        let mut file = File::create(&timestamped_path)?;
         
         // Write the JSON to the file
         let formatted_json = serde_json::to_string_pretty(&output)?;
         file.write_all(formatted_json.as_bytes())?;
         
-        println!("Rule performance data exported to: {}", file_path);
+        // Create/update the "latest" file (without timestamp) for backwards compatibility
+        // Just write the same content to this file
+        if let Ok(mut latest_file) = File::create(&latest_path) {
+            latest_file.write_all(formatted_json.as_bytes())?;
+        }
+        
+        println!("Rule performance data exported to: {}", timestamped_path.display());
+        println!("Latest version also available at: {}", latest_path.display());
         
         Ok(())
     }
