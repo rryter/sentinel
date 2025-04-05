@@ -132,8 +132,6 @@ impl TypeScriptAnalyzer {
         // First, scan for files
         let scan_result = self.scan_directory(path, extensions)?;
         
-        // Always print the count of files found
-        println!("Found {} TypeScript files to analyze", scan_result.files.len());
         
         // If there are no files, return early with an empty result
         if scan_result.files.is_empty() {
@@ -268,19 +266,9 @@ impl TypeScriptAnalyzer {
         let final_parsed_count = parsed_count.load(Ordering::Relaxed);
         let final_error_count = error_count.load(Ordering::Relaxed);
         
-        println!("Successfully parsed {} files ({} errors)", 
-            final_parsed_count.to_string().green().bold(), 
-            if final_error_count > 0 { final_error_count.to_string().red().bold() } else { final_error_count.to_string().green() }
-        );
+    
         
-        // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
-        let duration_str = if parse_duration.as_secs() > 0 {
-            format!("{:.3}s", parse_duration.as_secs_f64())
-        } else {
-            format!("{}ms", parse_duration.as_millis())
-        };
         
-        println!("Parse time: {}", duration_str.cyan());
         
         // Calculate files per second for the result return value
         let duration_nanos = parse_duration.as_nanos();

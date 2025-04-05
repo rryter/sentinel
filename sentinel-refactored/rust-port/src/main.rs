@@ -192,7 +192,10 @@ fn main() -> Result<()> {
         TypeScriptAnalyzer::new(args.verbose)
     };
     
-    println!("Analyzing TypeScript files in {}", path.display());
+    // Display the analysis message with a newline before it
+    println!("");
+    println!("{}", "Path:".bold());
+    println!("  {}", path.display().to_string().cyan().bold());
     
     // Run the analysis
     let result = analyzer.analyze_directory(path, &extensions)?;
