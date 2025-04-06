@@ -6,9 +6,9 @@ cd "$(dirname "$0")"
 # Set to use nightly (via mise) for this script's execution
 mise use rust@nightly
 
-# Build the project
+# Build the project with custom rules feature
 echo "Building typescript-analyzer..."
-cargo build || { echo "Build failed"; exit 1; }
+cargo build --features custom_rules || { echo "Build failed"; exit 1; }
 
 # Check if a path argument was provided
 if [ $# -ge 1 ]; then

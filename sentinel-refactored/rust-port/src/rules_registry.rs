@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_semantic::SemanticBuilderReturn;
+use oxc_span::GetSpan;
 
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
@@ -117,10 +118,27 @@ pub fn create_default_registry() -> RulesRegistry {
     registry.register_rule(Box::new(NoDebuggerRule));
     registry.register_rule(Box::new(NoEmptyPatternRule));
     
+    // Register custom rules if the feature is enabled
+    #[cfg(feature = "custom_rules")]
+    register_custom_rules(&mut registry);
+    
     // Enable the default rules
     registry.enable_rules(&["no-debugger", "no-empty-pattern"]);
     
     registry
+}
+
+/// Register all custom rules with the registry
+#[cfg(feature = "custom_rules")]
+fn register_custom_rules(registry: &mut RulesRegistry) {
+    use crate::rules::custom::*;
+    
+    // Register the NoConsoleRule
+    registry.register_rule(Box::new(NoConsoleRule));
+    
+    // Add more custom rules here as they are created
+    
+    println!("Registered custom rules");
 }
 
 /// Load a rule configuration from a JSON file

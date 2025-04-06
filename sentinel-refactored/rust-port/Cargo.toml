@@ -3,6 +3,10 @@ name = "typescript-analyzer"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+custom_rules = []
+
 [dependencies]
 walkdir = "2.4"
 # For the future integration with oxc parser

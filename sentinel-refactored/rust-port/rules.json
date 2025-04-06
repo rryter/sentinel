@@ -1,6 +1,7 @@
 {
   "rules": [
     "no-debugger",
-    "no-empty-pattern"
+    "no-empty-pattern",
+    "no-console"
   ]
 } 

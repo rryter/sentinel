@@ -15,9 +15,10 @@ use rayon::prelude::*;
 // Import our modules
 mod metrics;
 mod rules;
+mod rules_registry;
 
 use metrics::Metrics;
-use rules::{RulesRegistry, create_default_registry, load_rule_config};
+use rules_registry::{RulesRegistry, create_default_registry, load_rule_config};
 
 /// Configuration structure for the TypeScript analyzer
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -78,7 +79,7 @@ fn main() {
         println!("Loading rules configuration from {}", rules_config_path);
         match load_rule_config(rules_config_path) {
             Ok(enabled_rules) => {
-                rules::configure_registry(&mut rules_registry, &enabled_rules);
+                rules_registry::configure_registry(&mut rules_registry, &enabled_rules);
                 println!("Enabled rules: {:?}", rules_registry.get_enabled_rules());
             },
             Err(err) => {
