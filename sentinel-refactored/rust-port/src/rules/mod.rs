@@ -17,6 +17,7 @@ pub trait Rule: Send + Sync {
     fn name(&self) -> &'static str;
     
     /// Get a description of what the rule checks for
+    #[allow(dead_code)]
     fn description(&self) -> &'static str;
     
     /// Run the rule on a semantic node
