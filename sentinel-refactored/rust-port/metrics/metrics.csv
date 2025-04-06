@@ -1,2 +1,5 @@
 timestamp,total_duration_ms,scan_duration_ms,analysis_duration_ms,files_processed,avg_time_per_file_ms,files_per_second,slowest_file,slowest_file_duration_ms,total_parse_time_ms,total_semantic_time_ms,avg_parse_time_ms,avg_semantic_time_ms
-2025-04-06T17:42:49.974301733+00:00,1822,18,1804,2953,0.61,1650.03,"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",13,1046,671,0.35,0.23
+2025-04-06T17:55:37.577396849+00:00,1771,18,1753,2953,0.59,1698.17,"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",12,1033,658,0.35,0.22
+2025-04-06T17:57:23.902566363+00:00,1776,18,1757,2953,0.59,1694.03,"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",12,1033,663,0.35,0.22
+2025-04-06T17:57:30.348117128+00:00,1816,17,1798,2953,0.60,1655.91,"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/invoice.helpers.spec.ts",14,1055,679,0.36,0.23
+2025-04-06T17:57:45.921649349+00:00,1791,18,1772,2953,0.60,1679.52,"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",13,1051,659,0.36,0.22

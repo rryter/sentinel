@@ -127,8 +127,6 @@ fn find_typescript_files(dir: &str) -> Vec<String> {
 fn analyze_file_with_metrics(file_path: &str, metrics: &mut Metrics) {
     let file_start = Instant::now();
     
-    println!("Analyzing {}", file_path);
-    
     // Read file
     let source = match fs::read_to_string(file_path) {
         Ok(content) => content,
@@ -177,41 +175,4 @@ fn analyze_file_with_metrics(file_path: &str, metrics: &mut Metrics) {
     
     // Record total file processing time
     metrics.record_file_time(file_path, file_start.elapsed());
-}
-
-// Keep the original analyze_file function for reference but don't use it
-#[allow(dead_code)]
-fn analyze_file(file_path: &str) {
-    println!("Analyzing {}", file_path);
-    
-    // Read file
-    let source = match fs::read_to_string(file_path) {
-        Ok(content) => content,
-        Err(err) => {
-            println!("Error reading file: {}", err);
-            return;
-        }
-    };
-    
-    // Parse and create semantic model
-    let allocator = Allocator::default();
-    let source_type = match SourceType::from_path(Path::new(file_path)) {
-        Ok(st) => st,
-        Err(_) => return,
-    };
-    
-    let parse_result = Parser::new(&allocator, &source, source_type).parse();
-    if !parse_result.errors.is_empty() {
-        println!("Parse errors: {}", parse_result.errors.len());
-        return;
-    }
-    
-    let semantic_result = SemanticBuilder::new().build(&parse_result.program);
-    
-    // Run rules (example with a simple rule that finds debugger statements)
-    for node in semantic_result.semantic.nodes() {
-        if let AstKind::DebuggerStatement(_) = node.kind() {
-            println!("Found debugger statement in {}", file_path);
-        }
-    }
 }

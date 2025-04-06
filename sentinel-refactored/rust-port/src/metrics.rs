@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 use std::collections::HashMap;
-use std::fs::{self, File};
-use std::io::Write;
+use std::fs::{self, File, OpenOptions};
+use std::io::{Write, Read};
 use std::path::Path;
 use serde::{Serialize, Deserialize};
 
@@ -23,7 +23,7 @@ pub struct Metrics {
 }
 
 /// Serializable metrics for export to JSON
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct ExportableMetrics {
     timestamp: String,
     total_duration_ms: u64,
@@ -84,7 +84,7 @@ impl Metrics {
         self.total_duration = Some(self.start_time.elapsed());
     }
     
-    /// Export metrics to a JSON file
+    /// Export metrics to a JSON file, appending to existing data
     pub fn export_to_json(&self, file_path: &str) -> Result<(), String> {
         if self.total_duration.is_none() {
             return Err("Total duration not measured yet. Call stop() first.".to_string());
@@ -141,7 +141,7 @@ impl Metrics {
         };
         
         // Create exportable metrics structure
-        let exportable = ExportableMetrics {
+        let new_metrics = ExportableMetrics {
             timestamp: chrono::Local::now().to_rfc3339(),
             total_duration_ms: total_duration.as_millis() as u64,
             scan_duration_ms: scan_duration.as_millis() as u64,
@@ -157,8 +157,35 @@ impl Metrics {
             avg_semantic_time_ms: avg_semantic_time,
         };
         
+        // Check if file exists and read existing metrics
+        let mut metrics_array: Vec<ExportableMetrics> = if Path::new(file_path).exists() {
+            let mut file = File::open(file_path)
+                .map_err(|e| format!("Failed to open existing file {}: {}", file_path, e))?;
+            
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)
+                .map_err(|e| format!("Failed to read existing file {}: {}", file_path, e))?;
+            
+            // Try to parse as array first
+            serde_json::from_str::<Vec<ExportableMetrics>>(&contents)
+                .unwrap_or_else(|_| {
+                    // If not an array, try as single object and convert to array
+                    if let Ok(single) = serde_json::from_str::<ExportableMetrics>(&contents) {
+                        vec![single]
+                    } else {
+                        // If parsing fails completely, start with empty array
+                        Vec::new()
+                    }
+                })
+        } else {
+            Vec::new()
+        };
+        
+        // Add new metrics to array
+        metrics_array.push(new_metrics);
+        
         // Serialize and write to file
-        let json = serde_json::to_string_pretty(&exportable)
+        let json = serde_json::to_string_pretty(&metrics_array)
             .map_err(|e| format!("Failed to serialize metrics: {}", e))?;
         
         let mut file = File::create(file_path)
@@ -170,7 +197,7 @@ impl Metrics {
         Ok(())
     }
     
-    /// Export metrics to a CSV file
+    /// Export metrics to a CSV file, appending to existing data
     pub fn export_to_csv(&self, file_path: &str) -> Result<(), String> {
         if self.total_duration.is_none() {
             return Err("Total duration not measured yet. Call stop() first.".to_string());
@@ -249,13 +276,24 @@ impl Metrics {
             avg_semantic_time
         );
         
-        // Write to file
-        let mut file = File::create(file_path)
-            .map_err(|e| format!("Failed to create file {}: {}", file_path, e))?;
-            
-        file.write_all(header.as_bytes())
-            .map_err(|e| format!("Failed to write header to file {}: {}", file_path, e))?;
-            
+        // Check if file exists
+        let file_exists = Path::new(file_path).exists();
+        
+        // Open file in append or create mode
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(true)
+            .open(file_path)
+            .map_err(|e| format!("Failed to open file {}: {}", file_path, e))?;
+        
+        // Write header only if file is new
+        if !file_exists {
+            file.write_all(header.as_bytes())
+                .map_err(|e| format!("Failed to write header to file {}: {}", file_path, e))?;
+        }
+        
+        // Always append the new record
         file.write_all(record.as_bytes())
             .map_err(|e| format!("Failed to write record to file {}: {}", file_path, e))?;
             

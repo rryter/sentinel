@@ -1,15 +1,62 @@
-{
-  "timestamp": "2025-04-06T17:42:49.973599472+00:00",
-  "total_duration_ms": 1822,
-  "scan_duration_ms": 18,
-  "analysis_duration_ms": 1804,
-  "files_processed": 2953,
-  "avg_time_per_file_ms": 0.6060507023366069,
-  "files_per_second": 1650.0269633291994,
-  "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
-  "slowest_file_duration_ms": 13,
-  "total_parse_time_ms": 1046,
-  "total_semantic_time_ms": 671,
-  "avg_parse_time_ms": 0.3544130924483576,
-  "avg_semantic_time_ms": 0.2274751544192347
-}
+[
+  {
+    "timestamp": "2025-04-06T17:55:37.576782416+00:00",
+    "total_duration_ms": 1771,
+    "scan_duration_ms": 18,
+    "analysis_duration_ms": 1753,
+    "files_processed": 2953,
+    "avg_time_per_file_ms": 0.5888699806975957,
+    "files_per_second": 1698.1677327401976,
+    "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
+    "slowest_file_duration_ms": 12,
+    "total_parse_time_ms": 1033,
+    "total_semantic_time_ms": 658,
+    "avg_parse_time_ms": 0.3499924608872333,
+    "avg_semantic_time_ms": 0.2229867236708432
+  },
+  {
+    "timestamp": "2025-04-06T17:57:23.901961227+00:00",
+    "total_duration_ms": 1776,
+    "scan_duration_ms": 18,
+    "analysis_duration_ms": 1757,
+    "files_processed": 2953,
+    "avg_time_per_file_ms": 0.5903099610565526,
+    "files_per_second": 1694.0252849709211,
+    "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
+    "slowest_file_duration_ms": 12,
+    "total_parse_time_ms": 1033,
+    "total_semantic_time_ms": 663,
+    "avg_parse_time_ms": 0.3500635611242804,
+    "avg_semantic_time_ms": 0.22452457128344055
+  },
+  {
+    "timestamp": "2025-04-06T17:57:30.347532881+00:00",
+    "total_duration_ms": 1816,
+    "scan_duration_ms": 17,
+    "analysis_duration_ms": 1798,
+    "files_processed": 2953,
+    "avg_time_per_file_ms": 0.603898074500508,
+    "files_per_second": 1655.9085750142738,
+    "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/invoice.helpers.spec.ts",
+    "slowest_file_duration_ms": 14,
+    "total_parse_time_ms": 1055,
+    "total_semantic_time_ms": 679,
+    "avg_parse_time_ms": 0.3575993965458856,
+    "avg_semantic_time_ms": 0.23010467897053843
+  },
+  {
+    "timestamp": "2025-04-06T17:57:45.920861638+00:00",
+    "total_duration_ms": 1791,
+    "scan_duration_ms": 18,
+    "analysis_duration_ms": 1772,
+    "files_processed": 2953,
+    "avg_time_per_file_ms": 0.5954081026075178,
+    "files_per_second": 1679.5203082064568,
+    "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
+    "slowest_file_duration_ms": 13,
+    "total_parse_time_ms": 1051,
+    "total_semantic_time_ms": 659,
+    "avg_parse_time_ms": 0.35612293565865216,
+    "avg_semantic_time_ms": 0.22327361970877074
+  }
+]
