@@ -2,5 +2,6 @@
   "path": "/home/rryter/projects/myCSS/packages/mycss-app/src/",
   "export_metrics_json": "./metrics/metrics.json",
   "export_metrics_csv": "./metrics/metrics.csv",
-  "threads": 16
+  "threads": 24,
+  "rules_config": "./rules.json"
 } 
