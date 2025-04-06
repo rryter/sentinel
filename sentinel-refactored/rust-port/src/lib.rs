@@ -239,42 +239,21 @@ impl TypeScriptAnalyzer {
                     AstKind::Decorator(decorator) => {
                         // Use the corrected helper function to extract the name
                         if let Some(name) = get_decorator_name(decorator) {
-                            // Match on the extracted name string
-                            match name {
-                                "Input" => {
-                                    errors.push(suggest_signal_alternatives(decorator.span));
-                                },
-                                "Output" => {
-                                    errors.push(suggest_signal_alternatives(decorator.span));
-                                },
-                                // "ViewChild" => {
-                                //     println!("Found @ViewChild decorator at {:?}", decorator.span);
-                                //     errors.push(suggest_signal_view_child(decorator.span));
-                                // },
-                                // "ViewChildren" => {
-                                //     println!("Found @ViewChildren decorator at {:?}", decorator.span);
-                                //     errors.push(suggest_signal_view_children(decorator.span));
-                                // },
-                                // "ContentChild" => {
-                                //     println!("Found @ContentChild decorator at {:?}", decorator.span);
-                                //     errors.push(suggest_signal_content_child(decorator.span));
-                                // },
-                                // "ContentChildren" => {
-                                //     println!("Found @ContentChildren decorator at {:?}", decorator.span);
-                                //     errors.push(suggest_signal_content_children(decorator.span));
-                                // },
-                                _ => {
-                                    // Optional: You might want to ignore other decorators silently,
-                                    // or log them if needed.
-                                    // println!("Ignoring decorator '{}' at {:?}", name, decorator.span);
-                                }
+                            // Create a set of decorators that should be migrated to signals
+                            const SIGNAL_MIGRATION_DECORATORS: &[&str] = &[
+                                "Input",
+                                "Output",
+                                "ViewChild",
+                                "ViewChildren",
+                                "ContentChild",
+                                "ContentChildren",
+                            ];
+
+                            if SIGNAL_MIGRATION_DECORATORS.contains(&name) {
+                                errors.push(suggest_signal_alternatives(decorator.span));
                             }
-                        } else {
-                            // Optional: Handle cases where a decorator-like syntax was used
-                            // but the name couldn't be extracted (e.g., complex expression decorators)
-                            // println!("Could not extract name from decorator expression at {:?}", decorator.span);
                         }
-                    },
+                    }
 
                     // Handle other AstKind variants if this match is part of a larger structure
                     // e.g., AstKind::ClassDeclaration(class_decl) => { /* ... */ }
