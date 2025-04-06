@@ -15,9 +15,6 @@ use typescript_analyzer::{
 use crate::config::Config;
 
 mod config;
-mod performance;
-mod visualization;
-mod reporter;
 
 /// A TypeScript analyzer that scans code and reports on issues
 #[derive(Parser, Debug)]
@@ -92,30 +89,6 @@ enum Commands {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    
-    // Check if a subcommand was specified
-    if let Some(cmd) = &args.command {
-        match cmd {
-            Commands::Visualize { input, output_dir } => {
-                println!("Generating visualizations from: {}", input);
-                
-                let input_path = Path::new(input);
-                let output_path = Path::new(output_dir);
-                
-                return match visualization::visualize_performance(input_path, output_path) {
-                    Ok(_) => {
-                        println!("Visualizations generated successfully in: {}", output_dir);
-                        Ok(())
-                    },
-                    Err(e) => {
-                        eprintln!("Failed to generate visualizations: {}", e);
-                        // Convert anyhow Error to a type that implements std::error::Error
-                        Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))
-                    }
-                };
-            }
-        }
-    }
     
     // Initialize the rule system first
     initialize_rules();

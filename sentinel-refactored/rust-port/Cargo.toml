@@ -18,6 +18,8 @@ oxc_parser = "0.62.0"
 oxc_ast = "0.62.0"
 oxc_span = "0.62.0"
 oxc_ast_visit = "0.62.0"
+oxc_diagnostics = "0.62.0"
+oxc_semantic = "0.62.0"
 
 # For parallel processing
 rayon = "1.8"

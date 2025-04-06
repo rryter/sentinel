@@ -35,16 +35,16 @@ rules:
   # min_severity: Warning
 
   # Export rule findings to a JSON file
-  export_json: "./results/findings.json"
+  # export_json: "./results/findings.json"
 
   # Export rule performance data to a JSON file
-  export_performance_json: "./results/performance.json"
+  # export_performance_json: "./results/performance.json"
 
 # --- Debugging ---
 # Enable verbose debug logging for the rule registry and evaluation process.
 debug:
   # Enable logging for the rule registry and evaluation process.
-  rules: true
+  rules: false
   # Add other potential components here later if needed, e.g.:
   # parser: false
   # config_loading: false

@@ -3,13 +3,18 @@ use std::fs;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use std::collections::HashMap;
-use anyhow::Result;
-use walkdir::WalkDir;
+use std::collections::{HashMap};
+use anyhow::{Result};
+use walkdir::{WalkDir};
 // Add imports for oxc
-use oxc_allocator::Allocator;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_allocator::{Allocator};
+use oxc_parser::{Parser};
+use oxc_span::{SourceType};
+use oxc_semantic::{SemanticBuilder};
+use oxc_diagnostics::{OxcDiagnostic};
+use oxc_ast::{AstKind};
+use oxc_ast::ast::{Span};
+
 // Rayon for parallel processing
 use rayon::prelude::*;
 // MiMalloc for faster memory allocation
@@ -24,8 +29,6 @@ static GLOBAL: MiMalloc = MiMalloc;
 pub mod scanner;
 pub mod metrics;
 pub mod rules;
-pub mod visualization;
-pub mod performance;
 
 /// Result of scanning a codebase for TypeScript files
 pub struct ScanResult {
@@ -194,75 +197,51 @@ impl TypeScriptAnalyzer {
         
         // Process files in parallel using Rayon
         scan_result.files.par_iter().for_each(|file_path| {
-            // Create a path object for the current file
-            let file_path_obj = Path::new(file_path);
+            let path = Path::new(&file_path);
             
-            // Read file content with better error handling
-            match fs::read_to_string(file_path) {
-                Ok(content) => {
-                    // Create a new allocator for each file to avoid memory issues
-                    let allocator = Allocator::default();
-                    
-                    // Determine source type from file extension
-                    let source_type = match SourceType::from_path(file_path_obj) {
-                        Ok(st) => st,
-                        Err(_) => SourceType::default(),
-                    };
-                    
-                    // Parse the file with better error handling
-                    let parser_result = Parser::new(&allocator, &content, source_type).parse();
-                    
-                    if !parser_result.errors.is_empty() || parser_result.panicked {
-                        error_count.fetch_add(1, Ordering::Relaxed);
-                        if self.verbose {
-                            println!("Errors parsing file: {}", file_path);
-                            for error in &parser_result.errors {
-                                println!("  - {:?}", error);
-                            }
-                        }
-                    } else if parser_result.program.body.is_empty() {
-                        // Skip empty programs but don't count as error
-                        if self.verbose {
-                            println!("Empty program in file: {}", file_path);
-                        }
-                    } else {
-                        parsed_count.fetch_add(1, Ordering::Relaxed);
-                        
-                        // Apply rules if enabled
-                        if let (Some(registry), Some(results)) = (&registry_clone, &rule_results_clone) {
-                            let file_results = registry.evaluate_all(&parser_result.program, file_path);
-                            
-                            if !file_results.matches.is_empty() {
-                                let mut results_write = results.lock();
-                                for rule_match in file_results.matches {
-                                    results_write.add_match(rule_match);
-                                }
-                            }
-                        }
-                        
-                        // Optionally save AST to file
-                        if self.verbose {
-                            if let Some(file_name) = file_path_obj.file_name() {
-                                if let Some(file_name_str) = file_name.to_str() {
-                                    let mut output_path = results_dir.clone();
-                                    output_path.push(format!("{}.json", file_name_str));
-                                    
-                                    // For now, just indicate success without actually writing
-                                    // This avoids file I/O bottlenecks during parsing
-                                    if self.verbose {
-                                        println!("Successfully parsed: {}", file_path);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                Err(e) => {
+            // Handle file reading errors without using ?
+            let source_text = match fs::read_to_string(path) {
+                Ok(text) => text,
+                Err(_) => {
                     error_count.fetch_add(1, Ordering::Relaxed);
-                    if self.verbose {
-                        println!("Error reading file {}: {}", file_path, e);
-                    }
+                    return;
                 }
+            };
+            
+            let allocator = Allocator::default();
+            
+            // Handle source type errors without using unwrap
+            let source_type = match SourceType::from_path(path) {
+                Ok(st) => st,
+                Err(_) => {
+                    error_count.fetch_add(1, Ordering::Relaxed);
+                    return;
+                }
+            };
+            
+            // Parse and track successful parses
+            let ret = Parser::new(&allocator, &source_text, source_type).parse();
+            
+            // Only count successful parses
+            parsed_count.fetch_add(1, Ordering::Relaxed);
+            
+            // Perform semantic analysis
+            let semantic_ret = SemanticBuilder::new().build(&ret.program);
+
+            // Check for specific issues using the semantic model
+            let mut errors: Vec<OxcDiagnostic> = vec![];
+            for node in semantic_ret.semantic.nodes() {
+                match node.kind() {
+                    AstKind::DebuggerStatement(stmt) => {
+                        errors.push(no_debugger(stmt.span));
+                    }
+                    // Add other AST checks here
+                    _ => {}
+                }
+            }
+
+            if !errors.is_empty() {
+                print_errors(&source_text, errors);
             }
         });
         
@@ -276,10 +255,6 @@ impl TypeScriptAnalyzer {
         // Get final counts
         let final_parsed_count = parsed_count.load(Ordering::Relaxed);
         let final_error_count = error_count.load(Ordering::Relaxed);
-        
-    
-        
-        
         
         // Calculate files per second for the result return value
         let duration_nanos = parse_duration.as_nanos();
@@ -397,4 +372,24 @@ impl TypeScriptAnalyzer {
             analyzer: Some(Arc::new(self.clone())),
         })
     }
-} 
+}
+
+/// Utility function to print diagnostic errors
+fn print_errors(source_text: &str, errors: Vec<OxcDiagnostic>) {
+    for error in errors {
+        println!("{error:?}");
+        let error = error.with_source_code(source_text.to_string());
+        println!("{error:?}");
+    }
+}
+
+// This prints:
+//
+//   ⚠ `debugger` statement is not allowed
+//   ╭────
+// 1 │ debugger;
+//   · ─────────
+//   ╰────
+fn no_debugger(debugger_span: Span) -> OxcDiagnostic {
+    OxcDiagnostic::error("`debugger` statement is not allowed").with_label(debugger_span)
+}
