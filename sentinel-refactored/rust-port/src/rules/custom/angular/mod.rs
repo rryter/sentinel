@@ -1,1 +1,0 @@
-// Angular custom rules module

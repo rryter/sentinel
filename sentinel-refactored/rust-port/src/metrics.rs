@@ -1,88 +1,95 @@
 use std::time::{Duration, Instant};
+use std::collections::HashMap;
 
-/// A timer for measuring performance of operations
-pub struct Timer {
-    start: Instant,
-    name: String,
-}
-
-impl Timer {
-    /// Create a new timer with a name
-    pub fn new(name: &str) -> Self {
-        Self {
-            start: Instant::now(),
-            name: name.to_string(),
-        }
-    }
-    
-    /// Get the elapsed time since the timer was created
-    pub fn elapsed(&self) -> Duration {
-        self.start.elapsed()
-    }
-    
-    /// Print the elapsed time
-    pub fn report(&self) {
-        println!("{} took {:?}", self.name, self.elapsed());
-    }
-}
-
-/// A collection of performance metrics for an analysis run
-pub struct AnalysisMetrics {
-    pub file_count: usize,
-    pub total_lines: usize,
-    pub total_size: u64,
-    pub scan_duration: Duration,
-    pub parse_duration: Option<Duration>,
+/// Performance metrics for tracking execution time of different operations
+pub struct Metrics {
+    start_time: Instant,
+    /// Total execution time
+    pub total_duration: Option<Duration>,
+    /// Time spent scanning for files
+    pub scan_duration: Option<Duration>,
+    /// Time spent analyzing all files
     pub analysis_duration: Option<Duration>,
+    /// Individual file processing times (file path -> duration)
+    pub file_times: HashMap<String, Duration>,
 }
 
-impl AnalysisMetrics {
-    /// Create a new empty metrics object
+impl Metrics {
+    /// Create a new metrics instance, starting the timer
     pub fn new() -> Self {
         Self {
-            file_count: 0,
-            total_lines: 0,
-            total_size: 0,
-            scan_duration: Duration::default(),
-            parse_duration: None,
+            start_time: Instant::now(),
+            total_duration: None,
+            scan_duration: None,
             analysis_duration: None,
+            file_times: HashMap::new(),
         }
     }
     
-    /// Print a summary of the metrics
-    pub fn print_summary(&self, file_paths: Option<&[String]>) {
-        println!("\n--- Analysis Metrics ---");
-        println!("Files scanned: {}", self.file_count);
+    /// Record the duration of scanning for files
+    pub fn record_scan_time(&mut self, duration: Duration) {
+        self.scan_duration = Some(duration);
+    }
+    
+    /// Record the duration of analyzing all files
+    pub fn record_analysis_time(&mut self, duration: Duration) {
+        self.analysis_duration = Some(duration);
+    }
+    
+    /// Record the duration of processing a single file
+    pub fn record_file_time(&mut self, file_path: &str, duration: Duration) {
+        self.file_times.insert(file_path.to_string(), duration);
+    }
+    
+    /// Stop timing and record total duration
+    pub fn stop(&mut self) {
+        self.total_duration = Some(self.start_time.elapsed());
+    }
+    
+    /// Print a summary of the collected metrics
+    pub fn print_summary(&self) {
+        println!("\n--- Performance Metrics ---");
         
+        // Total time
+        if let Some(duration) = self.total_duration {
+            println!("Total execution time: {:.2?}", duration);
+        }
         
-        // Print file paths if provided
-        if let Some(paths) = file_paths {
-            if !paths.is_empty() {
-                println!("File paths:");
-                for path in paths.iter().take(10) {
-                    println!("  - {}", path);
-                }
-                if paths.len() > 10 {
-                    println!("  ... and {} more files", paths.len() - 10);
-                }
+        // Scan time
+        if let Some(duration) = self.scan_duration {
+            println!("File scanning time: {:.2?}", duration);
+        }
+        
+        // Analysis time
+        if let Some(duration) = self.analysis_duration {
+            println!("File analysis time: {:.2?}", duration);
+        }
+        
+        // Files processed
+        let file_count = self.file_times.len();
+        if file_count > 0 {
+            println!("Files processed: {}", file_count);
+            
+            // Calculate average processing time per file
+            let total_file_time: Duration = self.file_times.values().sum();
+            let avg_time = total_file_time / file_count as u32;
+            println!("Average time per file: {:.2?}", avg_time);
+            
+            // Calculate files per second
+            if !total_file_time.is_zero() {
+                let seconds = total_file_time.as_secs_f64();
+                let files_per_second = file_count as f64 / seconds;
+                println!("Files per second: {:.2}", files_per_second);
+            }
+            
+            // Find slowest file
+            if let Some((slowest_file, duration)) = self.file_times
+                .iter()
+                .max_by_key(|(_, &duration)| duration) {
+                println!("Slowest file: {} ({:.2?})", slowest_file, duration);
             }
         }
         
-        println!("Total lines: {}", self.total_lines);
-        println!("Total size: {} bytes", self.total_size);
-        println!("Scan duration: {:?}", self.scan_duration);
-        
-        if let Some(parse_duration) = self.parse_duration {
-            println!("Parse duration: {:?}", parse_duration);
-        }
-        
-        if let Some(analysis_duration) = self.analysis_duration {
-            println!("Analysis duration: {:?}", analysis_duration);
-        }
-        
-        if self.scan_duration.as_secs_f64() > 0.0 {
-            let files_per_second = self.file_count as f64 / self.scan_duration.as_secs_f64();
-            println!("Files per second: {:.2}", files_per_second);
-        }
+        println!("---------------------------");
     }
 } 

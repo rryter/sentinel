@@ -10,9 +10,13 @@ mise use rust@nightly
 echo "Building typescript-analyzer..."
 cargo build || { echo "Build failed"; exit 1; }
 
-# Set default path, but allow it to be overridden by the first argument
-PROJECT_PATH=${1:-"/home/rryter/projects/myCSS/packages/mycss-app/src/"}
-shift 2>/dev/null || true  # Remove first argument if it exists, silently continue if not
-
-# Run the binary with path argument and remaining arguments
-./target/debug/typescript-analyzer "$PROJECT_PATH" "$@"
+# Check if a path argument was provided
+if [ $# -ge 1 ]; then
+  # Use the provided path argument
+  echo "Using provided path: $1"
+  ./target/debug/typescript-analyzer "$1" "${@:2}"
+else
+  # No path argument provided, use sentinel.json configuration
+  echo "Using path from sentinel.json"
+  ./target/debug/typescript-analyzer
+fi
