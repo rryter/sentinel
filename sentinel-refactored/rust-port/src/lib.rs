@@ -40,7 +40,8 @@ pub struct ScanResult {
 pub struct AnalysisResult {
     pub scan_result: ScanResult,
     pub parse_duration: Duration,
-    pub analysis_duration: Duration,
+    pub total_cpu_semantic_duration: Duration,
+    pub parallel_analysis_duration: Duration,
     pub parsed_count: usize,
     pub error_count: usize,
     pub rule_results: Option<rules::RuleResults>,
@@ -151,7 +152,8 @@ impl TypeScriptAnalyzer {
             return Ok(AnalysisResult {
                 scan_result,
                 parse_duration: Duration::default(),
-                analysis_duration: Duration::default(),
+                total_cpu_semantic_duration: Duration::default(),
+                parallel_analysis_duration: Duration::default(),
                 parsed_count: 0,
                 error_count: 0,
                 rule_results: None,
@@ -191,19 +193,26 @@ impl TypeScriptAnalyzer {
             None
         };
         
+        // Use Arc<Mutex<>> for thread-safe duration aggregation
+        let total_semantic_duration_aggregator = Arc::new(Mutex::new(Duration::default()));
+        
         // Clone rule registry for thread safety if it exists
         let registry_clone = self.rule_registry.clone();
         let rule_results_clone = rule_results.clone();
+        let semantic_duration_aggregator_clone = total_semantic_duration_aggregator.clone();
+        // Clone Arcs for the closure
+        let parsed_count_clone = parsed_count.clone();
+        let error_count_clone = error_count.clone();
         
         // Process files in parallel using Rayon
-        scan_result.files.par_iter().for_each(|file_path| {
+        scan_result.files.par_iter().for_each(move |file_path| {
             let path = Path::new(&file_path);
             
             // Handle file reading errors without using ?
             let source_text = match fs::read_to_string(path) {
                 Ok(text) => text,
                 Err(_) => {
-                    error_count.fetch_add(1, Ordering::Relaxed);
+                    error_count_clone.fetch_add(1, Ordering::Relaxed); // Use clone
                     return;
                 }
             };
@@ -214,7 +223,7 @@ impl TypeScriptAnalyzer {
             let source_type = match SourceType::from_path(path) {
                 Ok(st) => st,
                 Err(_) => {
-                    error_count.fetch_add(1, Ordering::Relaxed);
+                    error_count_clone.fetch_add(1, Ordering::Relaxed); // Use clone
                     return;
                 }
             };
@@ -223,46 +232,60 @@ impl TypeScriptAnalyzer {
             let ret = Parser::new(&allocator, &source_text, source_type).parse();
             
             // Only count successful parses
-            parsed_count.fetch_add(1, Ordering::Relaxed);
+            parsed_count_clone.fetch_add(1, Ordering::Relaxed); // Use clone
             
+            // --- Start Timing Semantic Analysis ---
+            let semantic_start = Instant::now();
+
             // Perform semantic analysis
             let semantic_ret = SemanticBuilder::new().build(&ret.program);
 
             // Check for specific issues using the semantic model
             let mut errors: Vec<OxcDiagnostic> = vec![];
-            for node in semantic_ret.semantic.nodes() {
-                match node.kind() {
-                    AstKind::DebuggerStatement(stmt) => {
-                        errors.push(no_debugger(stmt.span));
-                    }
+            if ret.errors.is_empty() { // Only analyze if parsing succeeded
+                for node in semantic_ret.semantic.nodes() {
+                    match node.kind() {
+                        AstKind::DebuggerStatement(stmt) => {
+                            errors.push(no_debugger(stmt.span));
+                        }
 
-                    AstKind::Decorator(decorator) => {
-                        // Use the corrected helper function to extract the name
-                        if let Some(name) = get_decorator_name(decorator) {
-                            // Create a set of decorators that should be migrated to signals
-                            const SIGNAL_MIGRATION_DECORATORS: &[&str] = &[
-                                "Input",
-                                "Output",
-                                "ViewChild",
-                                "ViewChildren",
-                                "ContentChild",
-                                "ContentChildren",
-                            ];
+                        AstKind::Decorator(decorator) => {
+                            // Use the corrected helper function to extract the name
+                            if let Some(name) = get_decorator_name(decorator) {
+                                // Create a set of decorators that should be migrated to signals
+                                const SIGNAL_MIGRATION_DECORATORS: &[&str] = &[
+                                    "Input",
+                                    "Output",
+                                    "ViewChild",
+                                    "ViewChildren",
+                                    "ContentChild",
+                                    "ContentChildren",
+                                ];
 
-                            if SIGNAL_MIGRATION_DECORATORS.contains(&name) {
-                                errors.push(suggest_signal_alternatives(decorator.span));
+                                if SIGNAL_MIGRATION_DECORATORS.contains(&name) {
+                                    errors.push(suggest_signal_alternatives(decorator.span));
+                                }
                             }
                         }
-                    }
 
-                    // Handle other AstKind variants if this match is part of a larger structure
-                    // e.g., AstKind::ClassDeclaration(class_decl) => { /* ... */ }
-                    _ => {
-                        // Ignore other node types in this specific context
+                        // Handle other AstKind variants if needed
+                        _ => {}
                     }
                 }
             }
+            // Add collected parse errors
+            errors.extend(ret.errors.into_iter());
+            // Add collected semantic errors (if any)
+            errors.extend(semantic_ret.errors.into_iter());
 
+            // --- End Timing Semantic Analysis ---
+            let semantic_duration = semantic_start.elapsed(); 
+            // Add duration to the total using mutex
+            let mut total_duration_lock = semantic_duration_aggregator_clone.lock();
+            *total_duration_lock += semantic_duration;
+            drop(total_duration_lock);
+
+            // Handle diagnostic printing (might move this out or make conditional)
             if !errors.is_empty() {
                 print_errors(&source_text, errors);
             }
@@ -273,7 +296,8 @@ impl TypeScriptAnalyzer {
         drop(rule_results_clone);
         
         let parse_duration = parse_start.elapsed();
-        let analysis_duration = analysis_start.elapsed();
+        let parallel_analysis_duration = analysis_start.elapsed();
+        let final_total_cpu_semantic_duration = *total_semantic_duration_aggregator.lock();
         
         // Get final counts
         let final_parsed_count = parsed_count.load(Ordering::Relaxed);
@@ -300,7 +324,8 @@ impl TypeScriptAnalyzer {
                     return Ok(AnalysisResult {
                         scan_result,
                         parse_duration,
-                        analysis_duration,
+                        total_cpu_semantic_duration: final_total_cpu_semantic_duration,
+                        parallel_analysis_duration,
                         parsed_count: final_parsed_count,
                         error_count: final_error_count,
                         rule_results: None,
@@ -387,7 +412,8 @@ impl TypeScriptAnalyzer {
         Ok(AnalysisResult {
             scan_result,
             parse_duration,
-            analysis_duration,
+            total_cpu_semantic_duration: final_total_cpu_semantic_duration,
+            parallel_analysis_duration,
             parsed_count: final_parsed_count,
             error_count: final_error_count,
             rule_results: final_rule_results,

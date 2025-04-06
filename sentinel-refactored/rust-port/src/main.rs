@@ -14,6 +14,9 @@ use typescript_analyzer::{
 };
 use crate::config::Config;
 
+// Import num_cpus
+use num_cpus;
+
 mod config;
 
 /// A TypeScript analyzer that scans code and reports on issues
@@ -268,17 +271,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     println!("  Parse errors: {}", error_count_str);
     
-    // Format duration with proper precision - no decimals for ms, 3 decimals for seconds
-    let duration_str = if results.analysis_duration.as_secs() > 0 {
-        format!("{:.3}s", results.analysis_duration.as_secs_f64())
+    // Calculate and display normalized semantic analysis duration
+    let num_cores = num_cpus::get();
+    let total_semantic_duration_nanos = results.total_cpu_semantic_duration.as_nanos();
+    let normalized_semantic_duration_nanos = total_semantic_duration_nanos / (num_cores as u128);
+    let normalized_semantic_duration = std::time::Duration::from_nanos(normalized_semantic_duration_nanos as u64);
+
+    let normalized_semantic_str = if normalized_semantic_duration.as_secs() > 0 {
+        format!("{:.3}s", normalized_semantic_duration.as_secs_f64())
     } else {
-        format!("{}ms", results.analysis_duration.as_millis())
+        format!("{}ms", normalized_semantic_duration.as_millis())
+    };
+    println!("  Normalized Semantic Analysis Time (Est.): {}", normalized_semantic_str.cyan());
+
+    // Format parallel analysis duration
+    let parallel_duration_str = if results.parallel_analysis_duration.as_secs() > 0 {
+        format!("{:.3}s", results.parallel_analysis_duration.as_secs_f64())
+    } else {
+        format!("{}ms", results.parallel_analysis_duration.as_millis())
     };
     
-    // Display analysis duration
-    println!("  Analysis time: {}", duration_str.cyan());
+    // Display parallel analysis duration
+    println!("  Parallel Analysis Duration: {}", parallel_duration_str.cyan());
     
-    // Display files per second if available
+    // Display files per second if available (based on parallel analysis duration)
     if let Some(files_per_second) = results.files_per_second {
         println!("  Files per second: {}", files_per_second.to_string().cyan().bold());
     } else {
