@@ -1,3 +1,5 @@
 {
-  "path": "/home/rryter/projects/myCSS/packages/mycss-app/src/"
+  "path": "/home/rryter/projects/myCSS/packages/mycss-app/src/",
+  "export_metrics_json": "./metrics/metrics.json",
+  "export_metrics_csv": "./metrics/metrics.csv"
 } 

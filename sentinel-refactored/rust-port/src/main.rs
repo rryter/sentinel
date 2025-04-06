@@ -19,6 +19,8 @@ use metrics::Metrics;
 #[derive(Serialize, Deserialize, Debug, Default)]
 struct Config {
     path: Option<String>,
+    export_metrics_json: Option<String>,
+    export_metrics_csv: Option<String>,
 }
 
 impl Config {
@@ -79,9 +81,7 @@ fn main() {
     
     // Process each file and record metrics
     for file_path in files {
-        let file_start = Instant::now();
-        analyze_file(&file_path);
-        metrics.record_file_time(&file_path, file_start.elapsed());
+        analyze_file_with_metrics(&file_path, &mut metrics);
     }
     
     // Record total analysis time
@@ -92,6 +92,21 @@ fn main() {
     
     // Print performance summary
     metrics.print_summary();
+    
+    // Export metrics if configured
+    if let Some(json_path) = &config.export_metrics_json {
+        println!("Exporting metrics to JSON: {}", json_path);
+        if let Err(err) = metrics.export_to_json(json_path) {
+            eprintln!("Error exporting metrics to JSON: {}", err);
+        }
+    }
+    
+    if let Some(csv_path) = &config.export_metrics_csv {
+        println!("Exporting metrics to CSV: {}", csv_path);
+        if let Err(err) = metrics.export_to_csv(csv_path) {
+            eprintln!("Error exporting metrics to CSV: {}", err);
+        }
+    }
 }
 
 fn find_typescript_files(dir: &str) -> Vec<String> {
@@ -108,6 +123,64 @@ fn find_typescript_files(dir: &str) -> Vec<String> {
         .collect()
 }
 
+/// Analyze a file and record detailed metrics
+fn analyze_file_with_metrics(file_path: &str, metrics: &mut Metrics) {
+    let file_start = Instant::now();
+    
+    println!("Analyzing {}", file_path);
+    
+    // Read file
+    let source = match fs::read_to_string(file_path) {
+        Ok(content) => content,
+        Err(err) => {
+            println!("Error reading file: {}", err);
+            return;
+        }
+    };
+    
+    // Measure parsing time
+    let parse_start = Instant::now();
+    
+    // Parse file
+    let allocator = Allocator::default();
+    let source_type = match SourceType::from_path(Path::new(file_path)) {
+        Ok(st) => st,
+        Err(_) => return,
+    };
+    
+    let parse_result = Parser::new(&allocator, &source, source_type).parse();
+    if !parse_result.errors.is_empty() {
+        println!("Parse errors: {}", parse_result.errors.len());
+        return;
+    }
+    
+    // Record parse time
+    let parse_duration = parse_start.elapsed();
+    metrics.record_parse_time(file_path, parse_duration);
+    
+    // Measure semantic analysis time
+    let semantic_start = Instant::now();
+    
+    // Perform semantic analysis
+    let semantic_result = SemanticBuilder::new().build(&parse_result.program);
+    
+    // Record semantic analysis time
+    let semantic_duration = semantic_start.elapsed();
+    metrics.record_semantic_time(file_path, semantic_duration);
+    
+    // Run rules (example with a simple rule that finds debugger statements)
+    for node in semantic_result.semantic.nodes() {
+        if let AstKind::DebuggerStatement(_) = node.kind() {
+            println!("Found debugger statement in {}", file_path);
+        }
+    }
+    
+    // Record total file processing time
+    metrics.record_file_time(file_path, file_start.elapsed());
+}
+
+// Keep the original analyze_file function for reference but don't use it
+#[allow(dead_code)]
 fn analyze_file(file_path: &str) {
     println!("Analyzing {}", file_path);
     

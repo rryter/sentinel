@@ -1,0 +1,2 @@
+timestamp,total_duration_ms,scan_duration_ms,analysis_duration_ms,files_processed,avg_time_per_file_ms,files_per_second,slowest_file,slowest_file_duration_ms,total_parse_time_ms,total_semantic_time_ms,avg_parse_time_ms,avg_semantic_time_ms
+2025-04-06T16:26:09.304074030+00:00,1835,18,1817,2953,0.61,1638.24,"/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",12,1066,663,0.36,0.22

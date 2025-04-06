@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-04-06T16:26:09.303346312+00:00",
+  "total_duration_ms": 1835,
+  "scan_duration_ms": 18,
+  "analysis_duration_ms": 1817,
+  "files_processed": 2953,
+  "avg_time_per_file_ms": 0.610412983406705,
+  "files_per_second": 1638.23514109909,
+  "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
+  "slowest_file_duration_ms": 12,
+  "total_parse_time_ms": 1066,
+  "total_semantic_time_ms": 663,
+  "avg_parse_time_ms": 0.3613110118523535,
+  "avg_semantic_time_ms": 0.22458796274974602
+}
