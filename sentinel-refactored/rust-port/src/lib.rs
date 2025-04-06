@@ -11,9 +11,9 @@ use oxc_allocator::{Allocator};
 use oxc_parser::{Parser};
 use oxc_span::{SourceType};
 use oxc_semantic::{SemanticBuilder};
-use oxc_diagnostics::{OxcDiagnostic};
+use oxc_diagnostics::{OxcDiagnostic, Severity};
 use oxc_ast::{AstKind};
-use oxc_ast::ast::{Span};
+use oxc_ast::ast::{Span, Expression, Decorator};
 
 // Rayon for parallel processing
 use rayon::prelude::*;
@@ -235,8 +235,52 @@ impl TypeScriptAnalyzer {
                     AstKind::DebuggerStatement(stmt) => {
                         errors.push(no_debugger(stmt.span));
                     }
-                    // Add other AST checks here
-                    _ => {}
+
+                    AstKind::Decorator(decorator) => {
+                        // Use the corrected helper function to extract the name
+                        if let Some(name) = get_decorator_name(decorator) {
+                            // Match on the extracted name string
+                            match name {
+                                "Input" => {
+                                    errors.push(suggest_signal_alternatives(decorator.span));
+                                },
+                                "Output" => {
+                                    errors.push(suggest_signal_alternatives(decorator.span));
+                                },
+                                // "ViewChild" => {
+                                //     println!("Found @ViewChild decorator at {:?}", decorator.span);
+                                //     errors.push(suggest_signal_view_child(decorator.span));
+                                // },
+                                // "ViewChildren" => {
+                                //     println!("Found @ViewChildren decorator at {:?}", decorator.span);
+                                //     errors.push(suggest_signal_view_children(decorator.span));
+                                // },
+                                // "ContentChild" => {
+                                //     println!("Found @ContentChild decorator at {:?}", decorator.span);
+                                //     errors.push(suggest_signal_content_child(decorator.span));
+                                // },
+                                // "ContentChildren" => {
+                                //     println!("Found @ContentChildren decorator at {:?}", decorator.span);
+                                //     errors.push(suggest_signal_content_children(decorator.span));
+                                // },
+                                _ => {
+                                    // Optional: You might want to ignore other decorators silently,
+                                    // or log them if needed.
+                                    // println!("Ignoring decorator '{}' at {:?}", name, decorator.span);
+                                }
+                            }
+                        } else {
+                            // Optional: Handle cases where a decorator-like syntax was used
+                            // but the name couldn't be extracted (e.g., complex expression decorators)
+                            // println!("Could not extract name from decorator expression at {:?}", decorator.span);
+                        }
+                    },
+
+                    // Handle other AstKind variants if this match is part of a larger structure
+                    // e.g., AstKind::ClassDeclaration(class_decl) => { /* ... */ }
+                    _ => {
+                        // Ignore other node types in this specific context
+                    }
                 }
             }
 
@@ -377,9 +421,8 @@ impl TypeScriptAnalyzer {
 /// Utility function to print diagnostic errors
 fn print_errors(source_text: &str, errors: Vec<OxcDiagnostic>) {
     for error in errors {
-        println!("{error:?}");
-        let error = error.with_source_code(source_text.to_string());
-        println!("{error:?}");
+        let _error = error.with_source_code(source_text.to_string());
+        // println!("{error:?}");  
     }
 }
 
@@ -392,4 +435,22 @@ fn print_errors(source_text: &str, errors: Vec<OxcDiagnostic>) {
 //   ╰────
 fn no_debugger(debugger_span: Span) -> OxcDiagnostic {
     OxcDiagnostic::error("`debugger` statement is not allowed").with_label(debugger_span)
+}
+
+fn suggest_signal_alternatives(debugger_span: Span) -> OxcDiagnostic {
+    OxcDiagnostic::error("`debugger` statement is not allowed").with_label(debugger_span)
+        .with_url("http://localhost:8000")
+        .with_severity(Severity::Error)
+}
+
+/// Corrected helper function (as defined in the previous answer)
+fn get_decorator_name<'a>(decorator: &'a Decorator) -> Option<&'a str> {
+    match &decorator.expression {
+        Expression::Identifier(id_ref) => Some(id_ref.name.as_str()),
+        Expression::CallExpression(call_expr) => match &call_expr.callee {
+            Expression::Identifier(id_ref) => Some(id_ref.name.as_str()),
+            _ => None,
+        },
+        _ => None,
+    }
 }
