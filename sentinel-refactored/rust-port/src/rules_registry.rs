@@ -135,9 +135,13 @@ pub fn create_default_registry() -> RulesRegistry {
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
     use crate::rules::custom::NoConsoleRule;
+    use crate::rules::custom::NoConsoleWarnRule;
     
     // Register the NoConsoleRule
     registry.register_rule(Box::new(NoConsoleRule));
+    
+    // Register the NoConsoleWarnRule
+    registry.register_rule(Box::new(NoConsoleWarnRule));
     
     // Add more custom rules here as they are created
     

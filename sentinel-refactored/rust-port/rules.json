@@ -2,6 +2,7 @@
   "rules": [
     "no-debugger",
     "no-empty-pattern",
-    "no-console"
+    "no-console",
+    "no-console-warn"
   ]
 } 
