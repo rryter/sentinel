@@ -80,24 +80,18 @@ impl Rule for NoConsoleWarnVisitorRule {
         "Disallows the use of console.warn (Visitor Pattern implementation)"
     }
 
-    fn run_on_node(&self, _node: &AstKind, _span: Span, _file_path: &str) -> Option<OxcDiagnostic> {
-        None // We don't use this method since we're using the visitor pattern
-    }
-
-    fn run_on_semantic(&self, semantic_result: &SemanticBuilderReturn, file_path: &str) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Option<OxcDiagnostic> {
         let mut visitor = ConsoleWarnVisitor::new(file_path);
-        
-        // Iterate through all AST nodes and let the visitor pattern handle traversal
-        for node in semantic_result.semantic.nodes() {
-            match node.kind() {
-                AstKind::CallExpression(call_expr) => {
-                    visitor.visit_call_expression(call_expr);
-                }
-                // We only care about call expressions, so skip other node types
-                _ => {}
+
+        match node {
+            AstKind::CallExpression(call_expr) => {
+                visitor.visit_call_expression(call_expr);
             }
+            // We only care about call expressions, so skip other node types
+            _ => {}
         }
         
-        visitor.diagnostics
+        // Return the first diagnostic if any exist, otherwise None
+        visitor.diagnostics.into_iter().next()
     }
 } 
