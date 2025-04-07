@@ -110,14 +110,15 @@ impl RulesRegistry {
                         // Run the rule
                         let diagnostic_option = rule.run_on_node(&node_kind, span, file_path);
                         
-                        // Record the time taken
+                        // Record the time taken *only if* a diagnostic was produced
                         let duration = rule_start.elapsed();
-                        if let Ok(mut metrics_guard) = metrics.lock() {
-                            metrics_guard.record_rule_time(rule_name, duration);
-                        }
                         
                         // Add any diagnostic that was produced
                         if let Some(diagnostic) = diagnostic_option {
+                            // Record time only when rule yielded a result for this node
+                            if let Ok(mut metrics_guard) = metrics.lock() {
+                                metrics_guard.record_rule_time(rule_name, duration);
+                            }
                             diagnostics.push(diagnostic);
                         }
                     }
