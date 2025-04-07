@@ -1,5 +1,6 @@
 {
   "rules": [
-    "no-console-warn-visitor"
+    "no-console-warn-visitor",
+    "angular-observable-inputs"
   ]
 } 

@@ -234,11 +234,13 @@ pub fn create_default_registry() -> RulesRegistry {
 /// Register all custom rules with the registry
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
-    use crate::rules::custom::NoConsoleWarnVisitorRule;
-    
+    use crate::rules::custom::{NoConsoleWarnVisitorRule, AngularObservableInputsRule};
     
     // Register the NoConsoleWarnVisitorRule
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
+    
+    // Register the AngularObservableInputsRule
+    registry.register_rule(Box::new(AngularObservableInputsRule));
     
     // Add more custom rules here as they are created
 }

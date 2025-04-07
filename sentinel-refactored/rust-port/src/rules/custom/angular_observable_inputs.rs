@@ -28,17 +28,17 @@ use crate::rules::Rule;
 /// console.error('Error message');
 /// logger.warn('Warning with proper logger');
 /// ```
-pub struct NoConsoleWarnVisitorRule;
+pub struct AngularObservableInputsRule;
 
 /// Visitor implementation that tracks console.warn calls
-struct ConsoleWarnVisitor<'a> {
+struct ObservableInputsVisitor<'a> {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
     /// File path for context in diagnostics
     file_path: &'a str,
 }
 
-impl<'a> ConsoleWarnVisitor<'a> {
+impl<'a> ObservableInputsVisitor<'a> {
     fn new(file_path: &'a str) -> Self {
         Self {
             diagnostics: Vec::new(),
@@ -54,7 +54,7 @@ impl<'a> ConsoleWarnVisitor<'a> {
     }
 }
 
-impl<'a> Visit<'a> for ConsoleWarnVisitor<'a> {
+impl<'a> Visit<'a> for ObservableInputsVisitor<'a> {
     fn visit_call_expression(&mut self, call_expr: &CallExpression<'a>) {
         if let Some(member_expr) = call_expr.callee.as_member_expression() {
             // Check if it's a console.warn call
@@ -71,17 +71,17 @@ impl<'a> Visit<'a> for ConsoleWarnVisitor<'a> {
     }
 }
 
-impl Rule for NoConsoleWarnVisitorRule {
+impl Rule for AngularObservableInputsRule {
     fn name(&self) -> &'static str {
-        "no-console-warn-visitor"
+        "angular-observable-inputs"
     }
 
     fn description(&self) -> &'static str {
-        "Disallows the use of console.warn (Visitor Pattern implementation)"
+        "Checks for proper usage of Observable inputs in Angular components"
     }
 
     fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Option<OxcDiagnostic> {
-        let mut visitor = ConsoleWarnVisitor::new(file_path);
+        let mut visitor = ObservableInputsVisitor::new(file_path);
 
         match node {
             AstKind::CallExpression(call_expr) => {
