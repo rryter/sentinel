@@ -8,17 +8,17 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_semantic::SemanticBuilder;
+use oxc_diagnostics::OxcDiagnostic;
 use walkdir::WalkDir;
 use serde::{Deserialize, Serialize, Deserializer};
 use rayon::prelude::*;
+use std::time::Duration;
+use std::collections::HashMap;
 
-// Import our modules
-mod metrics;
-mod rules;
-mod rules_registry;
-
-use metrics::Metrics;
-use rules_registry::{RulesRegistry, create_default_registry, load_rule_config};
+// Import from the typescript_analyzer crate
+use typescript_analyzer::FileAnalysisResult;
+use typescript_analyzer::metrics::Metrics;
+use typescript_analyzer::rules_registry::{RulesRegistry, create_default_registry, load_rule_config, configure_registry};
 
 /// Debug level enum for controlling output verbosity
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -168,7 +168,7 @@ fn main() {
         log(DebugLevel::Trace, debug_level, &format!("Loading rules configuration from {}", rules_config_path));
         match load_rule_config(rules_config_path) {
             Ok(enabled_rules) => {
-                rules_registry::configure_registry(&mut rules_registry, &enabled_rules);
+                configure_registry(&mut rules_registry, &enabled_rules);
                 log(DebugLevel::Info, debug_level, &format!("Enabled rules: {:?}", rules_registry.get_enabled_rules()));
             },
             Err(err) => {
@@ -212,43 +212,53 @@ fn main() {
     // Start timing file analysis
     let analysis_start = Instant::now();
     
-    // Process files in parallel using rayon
-    files.par_iter().for_each(|file_path| {
-        // Create references to the shared data for this thread
-        let metrics_ref = Arc::clone(&metrics_arc);
-        let rules_ref = Arc::clone(&rules_registry_arc);
-        
-        analyze_file(file_path, metrics_ref, rules_ref, debug_level);
-    });
+    // Process files in parallel using rayon and collect results
+    let analysis_results: Vec<FileAnalysisResult> = files
+        .par_iter()
+        .map(|file_path| {
+            // Create a clone of the Arc for the rules registry for this thread
+            let rules_ref = Arc::clone(&rules_registry_arc);
+            // Call analyze_file without metrics Arc
+            analyze_file(file_path, rules_ref, debug_level)
+        })
+        .collect();
     
-    // Record total analysis time and other operations
-    {
-        if let Ok(mut metrics) = metrics_arc.lock() {
-            metrics.record_analysis_time(analysis_start.elapsed());
-            metrics.stop();
-            // Convert debug_level to a string and pass it to print_summary
-            let debug_level_str = match debug_level {
-                DebugLevel::Trace => Some("trace"),
-                _ => None,
-            };
-            metrics.print_summary(debug_level_str);
-        }
+    // Record total analysis time (wall clock)
+    let analysis_duration = analysis_start.elapsed();
+    
+    // Aggregate results into the final Metrics struct
+    // Create the final Metrics instance (not locked during parallel phase)
+    let mut final_metrics = Metrics::new(); 
+    final_metrics.record_analysis_time(analysis_duration); 
+    final_metrics.record_scan_time(scan_start.elapsed()); // Record scan time here too
+
+    // Aggregate data from each file result
+    for result in analysis_results {
+        final_metrics.aggregate_file_result(result);
     }
     
-    // Export metrics if configured
-    export_metrics(&config, &metrics_arc, debug_level);
+    // Stop the final metrics timer AFTER aggregation
+    final_metrics.stop();
+
+    // Print summary from the final aggregated metrics
+    let debug_level_str = match debug_level {
+        DebugLevel::Trace => Some("trace"),
+        _ => None,
+    };
+    final_metrics.print_summary(debug_level_str);
+    
+    // Export metrics if configured (pass the final aggregated metrics)
+    export_metrics(&config, &final_metrics, debug_level);
 }
 
 /// Export metrics to files if configured
-fn export_metrics(config: &Config, metrics_arc: &Arc<Mutex<Metrics>>, debug_level: DebugLevel) {
-    if let Ok(metrics) = metrics_arc.lock() {
-        // Call the export_to_configured_formats method on Metrics
-        if let Err(err) = metrics.export_to_configured_formats(
-            config.export_metrics_json.as_ref(), 
-            config.export_metrics_csv.as_ref()
-        ) {
-            log(DebugLevel::Error, debug_level, &format!("Failed to export metrics: {}", err));
-        }
+fn export_metrics(config: &Config, metrics: &Metrics, debug_level: DebugLevel) { // Takes &Metrics now
+    // Call the export_to_configured_formats method on Metrics
+    if let Err(err) = metrics.export_to_configured_formats(
+        config.export_metrics_json.as_ref(), 
+        config.export_metrics_csv.as_ref()
+    ) {
+        log(DebugLevel::Error, debug_level, &format!("Failed to export metrics: {}", err));
     }
 }
 
@@ -267,8 +277,12 @@ fn find_typescript_files(dir: &str) -> Vec<String> {
         .collect()
 }
 
-/// Analyze a file and record detailed metrics and run lint rules
-fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registry: Arc<RulesRegistry>, debug_level: DebugLevel) {
+/// Analyze a file and return detailed results
+fn analyze_file(
+    file_path: &str, 
+    rules_registry: Arc<RulesRegistry>, 
+    debug_level: DebugLevel
+) -> FileAnalysisResult { // Return the new struct
     let file_start = Instant::now();
     
     // Read file
@@ -276,7 +290,14 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
         Ok(content) => content,
         Err(err) => {
             log(DebugLevel::Error, debug_level, &format!("Error reading file {}: {}", file_path, err));
-            return;
+            return FileAnalysisResult {
+                file_path: file_path.to_string(),
+                parse_duration: Duration::from_secs(0),
+                semantic_duration: Duration::from_secs(0),
+                rule_durations: HashMap::new(),
+                total_duration: Duration::from_secs(0),
+                diagnostics: Vec::new(),
+            };
         }
     };
     
@@ -287,20 +308,31 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
     let allocator = Allocator::default();
     let source_type = match SourceType::from_path(Path::new(file_path)) {
         Ok(st) => st,
-        Err(_) => return,
+        Err(_) => return FileAnalysisResult {
+            file_path: file_path.to_string(),
+            parse_duration: Duration::from_secs(0),
+            semantic_duration: Duration::from_secs(0),
+            rule_durations: HashMap::new(),
+            total_duration: Duration::from_secs(0),
+            diagnostics: Vec::new(),
+        },
     };
     
     let parse_result = Parser::new(&allocator, &source, source_type).parse();
     if !parse_result.errors.is_empty() {
         log(DebugLevel::Error, debug_level, &format!("Parse errors in {}: {}", file_path, parse_result.errors.len()));
-        return;
+        return FileAnalysisResult {
+            file_path: file_path.to_string(),
+            parse_duration: Duration::from_secs(0),
+            semantic_duration: Duration::from_secs(0),
+            rule_durations: HashMap::new(),
+            total_duration: Duration::from_secs(0),
+            diagnostics: parse_result.errors.into_iter().map(|e| e.into()).collect(),
+        };
     }
     
-    // Record parse time
+    // Record parse time - NO LONGER RECORDED HERE
     let parse_duration = parse_start.elapsed();
-    if let Ok(mut metrics) = metrics_arc.lock() {
-        metrics.record_parse_time(file_path, parse_duration);
-    }
     
     // Measure semantic analysis time
     let semantic_start = Instant::now();
@@ -308,42 +340,45 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
     // Perform semantic analysis
     let semantic_result = SemanticBuilder::new().build(&parse_result.program);
     
-    // Record semantic analysis time
+    // Record semantic analysis time - NO LONGER RECORDED HERE
     let semantic_duration = semantic_start.elapsed();
-    if let Ok(mut metrics) = metrics_arc.lock() {
-        metrics.record_semantic_time(file_path, semantic_duration);
-    }
     
-    // Measure rule execution time
-    let rules_start = Instant::now();
+    // Measure rule execution time - NO LONGER NEEDED FOR __all_rules__
+    // let rules_start = Instant::now();
     
-    // Run configured lint rules with metrics tracking
-    let result = rules_registry.run_rules_with_metrics(&semantic_result, file_path, Arc::clone(&metrics_arc));
+    // Run configured lint rules with metrics tracking - Now returns diagnostics and rule durations
+    let (diagnostics, rule_durations) = rules_registry.run_rules_with_metrics(&semantic_result, file_path);
     
-    // Record rule execution time as a whole
-    let rules_duration = rules_start.elapsed();
-    if let Ok(mut metrics) = metrics_arc.lock() {
-        // Record overall rule execution time under a special key
-        metrics.record_rule_time("__all_rules__", rules_duration);
-    }
+    // Record rule execution time as a whole - NO LONGER NEEDED
+    // let rules_duration = rules_start.elapsed();
+    // if let Ok(mut metrics) = metrics_arc.lock() {
+    //     // Record overall rule execution time under a special key
+    //     metrics.record_rule_time("__all_rules__", rules_duration);
+    // }
     
-    if !result.diagnostics.is_empty() && debug_level >= DebugLevel::Info {
-        println!("Found {} issues in {}", result.diagnostics.len(), file_path);
-        for diagnostic in result.diagnostics {
-            let error = diagnostic.with_source_code(source.clone());
+    if !diagnostics.is_empty() && debug_level >= DebugLevel::Info {
+        println!("Found {} issues in {}", diagnostics.len(), file_path);
+        for diagnostic in &diagnostics { // Iterate over reference
+            let error = diagnostic.clone().with_source_code(source.clone());
             println!("{:?}", error);
         }
     }
     
-    // Record total file processing time
+    // Record total file processing time - NO LONGER RECORDED HERE
     let total_duration = file_start.elapsed();
-    if let Ok(mut metrics) = metrics_arc.lock() {
-        metrics.record_file_time(file_path, total_duration);
-    }
     
     // Trace-level detailed logs about file processing
     // log(DebugLevel::Trace, debug_level, &format!(
-    //     "Processed {} in {:.2?} (parse: {:.2?}, semantic: {:.2?}, rules: {:.2?})",
-    //     file_path, total_duration, parse_duration, semantic_duration, rules_duration
+    //     "Processed {} in {:.2?} (parse: {:.2?}, semantic: {:.2?}, rules: ??)", // Rule duration needs summing?
+    //     file_path, total_duration, parse_duration, semantic_duration
     // ));
+
+    FileAnalysisResult {
+        file_path: file_path.to_string(),
+        parse_duration: parse_duration,
+        semantic_duration: semantic_duration,
+        rule_durations: rule_durations, // Store the returned map
+        total_duration: total_duration,
+        diagnostics: diagnostics,     // Store the returned diagnostics
+    }
 }

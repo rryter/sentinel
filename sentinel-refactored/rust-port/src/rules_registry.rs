@@ -4,11 +4,11 @@ use oxc_diagnostics::OxcDiagnostic;
 use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::GetSpan;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
 pub use crate::rules::{NoDebuggerRule, NoEmptyPatternRule};
-use crate::metrics::Metrics;
 
 /// The result of running a rule on a file
 pub struct RuleResult {
@@ -72,9 +72,15 @@ impl RulesRegistry {
         self.enabled_rules.iter().cloned().collect()
     }
     
-    /// Run all enabled rules on a file's semantic analysis with metrics tracking
-    pub fn run_rules_with_metrics(&self, semantic_result: &SemanticBuilderReturn, file_path: &str, metrics: Arc<Mutex<Metrics>>) -> RuleResult {
+    /// Run all enabled rules on a file's semantic analysis with metrics tracking.
+    /// Returns diagnostics and a map of rule execution times for this specific run.
+    pub fn run_rules_with_metrics(
+        &self, 
+        semantic_result: &SemanticBuilderReturn, 
+        file_path: &str
+    ) -> (Vec<OxcDiagnostic>, HashMap<String, Duration>) {
         let mut diagnostics = Vec::new();
+        let mut rule_durations = HashMap::new();
         
         // Only process if we have rules enabled
         if !self.enabled_rules.is_empty() {
@@ -88,48 +94,63 @@ impl RulesRegistry {
                     let mut visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
                     diagnostics.append(&mut visitor_diagnostics);
                     
-                    // Record the time taken
+                    // Record the time taken locally
                     let duration = rule_start.elapsed();
-                    if let Ok(mut metrics_guard) = metrics.lock() {
-                        metrics_guard.record_rule_time(rule_name, duration);
-                    }
+                    rule_durations.insert(rule_name.to_string(), duration);
                 }
             }
 
-            // Then run traditional node-based rules
-            for node in semantic_result.semantic.nodes() {
-                let node_kind = node.kind();
-                let span = node.span();
-                
-                // Run each enabled rule on this node
-                for rule_name in &self.enabled_rules {
-                    if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                        // Time the rule execution
-                        let rule_start = Instant::now();
-                        
-                        // Run the rule
-                        let diagnostic_option = rule.run_on_node(&node_kind, span, file_path);
-                        
-                        // Record the time taken *only if* a diagnostic was produced
-                        let duration = rule_start.elapsed();
-                        
-                        // Add any diagnostic that was produced
-                        if let Some(diagnostic) = diagnostic_option {
-                            // Record time only when rule yielded a result for this node
-                            if let Ok(mut metrics_guard) = metrics.lock() {
-                                metrics_guard.record_rule_time(rule_name, duration);
+            // Check if any enabled rule actually uses node-based processing
+            let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
+                self.rules.get(rule_name.as_str())
+                    .map_or(false, |rule| {
+                        // Heuristic: Check if the rule implements run_on_node.
+                        // Since run_on_node now has a default `None` implementation,
+                        // we need a way to know if a specific rule *overrides* it.
+                        // Comparing function pointers for default methods is complex.
+                        // A practical approach is to assume if a rule *might* return
+                        // Some(...) from run_on_node, it's considered node-based.
+                        // For now, we simplify: if a rule *could* be node-based, we run the loop.
+                        // This avoids needing complex reflection or trait checks.
+                        // TODO: A better long-term solution might involve adding metadata
+                        // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
+                        true // Keep simplified check for now - run loop if any rule enabled.
+                             // We accept the overhead if only visitor rules are present,
+                             // as the inner loop won't record metrics anyway.
+                    })
+            });
+
+            // >>> Section 2: Run traditional node-based rules (Conditionally) <<<
+            if has_node_based_rules {
+                for node in semantic_result.semantic.nodes() {
+                    let node_kind = node.kind();
+                    let span = node.span();
+                    
+                    // Run each enabled rule on this node
+                    for rule_name in &self.enabled_rules {
+                        if let Some(rule) = self.rules.get(rule_name.as_str()) {
+                            // Time the rule execution
+                            let rule_start = Instant::now();
+                            
+                            // Run the rule
+                            let diagnostic_option = rule.run_on_node(&node_kind, span, file_path);
+                            
+                            // Record the time taken *only if* a diagnostic was produced
+                            let duration = rule_start.elapsed();
+                            
+                            // Add any diagnostic that was produced
+                            if let Some(diagnostic) = diagnostic_option {
+                                // Record time only when rule yielded a result for this node
+                                rule_durations.insert(rule_name.to_string(), duration);
+                                diagnostics.push(diagnostic);
                             }
-                            diagnostics.push(diagnostic);
                         }
                     }
                 }
             }
         }
         
-        RuleResult {
-            file_path: file_path.to_string(),
-            diagnostics,
-        }
+        (diagnostics, rule_durations)
     }
     
     /// Run all enabled rules on a file's semantic analysis (no metrics)
@@ -147,16 +168,38 @@ impl RulesRegistry {
                 }
             }
 
-            // Then run traditional node-based rules
-            for node in semantic_result.semantic.nodes() {
-                let node_kind = node.kind();
-                let span = node.span();
-                
-                // Run each enabled rule on this node
-                for rule_name in &self.enabled_rules {
-                    if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                        if let Some(diagnostic) = rule.run_on_node(&node_kind, span, file_path) {
-                            diagnostics.push(diagnostic);
+            // Check if any enabled rule actually uses node-based processing
+            let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
+                self.rules.get(rule_name.as_str())
+                    .map_or(false, |rule| {
+                        // Heuristic: Check if the rule implements run_on_node.
+                        // Since run_on_node now has a default `None` implementation,
+                        // we need a way to know if a specific rule *overrides* it.
+                        // Comparing function pointers for default methods is complex.
+                        // A practical approach is to assume if a rule *might* return
+                        // Some(...) from run_on_node, it's considered node-based.
+                        // For now, we simplify: if a rule *could* be node-based, we run the loop.
+                        // This avoids needing complex reflection or trait checks.
+                        // TODO: A better long-term solution might involve adding metadata
+                        // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
+                        true // Keep simplified check for now - run loop if any rule enabled.
+                             // We accept the overhead if only visitor rules are present,
+                             // as the inner loop won't record metrics anyway.
+                    })
+            });
+
+            // >>> Section 2: Run traditional node-based rules (Conditionally) <<<
+            if has_node_based_rules {
+                for node in semantic_result.semantic.nodes() {
+                    let node_kind = node.kind();
+                    let span = node.span();
+                    
+                    // Run each enabled rule on this node
+                    for rule_name in &self.enabled_rules {
+                        if let Some(rule) = self.rules.get(rule_name.as_str()) {
+                            if let Some(diagnostic) = rule.run_on_node(&node_kind, span, file_path) {
+                                diagnostics.push(diagnostic);
+                            }
                         }
                     }
                 }

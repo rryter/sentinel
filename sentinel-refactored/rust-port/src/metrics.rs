@@ -3,30 +3,31 @@ use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Write, Read};
 use std::path::Path;
-use std::sync::{Arc, Mutex};
 use serde::{Serialize, Deserialize};
+use crate::FileAnalysisResult;
+use std::ops::AddAssign;
 
 /// Performance metrics for tracking execution time of different operations
-/// Thread-safe implementation for parallel processing
-#[derive(Clone)]
+/// Now aggregates results after parallel processing.
+#[derive(Clone, Debug)]
 pub struct Metrics {
     start_time: Instant,
-    /// Total execution time (wall time)
+    /// Total execution time (wall time from start to stop)
     pub total_duration: Option<Duration>,
-    /// Time spent scanning for files
+    /// Time spent scanning for files (set once)
     pub scan_duration: Option<Duration>,
-    /// Time spent analyzing all files (wall time)
+    /// Time spent analyzing all files (wall clock from analysis start to end)
     pub analysis_duration: Option<Duration>,
     /// Individual file processing times (file path -> duration)
-    pub file_times: Arc<Mutex<HashMap<String, Duration>>>,
+    pub file_times: HashMap<String, Duration>,
     /// Detailed breakdown of file parse times
-    pub parse_times: Arc<Mutex<HashMap<String, Duration>>>,
+    pub parse_times: HashMap<String, Duration>,
     /// Detailed breakdown of semantic analysis times
-    pub semantic_times: Arc<Mutex<HashMap<String, Duration>>>,
+    pub semantic_times: HashMap<String, Duration>,
     /// Rule execution times (rule name -> cumulative duration)
-    pub rule_times: Arc<Mutex<HashMap<String, Duration>>>,
+    pub rule_times: HashMap<String, Duration>,
     /// Rule execution counts (rule name -> count)
-    pub rule_counts: Arc<Mutex<HashMap<String, usize>>>,
+    pub rule_counts: HashMap<String, usize>,
 }
 
 /// Serializable metrics for export to JSON
@@ -78,57 +79,35 @@ impl Metrics {
             total_duration: None,
             scan_duration: None,
             analysis_duration: None,
-            file_times: Arc::new(Mutex::new(HashMap::new())),
-            parse_times: Arc::new(Mutex::new(HashMap::new())),
-            semantic_times: Arc::new(Mutex::new(HashMap::new())),
-            rule_times: Arc::new(Mutex::new(HashMap::new())),
-            rule_counts: Arc::new(Mutex::new(HashMap::new())),
+            file_times: HashMap::new(),
+            parse_times: HashMap::new(),
+            semantic_times: HashMap::new(),
+            rule_times: HashMap::new(),
+            rule_counts: HashMap::new(),
         }
     }
     
-    /// Record the duration of scanning for files
+    /// Record the duration of scanning for files (called once)
     pub fn record_scan_time(&mut self, duration: Duration) {
         self.scan_duration = Some(duration);
     }
     
-    /// Record the duration of analyzing all files
+    /// Record the duration of analyzing all files (called once)
     pub fn record_analysis_time(&mut self, duration: Duration) {
         self.analysis_duration = Some(duration);
     }
     
-    /// Record the duration of processing a single file
-    pub fn record_file_time(&mut self, file_path: &str, duration: Duration) {
-        if let Ok(mut times) = self.file_times.lock() {
-            times.insert(file_path.to_string(), duration);
-        }
-    }
-    
-    /// Record the parse time for a file
-    pub fn record_parse_time(&mut self, file_path: &str, duration: Duration) {
-        if let Ok(mut times) = self.parse_times.lock() {
-            times.insert(file_path.to_string(), duration);
-        }
-    }
-    
-    /// Record the semantic analysis time for a file
-    pub fn record_semantic_time(&mut self, file_path: &str, duration: Duration) {
-        if let Ok(mut times) = self.semantic_times.lock() {
-            times.insert(file_path.to_string(), duration);
-        }
-    }
-    
-    /// Record execution time for a specific rule
-    pub fn record_rule_time(&mut self, rule_name: &str, duration: Duration) {
-        // Record the time
-        if let Ok(mut times) = self.rule_times.lock() {
-            let entry = times.entry(rule_name.to_string()).or_insert(Duration::default());
-            *entry += duration;
-        }
-        
-        // Record the count
-        if let Ok(mut counts) = self.rule_counts.lock() {
-            let entry = counts.entry(rule_name.to_string()).or_insert(0);
-            *entry += 1;
+    /// Aggregate metrics from a single file's analysis result
+    pub fn aggregate_file_result(&mut self, result: FileAnalysisResult) {
+        self.file_times.insert(result.file_path.clone(), result.total_duration);
+        self.parse_times.insert(result.file_path.clone(), result.parse_duration);
+        self.semantic_times.insert(result.file_path.clone(), result.semantic_duration);
+
+        for (rule_name, duration) in result.rule_durations {
+            // Aggregate rule times
+            self.rule_times.entry(rule_name.clone()).or_insert(Duration::default()).add_assign(duration);
+            // Increment rule counts
+            *self.rule_counts.entry(rule_name).or_insert(0) += 1;
         }
     }
     
@@ -287,86 +266,67 @@ impl Metrics {
         let scan_duration = self.scan_duration.unwrap_or(Duration::default());
         let analysis_duration = self.analysis_duration.unwrap_or(Duration::default());
         
-        // Safely access the metrics HashMaps
-        let file_times = match self.file_times.lock() {
-            Ok(guard) => guard,
-            Err(_) => return Err("Failed to lock file_times for metrics calculation".to_string()),
-        };
-        
-        let parse_times = match self.parse_times.lock() {
-            Ok(guard) => guard,
-            Err(_) => return Err("Failed to lock parse_times for metrics calculation".to_string()),
-        };
-        
-        let semantic_times = match self.semantic_times.lock() {
-            Ok(guard) => guard,
-            Err(_) => return Err("Failed to lock semantic_times for metrics calculation".to_string()),
-        };
-        
-        let rule_times = match self.rule_times.lock() {
-            Ok(guard) => guard,
-            Err(_) => return Err("Failed to lock rule_times for metrics calculation".to_string()),
-        };
-        
-        let rule_counts = match self.rule_counts.lock() {
-            Ok(guard) => guard,
-            Err(_) => return Err("Failed to lock rule_counts for metrics calculation".to_string()),
-        };
+        // Access HashMaps directly
+        let file_times = &self.file_times;
+        let parse_times = &self.parse_times;
+        let semantic_times = &self.semantic_times;
+        let rule_times = &self.rule_times;
+        let rule_counts = &self.rule_counts;
         
         // Calculate rule metrics
         let mut rule_execution_metrics = Vec::new();
         let total_rule_time: Duration = rule_times.values().sum();
         
         for (rule_name, &duration) in rule_times.iter() {
-            let count = rule_counts.get(rule_name).copied().unwrap_or(1);
-            let avg_time_us = duration.as_micros() as f64 / count as f64;
+            let count = rule_counts.get(rule_name).copied().unwrap_or(0);
+            let avg_time_us = if count > 0 {
+                 duration.as_micros() as f64 / count as f64
+            } else {
+                 0.0
+            };
             let percent_of_total = if !total_rule_time.is_zero() {
                 duration.as_secs_f64() / total_rule_time.as_secs_f64() * 100.0
             } else {
                 0.0
             };
             
-            rule_execution_metrics.push(RuleMetric {
-                rule_name: rule_name.clone(),
-                total_time_ms: duration.as_millis() as u64,
-                execution_count: count,
-                avg_time_per_execution_us: avg_time_us,
-                percent_of_total_rule_time: percent_of_total,
-            });
+            if count > 0 {
+                rule_execution_metrics.push(RuleMetric {
+                    rule_name: rule_name.clone(),
+                    total_time_ms: duration.as_millis() as u64,
+                    execution_count: count,
+                    avg_time_per_execution_us: avg_time_us,
+                    percent_of_total_rule_time: percent_of_total,
+                });
+            }
         }
         
-        // Sort by total execution time descending
         rule_execution_metrics.sort_by(|a, b| b.total_time_ms.cmp(&a.total_time_ms));
         
-        // File count and cumulative time (CPU time across all cores)
+        // File count and cumulative time
         let file_count = file_times.len();
         let cumulative_processing_time: Duration = file_times.values().sum();
         
-        // Calculate metrics
+        // Calculate metrics (avg_time_per_file, files_per_second_wall_time, files_per_second_cpu_time)
         let avg_time_per_file = if file_count > 0 {
             cumulative_processing_time.as_secs_f64() * 1000.0 / file_count as f64
         } else {
             0.0
         };
-        
-        // Files per second (based on wall time)
         let files_per_second_wall_time = if !analysis_duration.is_zero() {
             file_count as f64 / analysis_duration.as_secs_f64()
         } else {
             0.0
         };
-        
-        // Files per second (based on cumulative CPU time)
-        let files_per_second_cpu_time = if !cumulative_processing_time.is_zero() {
+         let files_per_second_cpu_time = if !cumulative_processing_time.is_zero() {
             file_count as f64 / cumulative_processing_time.as_secs_f64() 
         } else {
             0.0
         };
-        
+
         // Find the slowest file
         let none_string = "none".to_string();
         let default_duration = Duration::default();
-        
         let (slowest_file, slowest_duration) = file_times
             .iter()
             .max_by_key(|(_, &duration)| duration)
@@ -375,30 +335,24 @@ impl Metrics {
         // Calculate parse and semantic analysis time totals
         let total_parse_time: Duration = parse_times.values().sum();
         let total_semantic_time: Duration = semantic_times.values().sum();
-        
         let avg_parse_time = if file_count > 0 {
             total_parse_time.as_secs_f64() * 1000.0 / file_count as f64
         } else {
             0.0
         };
-        
         let avg_semantic_time = if file_count > 0 {
             total_semantic_time.as_secs_f64() * 1000.0 / file_count as f64
         } else {
             0.0
         };
         
-        // Parallelism metrics
-        let parallel_cores_used = rayon::current_num_threads();
-        
-        // Calculate speedup as ratio of cumulative processing time to wall clock time
+        // Parallelism metrics (calculation logic remains the same)
+        let parallel_cores_used = rayon::current_num_threads(); // Still relevant
         let parallel_speedup_factor = if !analysis_duration.is_zero() {
             cumulative_processing_time.as_secs_f64() / analysis_duration.as_secs_f64()
         } else {
             0.0
         };
-        
-        // Calculate parallelism efficiency (how effectively we're using our cores)
         let parallel_efficiency_percent = if parallel_cores_used > 0 {
             (parallel_speedup_factor / parallel_cores_used as f64) * 100.0
         } else {

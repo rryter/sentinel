@@ -21,8 +21,12 @@ pub trait Rule: Send + Sync {
     #[allow(dead_code)]
     fn description(&self) -> &'static str;
     
-    /// Run the rule on a semantic node
-    fn run_on_node(&self, node: &AstKind, span: Span, file_path: &str) -> Option<OxcDiagnostic>;
+    /// Run the rule on a specific AST node (optional)
+    /// Rules primarily using the visitor pattern might not implement this.
+    /// Default implementation returns None.
+    fn run_on_node(&self, _node: &AstKind, _span: Span, _file_path: &str) -> Option<OxcDiagnostic> {
+        None
+    }
 
     /// Run the rule using the visitor pattern (optional)
     /// Default implementation returns an empty Vec
