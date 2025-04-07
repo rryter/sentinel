@@ -10,6 +10,7 @@ pub mod custom;
 use oxc_ast::AstKind;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
+use oxc_semantic::SemanticBuilderReturn;
 
 /// Trait that all rules must implement
 pub trait Rule: Send + Sync {
@@ -22,6 +23,12 @@ pub trait Rule: Send + Sync {
     
     /// Run the rule on a semantic node
     fn run_on_node(&self, node: &AstKind, span: Span, file_path: &str) -> Option<OxcDiagnostic>;
+
+    /// Run the rule using the visitor pattern (optional)
+    /// Default implementation returns an empty Vec
+    fn run_on_semantic(&self, _semantic_result: &SemanticBuilderReturn) -> Vec<OxcDiagnostic> {
+        Vec::new()
+    }
 }
 
 // Re-export rules for easier access

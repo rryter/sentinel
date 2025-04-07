@@ -13,6 +13,7 @@ walkdir = "2.4"
 oxc_allocator = "0.62.0"
 oxc_parser = "0.62.0"
 oxc_ast = "0.62.0"
+oxc_ast_visit = "0.62.0"
 oxc_span = "0.62.0"
 oxc_semantic = "0.62.0"
 oxc_diagnostics = "0.62.0"
@@ -25,3 +26,11 @@ chrono = "0.4"
 rayon = "1.8"
 # For getting CPU cores count
 num_cpus = "1.16"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "rule_benchmarks"
+harness = false
+required-features = ["custom_rules"]

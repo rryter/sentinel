@@ -75,7 +75,16 @@ impl RulesRegistry {
         
         // Only process if we have rules enabled
         if !self.enabled_rules.is_empty() {
-            // Iterate through all nodes in the semantic analysis
+            // First, run visitor-based rules
+            for rule_name in &self.enabled_rules {
+                if let Some(rule) = self.rules.get(rule_name.as_str()) {
+                    // Run visitor-based analysis
+                    let mut visitor_diagnostics = rule.run_on_semantic(semantic_result);
+                    diagnostics.append(&mut visitor_diagnostics);
+                }
+            }
+
+            // Then run traditional node-based rules
             for node in semantic_result.semantic.nodes() {
                 let node_kind = node.kind();
                 let span = node.span();
@@ -136,12 +145,16 @@ pub fn create_default_registry() -> RulesRegistry {
 fn register_custom_rules(registry: &mut RulesRegistry) {
     use crate::rules::custom::NoConsoleRule;
     use crate::rules::custom::NoConsoleWarnRule;
+    use crate::rules::custom::NoConsoleWarnVisitorRule;
     
     // Register the NoConsoleRule
     registry.register_rule(Box::new(NoConsoleRule));
     
     // Register the NoConsoleWarnRule
     registry.register_rule(Box::new(NoConsoleWarnRule));
+    
+    // Register the NoConsoleWarnVisitorRule
+    registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
     
     // Add more custom rules here as they are created
     

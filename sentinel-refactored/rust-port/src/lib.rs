@@ -3,3 +3,5 @@
 
 // Expose the metrics module
 pub mod metrics;
+pub mod rules;
+pub mod rules_registry;
