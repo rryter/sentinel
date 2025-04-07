@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_semantic::SemanticBuilder;
 use walkdir::WalkDir;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer};
 use rayon::prelude::*;
 
 // Import our modules
@@ -19,6 +19,58 @@ mod rules_registry;
 
 use metrics::Metrics;
 use rules_registry::{RulesRegistry, create_default_registry, load_rule_config};
+
+/// Debug level enum for controlling output verbosity
+#[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum DebugLevel {
+    None,
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace
+}
+
+// Custom deserialize implementation to handle case-insensitive values
+impl<'de> Deserialize<'de> for DebugLevel {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        match s.to_lowercase().as_str() {
+            "none" => Ok(DebugLevel::None),
+            "error" => Ok(DebugLevel::Error),
+            "warn" => Ok(DebugLevel::Warn),
+            "info" => Ok(DebugLevel::Info),
+            "debug" => Ok(DebugLevel::Debug),
+            "trace" => Ok(DebugLevel::Trace),
+            _ => Err(serde::de::Error::custom(format!("Invalid debug level: {}", s))),
+        }
+    }
+}
+
+impl Default for DebugLevel {
+    fn default() -> Self {
+        DebugLevel::Info
+    }
+}
+
+impl std::str::FromStr for DebugLevel {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "none" => Ok(DebugLevel::None),
+            "error" => Ok(DebugLevel::Error),
+            "warn" => Ok(DebugLevel::Warn),
+            "info" => Ok(DebugLevel::Info),
+            "debug" => Ok(DebugLevel::Debug),
+            "trace" => Ok(DebugLevel::Trace),
+            _ => Err(format!("Invalid debug level: {}", s))
+        }
+    }
+}
 
 /// Configuration structure for the TypeScript analyzer
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -30,6 +82,8 @@ struct Config {
     threads: Option<usize>,
     /// Path to rules configuration file
     rules_config: Option<String>,
+    /// Debug level for controlling output verbosity
+    debug_level: Option<DebugLevel>,
 }
 
 impl Config {
@@ -59,16 +113,51 @@ impl Config {
     }
 }
 
+/// Helper function to get debug level
+fn get_debug_level(config: &Config, args: &[String]) -> DebugLevel {
+    // Check for command line argument first
+    for i in 0..args.len().saturating_sub(1) {
+        if args[i] == "--debug-level" || args[i] == "-d" {
+            if let Ok(level) = args[i + 1].parse() {
+                return level;
+            }
+        }
+    }
+    
+    // Fall back to config file
+    config.debug_level.unwrap_or_default()
+}
+
+/// Log function that respects debug level
+fn log(level: DebugLevel, current_level: DebugLevel, message: &str) {
+    if level as usize <= current_level as usize {
+        match level {
+            DebugLevel::Error => eprintln!("ERROR: {}", message),
+            DebugLevel::Warn => eprintln!("WARN: {}", message),
+            DebugLevel::Info => println!("INFO: {}", message),
+            DebugLevel::Debug => println!("DEBUG: {}", message),
+            DebugLevel::Trace => println!("TRACE: {}", message),
+            DebugLevel::None => {}
+        }
+    }
+}
+
 fn main() {
     // Load configuration from sentinel.json
     let config = Config::load();
+    
+    // Get command line arguments
+    let args: Vec<String> = env::args().collect();
+    
+    // Determine debug level
+    let debug_level = get_debug_level(&config, &args);
     
     // Configure thread pool size if specified in config
     if let Some(threads) = config.threads {
         rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build_global()
-            .unwrap_or_else(|e| eprintln!("Failed to configure thread pool: {}", e));
+            .unwrap_or_else(|e| log(DebugLevel::Error, debug_level, &format!("Failed to configure thread pool: {}", e)));
     }
     
     // Initialize the rules registry
@@ -76,32 +165,29 @@ fn main() {
     
     // If a custom rules config is specified, load it
     if let Some(rules_config_path) = &config.rules_config {
-        println!("Loading rules configuration from {}", rules_config_path);
+        log(DebugLevel::Info, debug_level, &format!("Loading rules configuration from {}", rules_config_path));
         match load_rule_config(rules_config_path) {
             Ok(enabled_rules) => {
                 rules_registry::configure_registry(&mut rules_registry, &enabled_rules);
-                println!("Enabled rules: {:?}", rules_registry.get_enabled_rules());
+                log(DebugLevel::Info, debug_level, &format!("Enabled rules: {:?}", rules_registry.get_enabled_rules()));
             },
             Err(err) => {
-                eprintln!("Failed to load rules configuration: {}", err);
-                println!("Using default rules: {:?}", rules_registry.get_enabled_rules());
+                log(DebugLevel::Error, debug_level, &format!("Failed to load rules configuration: {}", err));
+                log(DebugLevel::Info, debug_level, &format!("Using default rules: {:?}", rules_registry.get_enabled_rules()));
             }
         }
     } else {
-        println!("Using default rules: {:?}", rules_registry.get_enabled_rules());
+        log(DebugLevel::Info, debug_level, &format!("Using default rules: {:?}", rules_registry.get_enabled_rules()));
     }
     
-    // Get command line arguments
-    let args: Vec<String> = env::args().collect();
-    
     // Command line argument takes precedence over config file
-    let dir_path = if args.len() > 1 {
+    let dir_path = if args.len() > 1 && !args[1].starts_with("-") {
         args[1].clone()
     } else {
         config.path.as_ref().map_or_else(|| ".".to_string(), |p| p.clone())
     };
     
-    println!("Scanning directory: {}", dir_path);
+    log(DebugLevel::Info, debug_level, &format!("Scanning directory: {}", dir_path));
     
     // Initialize metrics in a thread-safe container
     let metrics_arc = Arc::new(Mutex::new(Metrics::new()));
@@ -120,8 +206,8 @@ fn main() {
         }
     }
     
-    println!("Found {} TypeScript files", files.len());
-    println!("Processing with {} threads", rayon::current_num_threads());
+    log(DebugLevel::Info, debug_level, &format!("Found {} TypeScript files", files.len()));
+    log(DebugLevel::Info, debug_level, &format!("Processing with {} threads", rayon::current_num_threads()));
     
     // Start timing file analysis
     let analysis_start = Instant::now();
@@ -132,7 +218,7 @@ fn main() {
         let metrics_ref = Arc::clone(&metrics_arc);
         let rules_ref = Arc::clone(&rules_registry_arc);
         
-        analyze_file(&file_path, metrics_ref, rules_ref);
+        analyze_file(file_path, metrics_ref, rules_ref, debug_level);
     });
     
     // Record total analysis time and other operations
@@ -140,30 +226,32 @@ fn main() {
         if let Ok(mut metrics) = metrics_arc.lock() {
             metrics.record_analysis_time(analysis_start.elapsed());
             metrics.stop();
-            metrics.print_summary();
+            if debug_level >= DebugLevel::Info {
+                metrics.print_summary();
+            }
         }
     }
     
     // Export metrics if configured
-    export_metrics(&config, &metrics_arc);
+    export_metrics(&config, &metrics_arc, debug_level);
 }
 
 /// Export metrics to files if configured
-fn export_metrics(config: &Config, metrics_arc: &Arc<Mutex<Metrics>>) {
+fn export_metrics(config: &Config, metrics_arc: &Arc<Mutex<Metrics>>, debug_level: DebugLevel) {
     if let Ok(metrics) = metrics_arc.lock() {
         // Export metrics to JSON if configured
         if let Some(json_path) = &config.export_metrics_json {
-            println!("Exporting metrics to JSON: {}", json_path);
+            log(DebugLevel::Info, debug_level, &format!("Exporting metrics to JSON: {}", json_path));
             if let Err(err) = metrics.export_to_json(json_path) {
-                eprintln!("Error exporting metrics to JSON: {}", err);
+                log(DebugLevel::Error, debug_level, &format!("Error exporting metrics to JSON: {}", err));
             }
         }
         
         // Export metrics to CSV if configured
         if let Some(csv_path) = &config.export_metrics_csv {
-            println!("Exporting metrics to CSV: {}", csv_path);
+            log(DebugLevel::Info, debug_level, &format!("Exporting metrics to CSV: {}", csv_path));
             if let Err(err) = metrics.export_to_csv(csv_path) {
-                eprintln!("Error exporting metrics to CSV: {}", err);
+                log(DebugLevel::Error, debug_level, &format!("Error exporting metrics to CSV: {}", err));
             }
         }
     }
@@ -185,14 +273,14 @@ fn find_typescript_files(dir: &str) -> Vec<String> {
 }
 
 /// Analyze a file and record detailed metrics and run lint rules
-fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registry: Arc<RulesRegistry>) {
+fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registry: Arc<RulesRegistry>, debug_level: DebugLevel) {
     let file_start = Instant::now();
     
     // Read file
     let source = match fs::read_to_string(file_path) {
         Ok(content) => content,
         Err(err) => {
-            eprintln!("Error reading file {}: {}", file_path, err);
+            log(DebugLevel::Error, debug_level, &format!("Error reading file {}: {}", file_path, err));
             return;
         }
     };
@@ -209,7 +297,7 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
     
     let parse_result = Parser::new(&allocator, &source, source_type).parse();
     if !parse_result.errors.is_empty() {
-        eprintln!("Parse errors in {}: {}", file_path, parse_result.errors.len());
+        log(DebugLevel::Error, debug_level, &format!("Parse errors in {}: {}", file_path, parse_result.errors.len()));
         return;
     }
     
@@ -231,12 +319,25 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
         metrics.record_semantic_time(file_path, semantic_duration);
     }
     
-    // Run configured lint rules
-    rules_registry.run_rules_and_print(&semantic_result, file_path, &source);
+    // Run configured lint rules and respect debug level
+    let result = rules_registry.run_rules(&semantic_result, file_path);
+    if !result.diagnostics.is_empty() && debug_level >= DebugLevel::Info {
+        println!("Found {} issues in {}", result.diagnostics.len(), file_path);
+        for diagnostic in result.diagnostics {
+            let error = diagnostic.with_source_code(source.clone());
+            println!("{:?}", error);
+        }
+    }
     
     // Record total file processing time
     let total_duration = file_start.elapsed();
     if let Ok(mut metrics) = metrics_arc.lock() {
         metrics.record_file_time(file_path, total_duration);
     }
+    
+    // Trace-level detailed logs about file processing
+    log(DebugLevel::Trace, debug_level, &format!(
+        "Processed {} in {:.2?} (parse: {:.2?}, semantic: {:.2?})",
+        file_path, total_duration, parse_duration, semantic_duration
+    ));
 }

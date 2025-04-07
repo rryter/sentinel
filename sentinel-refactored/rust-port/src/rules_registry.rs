@@ -105,21 +105,6 @@ impl RulesRegistry {
             diagnostics,
         }
     }
-    
-    /// Run enabled rules and print diagnostics
-    pub fn run_rules_and_print(&self, semantic_result: &SemanticBuilderReturn, file_path: &str, source: &str) {
-        let result = self.run_rules(semantic_result, file_path);
-        
-        if result.diagnostics.is_empty() {
-            return;
-        }
-        
-        println!("Found {} issues in {}", result.diagnostics.len(), file_path);
-        for diagnostic in result.diagnostics {
-            let error = diagnostic.with_source_code(source.to_string());
-            println!("{:?}", error);
-        }
-    }
 }
 
 /// Create a registry with all default rules registered
@@ -157,8 +142,6 @@ fn register_custom_rules(registry: &mut RulesRegistry) {
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
     
     // Add more custom rules here as they are created
-    
-    println!("Registered custom rules");
 }
 
 /// Load a rule configuration from a JSON file
