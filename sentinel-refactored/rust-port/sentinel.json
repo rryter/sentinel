@@ -1,9 +1,9 @@
 {
-  "path": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/",
+  "path": "/home/rryter/projects/myCSS/packages/mycss-app/src/app",
   "export_metrics_json": "./metrics/metrics.json",
   "export_metrics_csv": "./metrics/metrics.csv",
   "threads": 24,
   "rules_config": "./rules.json",
   "verbose": true,
-  "debug_level": "trace"
+  "debug_level": "info"
 } 

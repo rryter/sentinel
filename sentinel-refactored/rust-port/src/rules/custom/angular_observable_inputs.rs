@@ -57,13 +57,6 @@ impl<'a> ObservableInputsVisitor<'a> {
         }
     }
 
-    /// Helper method to create a diagnostic for Angular imports
-    fn create_import_diagnostic(&self, span: Span) -> OxcDiagnostic {
-        OxcDiagnostic::warn("Angular Input/Output decorator import detected")
-            .with_help("Review usage of Angular decorators with Observables. Input properties should not be Observables, and Output properties should be Observable-like.")
-            .with_label(span.label("Angular decorator import"))
-    }
-
     /// Helper method to create a diagnostic for Angular decorator usage
     fn create_decorator_diagnostic(&self, name: &str, span: Span) -> OxcDiagnostic {
         OxcDiagnostic::warn(format!("Angular @{} decorator detected", name))
@@ -73,24 +66,6 @@ impl<'a> ObservableInputsVisitor<'a> {
 }
 
 impl<'a> Visit<'a> for ObservableInputsVisitor<'a> {
-    fn visit_import_declaration(&mut self, import_decl: &ImportDeclaration<'a>) {
-        // Check if the import is from '@angular/core'
-        if import_decl.source.value == "@angular/core" {
-            // Iterate through the vector of specifiers if they exist
-            if let Some(specifiers) = &import_decl.specifiers {
-                for specifier in specifiers.iter() {
-                    // Check for Import specifiers
-                    if let ImportDeclarationSpecifier::ImportSpecifier(import_spec) = specifier {
-                        let name = import_spec.local.name.as_str();
-                        if self.restricted_decorators.contains(name) {
-                            self.diagnostics.push(self.create_import_diagnostic(import_spec.local.span()));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fn visit_decorator(&mut self, decorator: &Decorator<'a>) {
         match &decorator.expression {
             // Simple identifier decorator: @Input
@@ -128,9 +103,6 @@ impl Rule for AngularObservableInputsRule {
         let mut visitor = ObservableInputsVisitor::new(file_path);
 
         match node {
-            AstKind::ImportDeclaration(import_decl) => {
-                visitor.visit_import_declaration(import_decl);
-            }
             AstKind::Decorator(decorator) => {
                 visitor.visit_decorator(decorator);
             }
