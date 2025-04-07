@@ -165,7 +165,7 @@ fn main() {
     
     // If a custom rules config is specified, load it
     if let Some(rules_config_path) = &config.rules_config {
-        log(DebugLevel::Info, debug_level, &format!("Loading rules configuration from {}", rules_config_path));
+        log(DebugLevel::Trace, debug_level, &format!("Loading rules configuration from {}", rules_config_path));
         match load_rule_config(rules_config_path) {
             Ok(enabled_rules) => {
                 rules_registry::configure_registry(&mut rules_registry, &enabled_rules);
@@ -207,7 +207,7 @@ fn main() {
     }
     
     log(DebugLevel::Info, debug_level, &format!("Found {} TypeScript files", files.len()));
-    log(DebugLevel::Info, debug_level, &format!("Processing with {} threads", rayon::current_num_threads()));
+    log(DebugLevel::Trace, debug_level, &format!("Processing with {} threads", rayon::current_num_threads()));
     
     // Start timing file analysis
     let analysis_start = Instant::now();
@@ -226,9 +226,12 @@ fn main() {
         if let Ok(mut metrics) = metrics_arc.lock() {
             metrics.record_analysis_time(analysis_start.elapsed());
             metrics.stop();
-            if debug_level >= DebugLevel::Info {
-                metrics.print_summary();
-            }
+            // Convert debug_level to a string and pass it to print_summary
+            let debug_level_str = match debug_level {
+                DebugLevel::Trace => Some("trace"),
+                _ => None,
+            };
+            metrics.print_summary(debug_level_str);
         }
     }
     
@@ -239,20 +242,12 @@ fn main() {
 /// Export metrics to files if configured
 fn export_metrics(config: &Config, metrics_arc: &Arc<Mutex<Metrics>>, debug_level: DebugLevel) {
     if let Ok(metrics) = metrics_arc.lock() {
-        // Export metrics to JSON if configured
-        if let Some(json_path) = &config.export_metrics_json {
-            log(DebugLevel::Info, debug_level, &format!("Exporting metrics to JSON: {}", json_path));
-            if let Err(err) = metrics.export_to_json(json_path) {
-                log(DebugLevel::Error, debug_level, &format!("Error exporting metrics to JSON: {}", err));
-            }
-        }
-        
-        // Export metrics to CSV if configured
-        if let Some(csv_path) = &config.export_metrics_csv {
-            log(DebugLevel::Info, debug_level, &format!("Exporting metrics to CSV: {}", csv_path));
-            if let Err(err) = metrics.export_to_csv(csv_path) {
-                log(DebugLevel::Error, debug_level, &format!("Error exporting metrics to CSV: {}", err));
-            }
+        // Call the export_to_configured_formats method on Metrics
+        if let Err(err) = metrics.export_to_configured_formats(
+            config.export_metrics_json.as_ref(), 
+            config.export_metrics_csv.as_ref()
+        ) {
+            log(DebugLevel::Error, debug_level, &format!("Failed to export metrics: {}", err));
         }
     }
 }

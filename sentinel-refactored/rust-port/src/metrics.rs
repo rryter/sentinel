@@ -104,6 +104,30 @@ impl Metrics {
         self.total_duration = Some(self.start_time.elapsed());
     }
     
+    /// Export metrics to configured file formats
+    pub fn export_to_configured_formats(&self, json_path: Option<&String>, csv_path: Option<&String>) -> Result<(), String> {
+        // Export metrics to JSON if configured
+        if let Some(path) = json_path {
+            println!();
+            println!("INFO: Exporting metrics to JSON: {}", path);
+            if let Err(err) = self.export_to_json(path) {
+                eprintln!("ERROR: Error exporting metrics to JSON: {}", err);
+                return Err(format!("Error exporting metrics to JSON: {}", err));
+            }
+        }
+        
+        // Export metrics to CSV if configured
+        if let Some(path) = csv_path {
+            println!("INFO: Exporting metrics to CSV: {}", path);
+            if let Err(err) = self.export_to_csv(path) {
+                eprintln!("ERROR: Error exporting metrics to CSV: {}", err);
+                return Err(format!("Error exporting metrics to CSV: {}", err));
+            }
+        }
+        
+        Ok(())
+    }
+    
     /// Export metrics to a JSON file, appending to existing data
     pub fn export_to_json(&self, file_path: &str) -> Result<(), String> {
         if self.total_duration.is_none() {
@@ -336,28 +360,23 @@ impl Metrics {
     }
     
     /// Print a summary of the collected metrics
-    pub fn print_summary(&self) {
+    pub fn print_summary(&self, debug_level: Option<&str>) {
         if self.total_duration.is_none() {
-            println!("No metrics collected yet.");
+            return;
+        }
+
+        // Only show detailed metrics for trace level
+        if debug_level != Some("trace") {
             return;
         }
         
         match self.calculate_metrics() {
             Ok(metrics) => {
-                println!("\n--- Performance Metrics ---");
+                // Skip general metrics header and basic info
                 
-                // Wall time metrics
-                println!("Total execution time: {:.2?}", Duration::from_millis(metrics.total_duration_ms));
-                println!("File scanning time: {:.2?}", Duration::from_millis(metrics.scan_duration_ms));
-                println!("File analysis time: {:.2?}", Duration::from_millis(metrics.analysis_duration_ms));
-                
-                // File metrics
-                println!("Files processed: {}", metrics.files_processed);
-                println!("Files per second (wall time): {:.2}", metrics.files_per_second_wall_time);
-                
-                // CPU time metrics 
+                // CPU Usage metrics 
                 let cpu_time = Duration::from_millis(metrics.cumulative_processing_time_ms);
-                println!("\n--- CPU Usage Metrics ---");
+                println!("--- CPU Usage Metrics ---");
                 println!("Cumulative CPU time: {:.2?}", cpu_time);
                 println!("Average time per file: {:.2?} μs", metrics.avg_time_per_file_ms * 1000.0);
                 println!("Processing rate per core: {:.2} files/sec", metrics.files_per_second_cpu_time);
@@ -404,11 +423,9 @@ impl Metrics {
                             parse_percent, semantic_percent);
                     }
                 }
-                
-                println!("---------------------------");
             },
-            Err(e) => {
-                println!("Error calculating metrics: {}", e);
+            Err(_) => {
+                // Do nothing, we don't want to print errors for this 
             }
         }
     }
