@@ -1,11 +1,14 @@
 use std::collections::{HashMap, HashSet};
+use std::time::Instant;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::GetSpan;
+use std::sync::{Arc, Mutex};
 
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
 pub use crate::rules::{NoDebuggerRule, NoEmptyPatternRule};
+use crate::metrics::Metrics;
 
 /// The result of running a rule on a file
 pub struct RuleResult {
@@ -69,7 +72,66 @@ impl RulesRegistry {
         self.enabled_rules.iter().cloned().collect()
     }
     
-    /// Run all enabled rules on a file's semantic analysis
+    /// Run all enabled rules on a file's semantic analysis with metrics tracking
+    pub fn run_rules_with_metrics(&self, semantic_result: &SemanticBuilderReturn, file_path: &str, metrics: Arc<Mutex<Metrics>>) -> RuleResult {
+        let mut diagnostics = Vec::new();
+        
+        // Only process if we have rules enabled
+        if !self.enabled_rules.is_empty() {
+            // First, run visitor-based rules
+            for rule_name in &self.enabled_rules {
+                if let Some(rule) = self.rules.get(rule_name.as_str()) {
+                    // Time the rule execution
+                    let rule_start = Instant::now();
+                    
+                    // Run visitor-based analysis
+                    let mut visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
+                    diagnostics.append(&mut visitor_diagnostics);
+                    
+                    // Record the time taken
+                    let duration = rule_start.elapsed();
+                    if let Ok(mut metrics_guard) = metrics.lock() {
+                        metrics_guard.record_rule_time(rule_name, duration);
+                    }
+                }
+            }
+
+            // Then run traditional node-based rules
+            for node in semantic_result.semantic.nodes() {
+                let node_kind = node.kind();
+                let span = node.span();
+                
+                // Run each enabled rule on this node
+                for rule_name in &self.enabled_rules {
+                    if let Some(rule) = self.rules.get(rule_name.as_str()) {
+                        // Time the rule execution
+                        let rule_start = Instant::now();
+                        
+                        // Run the rule
+                        let diagnostic_option = rule.run_on_node(&node_kind, span, file_path);
+                        
+                        // Record the time taken
+                        let duration = rule_start.elapsed();
+                        if let Ok(mut metrics_guard) = metrics.lock() {
+                            metrics_guard.record_rule_time(rule_name, duration);
+                        }
+                        
+                        // Add any diagnostic that was produced
+                        if let Some(diagnostic) = diagnostic_option {
+                            diagnostics.push(diagnostic);
+                        }
+                    }
+                }
+            }
+        }
+        
+        RuleResult {
+            file_path: file_path.to_string(),
+            diagnostics,
+        }
+    }
+    
+    /// Run all enabled rules on a file's semantic analysis (no metrics)
     pub fn run_rules(&self, semantic_result: &SemanticBuilderReturn, file_path: &str) -> RuleResult {
         let mut diagnostics = Vec::new();
         
@@ -79,7 +141,7 @@ impl RulesRegistry {
             for rule_name in &self.enabled_rules {
                 if let Some(rule) = self.rules.get(rule_name.as_str()) {
                     // Run visitor-based analysis
-                    let mut visitor_diagnostics = rule.run_on_semantic(semantic_result);
+                    let mut visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
                     diagnostics.append(&mut visitor_diagnostics);
                 }
             }
@@ -128,15 +190,8 @@ pub fn create_default_registry() -> RulesRegistry {
 /// Register all custom rules with the registry
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
-    use crate::rules::custom::NoConsoleRule;
-    use crate::rules::custom::NoConsoleWarnRule;
     use crate::rules::custom::NoConsoleWarnVisitorRule;
     
-    // Register the NoConsoleRule
-    registry.register_rule(Box::new(NoConsoleRule));
-    
-    // Register the NoConsoleWarnRule
-    registry.register_rule(Box::new(NoConsoleWarnRule));
     
     // Register the NoConsoleWarnVisitorRule
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));

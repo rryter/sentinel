@@ -40,6 +40,9 @@ const COMPLEX_CODE: &str = r#"
     }
 "#;
 
+// File path for testing
+const TEST_FILE_PATH: &str = "test.js";
+
 // Traditional implementation function
 fn run_traditional() -> Vec<oxc_diagnostics::OxcDiagnostic> {
     let allocator = Rc::new(Allocator::default());
@@ -51,7 +54,7 @@ fn run_traditional() -> Vec<oxc_diagnostics::OxcDiagnostic> {
     registry.register_rule(Box::new(NoConsoleWarnRule));
     registry.enable_rule("no-console-warn");
     
-    registry.run_rules(&semantic_result, "test.js").diagnostics
+    registry.run_rules(&semantic_result, TEST_FILE_PATH).diagnostics
 }
 
 // Visitor pattern implementation function
@@ -65,7 +68,7 @@ fn run_visitor() -> Vec<oxc_diagnostics::OxcDiagnostic> {
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
     registry.enable_rule("no-console-warn-visitor");
     
-    registry.run_rules(&semantic_result, "test.js").diagnostics
+    registry.run_rules(&semantic_result, TEST_FILE_PATH).diagnostics
 }
 
 // Implementing Copy for Implementation enum

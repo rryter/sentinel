@@ -26,7 +26,10 @@ pub trait Rule: Send + Sync {
 
     /// Run the rule using the visitor pattern (optional)
     /// Default implementation returns an empty Vec
-    fn run_on_semantic(&self, _semantic_result: &SemanticBuilderReturn) -> Vec<OxcDiagnostic> {
+    /// 
+    /// @param semantic_result The result of semantic analysis
+    /// @param file_path The path of the file being analyzed
+    fn run_on_semantic(&self, semantic_result: &SemanticBuilderReturn, file_path: &str) -> Vec<OxcDiagnostic> {
         Vec::new()
     }
 }
@@ -36,3 +39,5 @@ pub use no_debugger::NoDebuggerRule;
 pub use no_empty_pattern::NoEmptyPatternRule;
 
 // Re-export custom rules if they exist
+#[cfg(feature = "custom_rules")]
+pub use custom::*;

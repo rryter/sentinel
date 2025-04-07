@@ -1,8 +1,5 @@
 {
   "rules": [
-    "no-debugger",
-    "no-empty-pattern",
-    "no-console-warn",
     "no-console-warn-visitor"
   ]
 } 

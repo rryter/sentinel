@@ -23,6 +23,10 @@ pub struct Metrics {
     pub parse_times: Arc<Mutex<HashMap<String, Duration>>>,
     /// Detailed breakdown of semantic analysis times
     pub semantic_times: Arc<Mutex<HashMap<String, Duration>>>,
+    /// Rule execution times (rule name -> cumulative duration)
+    pub rule_times: Arc<Mutex<HashMap<String, Duration>>>,
+    /// Rule execution counts (rule name -> count)
+    pub rule_counts: Arc<Mutex<HashMap<String, usize>>>,
 }
 
 /// Serializable metrics for export to JSON
@@ -52,6 +56,18 @@ struct ExportableMetrics {
     total_semantic_time_ms: u64,
     avg_parse_time_ms: f64,
     avg_semantic_time_ms: f64,
+    // Rule execution metrics
+    rule_execution_metrics: Vec<RuleMetric>,
+}
+
+/// Individual rule metrics for export
+#[derive(Serialize, Deserialize, Clone)]
+struct RuleMetric {
+    rule_name: String,
+    total_time_ms: u64,
+    execution_count: usize,
+    avg_time_per_execution_us: f64,
+    percent_of_total_rule_time: f64,
 }
 
 impl Metrics {
@@ -65,6 +81,8 @@ impl Metrics {
             file_times: Arc::new(Mutex::new(HashMap::new())),
             parse_times: Arc::new(Mutex::new(HashMap::new())),
             semantic_times: Arc::new(Mutex::new(HashMap::new())),
+            rule_times: Arc::new(Mutex::new(HashMap::new())),
+            rule_counts: Arc::new(Mutex::new(HashMap::new())),
         }
     }
     
@@ -96,6 +114,21 @@ impl Metrics {
     pub fn record_semantic_time(&mut self, file_path: &str, duration: Duration) {
         if let Ok(mut times) = self.semantic_times.lock() {
             times.insert(file_path.to_string(), duration);
+        }
+    }
+    
+    /// Record execution time for a specific rule
+    pub fn record_rule_time(&mut self, rule_name: &str, duration: Duration) {
+        // Record the time
+        if let Ok(mut times) = self.rule_times.lock() {
+            let entry = times.entry(rule_name.to_string()).or_insert(Duration::default());
+            *entry += duration;
+        }
+        
+        // Record the count
+        if let Ok(mut counts) = self.rule_counts.lock() {
+            let entry = counts.entry(rule_name.to_string()).or_insert(0);
+            *entry += 1;
         }
     }
     
@@ -270,6 +303,41 @@ impl Metrics {
             Err(_) => return Err("Failed to lock semantic_times for metrics calculation".to_string()),
         };
         
+        let rule_times = match self.rule_times.lock() {
+            Ok(guard) => guard,
+            Err(_) => return Err("Failed to lock rule_times for metrics calculation".to_string()),
+        };
+        
+        let rule_counts = match self.rule_counts.lock() {
+            Ok(guard) => guard,
+            Err(_) => return Err("Failed to lock rule_counts for metrics calculation".to_string()),
+        };
+        
+        // Calculate rule metrics
+        let mut rule_execution_metrics = Vec::new();
+        let total_rule_time: Duration = rule_times.values().sum();
+        
+        for (rule_name, &duration) in rule_times.iter() {
+            let count = rule_counts.get(rule_name).copied().unwrap_or(1);
+            let avg_time_us = duration.as_micros() as f64 / count as f64;
+            let percent_of_total = if !total_rule_time.is_zero() {
+                duration.as_secs_f64() / total_rule_time.as_secs_f64() * 100.0
+            } else {
+                0.0
+            };
+            
+            rule_execution_metrics.push(RuleMetric {
+                rule_name: rule_name.clone(),
+                total_time_ms: duration.as_millis() as u64,
+                execution_count: count,
+                avg_time_per_execution_us: avg_time_us,
+                percent_of_total_rule_time: percent_of_total,
+            });
+        }
+        
+        // Sort by total execution time descending
+        rule_execution_metrics.sort_by(|a, b| b.total_time_ms.cmp(&a.total_time_ms));
+        
         // File count and cumulative time (CPU time across all cores)
         let file_count = file_times.len();
         let cumulative_processing_time: Duration = file_times.values().sum();
@@ -356,6 +424,7 @@ impl Metrics {
             total_semantic_time_ms: total_semantic_time.as_millis() as u64,
             avg_parse_time_ms: avg_parse_time,
             avg_semantic_time_ms: avg_semantic_time,
+            rule_execution_metrics,
         })
     }
     
@@ -421,6 +490,22 @@ impl Metrics {
                         let semantic_percent = semantic_time.as_secs_f64() / total.as_secs_f64() * 100.0;
                         println!("Phase breakdown: Parsing {:.1}% / Semantic Analysis {:.1}%", 
                             parse_percent, semantic_percent);
+                    }
+                }
+                
+                // Rule execution metrics
+                if !metrics.rule_execution_metrics.is_empty() {
+                    println!("\n--- Rule Execution Metrics ---");
+                    println!("Rule Name                          | Total Time  | Executions | Avg Time (μs) | % of Rule Time");
+                    println!("-----------------------------------|-------------|------------|---------------|---------------");
+                    
+                    for rule in &metrics.rule_execution_metrics {
+                        println!("{:<35} | {:>11.2?} | {:>10} | {:>13.2} | {:>13.1}%",
+                            rule.rule_name,
+                            Duration::from_millis(rule.total_time_ms),
+                            rule.execution_count,
+                            rule.avg_time_per_execution_us,
+                            rule.percent_of_total_rule_time);
                     }
                 }
             },

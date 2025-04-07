@@ -314,8 +314,19 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
         metrics.record_semantic_time(file_path, semantic_duration);
     }
     
-    // Run configured lint rules and respect debug level
-    let result = rules_registry.run_rules(&semantic_result, file_path);
+    // Measure rule execution time
+    let rules_start = Instant::now();
+    
+    // Run configured lint rules with metrics tracking
+    let result = rules_registry.run_rules_with_metrics(&semantic_result, file_path, Arc::clone(&metrics_arc));
+    
+    // Record rule execution time as a whole
+    let rules_duration = rules_start.elapsed();
+    if let Ok(mut metrics) = metrics_arc.lock() {
+        // Record overall rule execution time under a special key
+        metrics.record_rule_time("__all_rules__", rules_duration);
+    }
+    
     if !result.diagnostics.is_empty() && debug_level >= DebugLevel::Info {
         println!("Found {} issues in {}", result.diagnostics.len(), file_path);
         for diagnostic in result.diagnostics {
@@ -331,8 +342,8 @@ fn analyze_file(file_path: &str, metrics_arc: Arc<Mutex<Metrics>>, rules_registr
     }
     
     // Trace-level detailed logs about file processing
-    log(DebugLevel::Trace, debug_level, &format!(
-        "Processed {} in {:.2?} (parse: {:.2?}, semantic: {:.2?})",
-        file_path, total_duration, parse_duration, semantic_duration
-    ));
+    // log(DebugLevel::Trace, debug_level, &format!(
+    //     "Processed {} in {:.2?} (parse: {:.2?}, semantic: {:.2?}, rules: {:.2?})",
+    //     file_path, total_duration, parse_duration, semantic_duration, rules_duration
+    // ));
 }
