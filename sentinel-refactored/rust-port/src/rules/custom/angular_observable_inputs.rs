@@ -1,73 +1,116 @@
-use oxc_ast::ast::{CallExpression, Expression};
+use oxc_ast::ast::{Decorator, Expression, ImportDeclaration, ImportDeclarationSpecifier};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::{GetSpan, Span};
+use std::collections::HashSet;
 
 use crate::rules::Rule;
 
-/// Rule that disallows console.warn calls specifically (using visitor pattern)
+/// Rule that checks for Angular Input/Output imports and decorators
 ///
-/// This rule detects and reports uses of `console.warn()` in TypeScript/JavaScript code.
-/// It leverages the visitor pattern for efficient traversal of the AST.
+/// This rule detects and reports Angular decorators that might have observable-related issues.
 ///
 /// ## Rule Details
 ///
 /// Examples of **incorrect** code:
 ///
-/// ```js
-/// console.warn('Warning message');
-/// console.warn('Multiple', 'arguments', { data: true });
+/// ```typescript
+/// import { Input, Output } from '@angular/core';
+/// @Input() property: Observable<string>;
+/// @Output() event = new EventEmitter<void>();
 /// ```
 ///
 /// Examples of **correct** code:
 ///
-/// ```js
-/// console.log('Info message');
-/// console.error('Error message');
-/// logger.warn('Warning with proper logger');
+/// ```typescript
+/// import { Component } from '@angular/core';
+/// @Input() property: string;
+/// @Output() event = new EventEmitter<void>();
 /// ```
 pub struct AngularObservableInputsRule;
 
-/// Visitor implementation that tracks console.warn calls
+/// Visitor implementation that tracks Angular decorator imports and usage
 struct ObservableInputsVisitor<'a> {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
     /// File path for context in diagnostics
     file_path: &'a str,
+    /// Set of decorator names to check
+    restricted_decorators: HashSet<&'static str>,
 }
 
 impl<'a> ObservableInputsVisitor<'a> {
     fn new(file_path: &'a str) -> Self {
+        let mut restricted_decorators = HashSet::new();
+        restricted_decorators.insert("Input");
+        restricted_decorators.insert("Output");
+        restricted_decorators.insert("ViewChild");
+        restricted_decorators.insert("ViewChildren");
+        restricted_decorators.insert("ContentChild");
+        restricted_decorators.insert("ContentChildren");
+
         Self {
             diagnostics: Vec::new(),
             file_path,
+            restricted_decorators,
         }
     }
 
-    /// Helper method to create a diagnostic for console.warn usage
-    fn create_diagnostic(&self, span: Span) -> OxcDiagnostic {
-        OxcDiagnostic::warn("Unexpected console.warn")
-            .with_help("Remove the console.warn or replace with proper logging")
-            .with_label(span.label("Use a logger instead of console.warn"))
+    /// Helper method to create a diagnostic for Angular imports
+    fn create_import_diagnostic(&self, span: Span) -> OxcDiagnostic {
+        OxcDiagnostic::warn("Angular Input/Output decorator import detected")
+            .with_help("Review usage of Angular decorators with Observables. Input properties should not be Observables, and Output properties should be Observable-like.")
+            .with_label(span.label("Angular decorator import"))
+    }
+
+    /// Helper method to create a diagnostic for Angular decorator usage
+    fn create_decorator_diagnostic(&self, name: &str, span: Span) -> OxcDiagnostic {
+        OxcDiagnostic::warn(format!("Angular @{} decorator detected", name))
+            .with_help("Ensure Input properties are not Observables, and Output properties are Observable-like.")
+            .with_label(span.label(format!("@{} decorator usage", name)))
     }
 }
 
 impl<'a> Visit<'a> for ObservableInputsVisitor<'a> {
-    fn visit_call_expression(&mut self, call_expr: &CallExpression<'a>) {
-        if let Some(member_expr) = call_expr.callee.as_member_expression() {
-            // Check if it's a console.warn call
-            if let Expression::Identifier(ident) = member_expr.object() {
-                if ident.name.as_str() == "console" {
-                    if let Some(prop_name) = member_expr.static_property_name() {
-                        if prop_name == "warn" {
-                            self.diagnostics
-                                .push(self.create_diagnostic(member_expr.span()));
+    fn visit_import_declaration(&mut self, import_decl: &ImportDeclaration<'a>) {
+        // Check if the import is from '@angular/core'
+        if import_decl.source.value == "@angular/core" {
+            // Iterate through the vector of specifiers if they exist
+            if let Some(specifiers) = &import_decl.specifiers {
+                for specifier in specifiers.iter() {
+                    // Check for Import specifiers
+                    if let ImportDeclarationSpecifier::ImportSpecifier(import_spec) = specifier {
+                        let name = import_spec.local.name.as_str();
+                        if self.restricted_decorators.contains(name) {
+                            self.diagnostics.push(self.create_import_diagnostic(import_spec.local.span()));
                         }
                     }
                 }
             }
+        }
+    }
+
+    fn visit_decorator(&mut self, decorator: &Decorator<'a>) {
+        match &decorator.expression {
+            // Simple identifier decorator: @Input
+            Expression::Identifier(ident) => {
+                let name = ident.name.as_str();
+                if self.restricted_decorators.contains(name) {
+                    self.diagnostics.push(self.create_decorator_diagnostic(name, decorator.span()));
+                }
+            },
+            // Decorator with arguments: @Input() or @Input('propName')
+            Expression::CallExpression(call_expr) => {
+                // Check if the callee is an identifier (most common case)
+                if let Expression::Identifier(callee_ident) = &call_expr.callee {
+                    let name = callee_ident.name.as_str();
+                    if self.restricted_decorators.contains(name) {
+                        self.diagnostics.push(self.create_decorator_diagnostic(name, decorator.span()));
+                    }
+                }
+            },
+            _ => {}
         }
     }
 }
@@ -85,10 +128,12 @@ impl Rule for AngularObservableInputsRule {
         let mut visitor = ObservableInputsVisitor::new(file_path);
 
         match node {
-            AstKind::CallExpression(call_expr) => {
-                visitor.visit_call_expression(call_expr);
+            AstKind::ImportDeclaration(import_decl) => {
+                visitor.visit_import_declaration(import_decl);
             }
-            // We only care about call expressions, so skip other node types
+            AstKind::Decorator(decorator) => {
+                visitor.visit_decorator(decorator);
+            }
             _ => {}
         }
 
