@@ -9,8 +9,15 @@ const GENERATED_FILE: &str = "custom_rules_discovery.rs";
 // Represents a discovered module or file containing rules
 #[derive(Debug)]
 enum DiscoveryItem {
-    Module { name: String, children: Vec<DiscoveryItem> },
-    RuleFile { name: String, path: PathBuf, factory_fns: Vec<String> },
+    Module {
+        name: String,
+        children: Vec<DiscoveryItem>,
+    },
+    RuleFile {
+        name: String,
+        path: PathBuf,
+        factory_fns: Vec<String>,
+    },
 }
 
 fn main() {
@@ -31,18 +38,28 @@ fn main() {
         generate_mod_code(&mut file, &discovery_tree, "", &mut all_factories);
 
         // Generate the factory collection function
-        writeln!(file, "\npub fn get_discovered_rule_factories() -> Vec<RuleFactory> {{").unwrap();
+        writeln!(
+            file,
+            "\npub fn get_discovered_rule_factories() -> Vec<RuleFactory> {{"
+        )
+        .unwrap();
         writeln!(file, "    vec![").unwrap();
         for factory_path in all_factories {
             writeln!(file, "        {},", factory_path).unwrap();
         }
         writeln!(file, "    ]").unwrap();
         writeln!(file, "}}").unwrap();
-
     } else {
-        println!("cargo:warning=Custom rules directory '{}' not found.", CUSTOM_RULES_DIR);
+        println!(
+            "cargo:warning=Custom rules directory '{}' not found.",
+            CUSTOM_RULES_DIR
+        );
         // Generate empty function if dir doesn't exist
-        writeln!(file, "\npub fn get_discovered_rule_factories() -> Vec<RuleFactory> {{ vec![] }}").unwrap();
+        writeln!(
+            file,
+            "\npub fn get_discovered_rule_factories() -> Vec<RuleFactory> {{ vec![] }}"
+        )
+        .unwrap();
     }
 }
 
@@ -104,8 +121,11 @@ fn generate_mod_code(
             DiscoveryItem::Module { name, children } => {
                 // Don't use #[path] here, rely on standard mod discovery
                 // Need mod.rs in the source directory for this module
-                 // Check if a mod.rs exists for this directory
-                let mod_file_path = Path::new(CUSTOM_RULES_DIR).join(current_mod_path).join(name).join("mod.rs");
+                // Check if a mod.rs exists for this directory
+                let mod_file_path = Path::new(CUSTOM_RULES_DIR)
+                    .join(current_mod_path)
+                    .join(name)
+                    .join("mod.rs");
                 let src_mod_path = if current_mod_path.is_empty() {
                     name.clone()
                 } else {
@@ -114,17 +134,27 @@ fn generate_mod_code(
 
                 // Only declare mod if mod.rs exists or it contains rule files/submodules
                 if mod_file_path.exists() || !children.is_empty() {
-                     writeln!(file, "pub mod {} {{", name).unwrap();
+                    writeln!(file, "pub mod {} {{", name).unwrap();
                     generate_mod_code(file, children, &src_mod_path, all_factories);
                     writeln!(file, "}}").unwrap();
                 } else {
-                     println!("cargo:warning=Skipping module declaration for '{}' as no mod.rs or nested rules found.", src_mod_path);
+                    println!("cargo:warning=Skipping module declaration for '{}' as no mod.rs or nested rules found.", src_mod_path);
                 }
             }
-            DiscoveryItem::RuleFile { name, path, factory_fns } => {
+            DiscoveryItem::RuleFile {
+                name,
+                path,
+                factory_fns,
+            } => {
                 // Use an absolute path for #[path] based on the CARGO_MANIFEST_DIR
                 let absolute_path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap()).join(path);
-                writeln!(file, "#[path=\"{}\"] pub mod {};", absolute_path.display(), name).unwrap();
+                writeln!(
+                    file,
+                    "#[path=\"{}\"] pub mod {};",
+                    absolute_path.display(),
+                    name
+                )
+                .unwrap();
                 // Add the fully qualified factory function paths
                 let base_path = if current_mod_path.is_empty() {
                     format!("{}", name)
@@ -144,17 +174,18 @@ fn extract_factory_names(content: &str) -> Vec<String> {
     let mut names = Vec::new();
     // Very basic search - could be improved with regex or syn
     for line in content.lines() {
-        if line.contains("fn create_") && line.contains("Rule") && line.contains("-> Arc<dyn Rule>") {
-             if let Some(fn_pos) = line.find("fn create_") {
-                 let start = fn_pos + 3; // Skip "fn "
-                 if let Some(paren_pos) = line[start..].find('(') {
-                     let name = line[start..start + paren_pos].trim();
+        if line.contains("fn create_") && line.contains("Rule") && line.contains("-> Arc<dyn Rule>")
+        {
+            if let Some(fn_pos) = line.find("fn create_") {
+                let start = fn_pos + 3; // Skip "fn "
+                if let Some(paren_pos) = line[start..].find('(') {
+                    let name = line[start..start + paren_pos].trim();
                     if !name.is_empty() {
-                         names.push(name.to_string());
+                        names.push(name.to_string());
                     }
-                 }
-             }
+                }
+            }
         }
     }
     names
-} 
+}

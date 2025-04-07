@@ -9,18 +9,18 @@ pub mod custom;
 // Re-export types and functions needed by other modules
 use oxc_ast::AstKind;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_span::Span;
 use oxc_semantic::SemanticBuilderReturn;
+use oxc_span::Span;
 
 /// Trait that all rules must implement
 pub trait Rule: Send + Sync {
     /// Get the name of the rule
     fn name(&self) -> &'static str;
-    
+
     /// Get a description of what the rule checks for
     #[allow(dead_code)]
     fn description(&self) -> &'static str;
-    
+
     /// Run the rule on a specific AST node (optional)
     /// Rules primarily using the visitor pattern might not implement this.
     /// Default implementation returns None.
@@ -30,10 +30,14 @@ pub trait Rule: Send + Sync {
 
     /// Run the rule using the visitor pattern (optional)
     /// Default implementation returns an empty Vec
-    /// 
+    ///
     /// @param semantic_result The result of semantic analysis
     /// @param file_path The path of the file being analyzed
-    fn run_on_semantic(&self, semantic_result: &SemanticBuilderReturn, file_path: &str) -> Vec<OxcDiagnostic> {
+    fn run_on_semantic(
+        &self,
+        semantic_result: &SemanticBuilderReturn,
+        file_path: &str,
+    ) -> Vec<OxcDiagnostic> {
         Vec::new()
     }
 }

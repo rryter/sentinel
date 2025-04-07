@@ -1,10 +1,10 @@
-use std::collections::{HashMap, HashSet};
-use std::time::Instant;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::GetSpan;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::time::Instant;
 
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
@@ -31,57 +31,57 @@ impl RulesRegistry {
             enabled_rules: HashSet::new(),
         }
     }
-    
+
     /// Register a rule with the registry
     pub fn register_rule(&mut self, rule: Box<dyn Rule>) {
         let rule_name = rule.name();
         self.rules.insert(rule_name, rule);
     }
-    
+
     /// Enable a rule by name
     pub fn enable_rule(&mut self, rule_name: &str) {
         self.enabled_rules.insert(rule_name.to_string());
     }
-    
+
     /// Enable multiple rules by name
     pub fn enable_rules(&mut self, rule_names: &[&str]) {
         for name in rule_names {
             self.enable_rule(name);
         }
     }
-    
+
     /// Disable a rule by name
     pub fn disable_rule(&mut self, rule_name: &str) {
         self.enabled_rules.remove(rule_name);
     }
-    
+
     /// Check if a rule is enabled
     #[allow(dead_code)]
     pub fn is_rule_enabled(&self, rule_name: &str) -> bool {
         self.enabled_rules.contains(rule_name)
     }
-    
+
     /// Get all registered rules
     #[allow(dead_code)]
     pub fn get_registered_rules(&self) -> Vec<&'static str> {
         self.rules.keys().cloned().collect()
     }
-    
+
     /// Get all enabled rules
     pub fn get_enabled_rules(&self) -> Vec<String> {
         self.enabled_rules.iter().cloned().collect()
     }
-    
+
     /// Run all enabled rules on a file's semantic analysis with metrics tracking.
     /// Returns diagnostics and a map of rule execution times for this specific run.
     pub fn run_rules_with_metrics(
-        &self, 
-        semantic_result: &SemanticBuilderReturn, 
-        file_path: &str
+        &self,
+        semantic_result: &SemanticBuilderReturn,
+        file_path: &str,
     ) -> (Vec<OxcDiagnostic>, HashMap<String, Duration>) {
         let mut diagnostics = Vec::new();
         let mut rule_durations = HashMap::new();
-        
+
         // Only process if we have rules enabled
         if !self.enabled_rules.is_empty() {
             // First, run visitor-based rules
@@ -89,11 +89,11 @@ impl RulesRegistry {
                 if let Some(rule) = self.rules.get(rule_name.as_str()) {
                     // Time the rule execution
                     let rule_start = Instant::now();
-                    
+
                     // Run visitor-based analysis
                     let mut visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
                     diagnostics.append(&mut visitor_diagnostics);
-                    
+
                     // Record the time taken locally
                     let duration = rule_start.elapsed();
                     rule_durations.insert(rule_name.to_string(), duration);
@@ -102,22 +102,21 @@ impl RulesRegistry {
 
             // Check if any enabled rule actually uses node-based processing
             let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
-                self.rules.get(rule_name.as_str())
-                    .map_or(false, |rule| {
-                        // Heuristic: Check if the rule implements run_on_node.
-                        // Since run_on_node now has a default `None` implementation,
-                        // we need a way to know if a specific rule *overrides* it.
-                        // Comparing function pointers for default methods is complex.
-                        // A practical approach is to assume if a rule *might* return
-                        // Some(...) from run_on_node, it's considered node-based.
-                        // For now, we simplify: if a rule *could* be node-based, we run the loop.
-                        // This avoids needing complex reflection or trait checks.
-                        // TODO: A better long-term solution might involve adding metadata
-                        // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
-                        true // Keep simplified check for now - run loop if any rule enabled.
-                             // We accept the overhead if only visitor rules are present,
-                             // as the inner loop won't record metrics anyway.
-                    })
+                self.rules.get(rule_name.as_str()).map_or(false, |rule| {
+                    // Heuristic: Check if the rule implements run_on_node.
+                    // Since run_on_node now has a default `None` implementation,
+                    // we need a way to know if a specific rule *overrides* it.
+                    // Comparing function pointers for default methods is complex.
+                    // A practical approach is to assume if a rule *might* return
+                    // Some(...) from run_on_node, it's considered node-based.
+                    // For now, we simplify: if a rule *could* be node-based, we run the loop.
+                    // This avoids needing complex reflection or trait checks.
+                    // TODO: A better long-term solution might involve adding metadata
+                    // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
+                    true // Keep simplified check for now - run loop if any rule enabled.
+                         // We accept the overhead if only visitor rules are present,
+                         // as the inner loop won't record metrics anyway.
+                })
             });
 
             // >>> Section 2: Run traditional node-based rules (Conditionally) <<<
@@ -125,19 +124,19 @@ impl RulesRegistry {
                 for node in semantic_result.semantic.nodes() {
                     let node_kind = node.kind();
                     let span = node.span();
-                    
+
                     // Run each enabled rule on this node
                     for rule_name in &self.enabled_rules {
                         if let Some(rule) = self.rules.get(rule_name.as_str()) {
                             // Time the rule execution
                             let rule_start = Instant::now();
-                            
+
                             // Run the rule
                             let diagnostic_option = rule.run_on_node(&node_kind, span, file_path);
-                            
+
                             // Record the time taken *only if* a diagnostic was produced
                             let duration = rule_start.elapsed();
-                            
+
                             // Add any diagnostic that was produced
                             if let Some(diagnostic) = diagnostic_option {
                                 // Record time only when rule yielded a result for this node
@@ -149,14 +148,18 @@ impl RulesRegistry {
                 }
             }
         }
-        
+
         (diagnostics, rule_durations)
     }
-    
+
     /// Run all enabled rules on a file's semantic analysis (no metrics)
-    pub fn run_rules(&self, semantic_result: &SemanticBuilderReturn, file_path: &str) -> RuleResult {
+    pub fn run_rules(
+        &self,
+        semantic_result: &SemanticBuilderReturn,
+        file_path: &str,
+    ) -> RuleResult {
         let mut diagnostics = Vec::new();
-        
+
         // Only process if we have rules enabled
         if !self.enabled_rules.is_empty() {
             // First, run visitor-based rules
@@ -170,22 +173,21 @@ impl RulesRegistry {
 
             // Check if any enabled rule actually uses node-based processing
             let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
-                self.rules.get(rule_name.as_str())
-                    .map_or(false, |rule| {
-                        // Heuristic: Check if the rule implements run_on_node.
-                        // Since run_on_node now has a default `None` implementation,
-                        // we need a way to know if a specific rule *overrides* it.
-                        // Comparing function pointers for default methods is complex.
-                        // A practical approach is to assume if a rule *might* return
-                        // Some(...) from run_on_node, it's considered node-based.
-                        // For now, we simplify: if a rule *could* be node-based, we run the loop.
-                        // This avoids needing complex reflection or trait checks.
-                        // TODO: A better long-term solution might involve adding metadata
-                        // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
-                        true // Keep simplified check for now - run loop if any rule enabled.
-                             // We accept the overhead if only visitor rules are present,
-                             // as the inner loop won't record metrics anyway.
-                    })
+                self.rules.get(rule_name.as_str()).map_or(false, |rule| {
+                    // Heuristic: Check if the rule implements run_on_node.
+                    // Since run_on_node now has a default `None` implementation,
+                    // we need a way to know if a specific rule *overrides* it.
+                    // Comparing function pointers for default methods is complex.
+                    // A practical approach is to assume if a rule *might* return
+                    // Some(...) from run_on_node, it's considered node-based.
+                    // For now, we simplify: if a rule *could* be node-based, we run the loop.
+                    // This avoids needing complex reflection or trait checks.
+                    // TODO: A better long-term solution might involve adding metadata
+                    // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
+                    true // Keep simplified check for now - run loop if any rule enabled.
+                         // We accept the overhead if only visitor rules are present,
+                         // as the inner loop won't record metrics anyway.
+                })
             });
 
             // >>> Section 2: Run traditional node-based rules (Conditionally) <<<
@@ -193,11 +195,12 @@ impl RulesRegistry {
                 for node in semantic_result.semantic.nodes() {
                     let node_kind = node.kind();
                     let span = node.span();
-                    
+
                     // Run each enabled rule on this node
                     for rule_name in &self.enabled_rules {
                         if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                            if let Some(diagnostic) = rule.run_on_node(&node_kind, span, file_path) {
+                            if let Some(diagnostic) = rule.run_on_node(&node_kind, span, file_path)
+                            {
                                 diagnostics.push(diagnostic);
                             }
                         }
@@ -205,7 +208,7 @@ impl RulesRegistry {
                 }
             }
         }
-        
+
         RuleResult {
             file_path: file_path.to_string(),
             diagnostics,
@@ -216,32 +219,32 @@ impl RulesRegistry {
 /// Create a registry with all default rules registered
 pub fn create_default_registry() -> RulesRegistry {
     let mut registry = RulesRegistry::new();
-    
+
     // Register built-in rules
     registry.register_rule(Box::new(NoDebuggerRule));
     registry.register_rule(Box::new(NoEmptyPatternRule));
-    
+
     // Register custom rules if the feature is enabled
     #[cfg(feature = "custom_rules")]
     register_custom_rules(&mut registry);
-    
+
     // Enable the default rules
     registry.enable_rules(&["no-debugger", "no-empty-pattern"]);
-    
+
     registry
 }
 
 /// Register all custom rules with the registry
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
-    use crate::rules::custom::{NoConsoleWarnVisitorRule, AngularObservableInputsRule};
-    
+    use crate::rules::custom::{AngularObservableInputsRule, NoConsoleWarnVisitorRule};
+
     // Register the NoConsoleWarnVisitorRule
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
-    
+
     // Register the AngularObservableInputsRule
     registry.register_rule(Box::new(AngularObservableInputsRule));
-    
+
     // Add more custom rules here as they are created
 }
 
@@ -251,12 +254,12 @@ pub fn load_rule_config(path: &str) -> Result<Vec<String>, String> {
         Ok(content) => content,
         Err(err) => return Err(format!("Failed to read config file: {}", err)),
     };
-    
+
     let config: serde_json::Value = match serde_json::from_str(&content) {
         Ok(config) => config,
         Err(err) => return Err(format!("Failed to parse config file: {}", err)),
     };
-    
+
     if let Some(rules) = config.get("rules") {
         if let Some(rules_array) = rules.as_array() {
             let rule_names = rules_array
@@ -266,7 +269,7 @@ pub fn load_rule_config(path: &str) -> Result<Vec<String>, String> {
             return Ok(rule_names);
         }
     }
-    
+
     Err("Config file does not contain a 'rules' array".to_string())
 }
 
@@ -276,9 +279,9 @@ pub fn configure_registry(registry: &mut RulesRegistry, enabled_rules: &[String]
     for rule in registry.get_enabled_rules() {
         registry.disable_rule(&rule);
     }
-    
+
     // Enable the specified rules
     for rule in enabled_rules {
         registry.enable_rule(rule);
     }
-} 
+}

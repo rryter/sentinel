@@ -2,8 +2,8 @@ use oxc_ast::ast::{CallExpression, Expression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_span::{GetSpan, Span};
 use oxc_semantic::SemanticBuilderReturn;
+use oxc_span::{GetSpan, Span};
 
 use crate::rules::Rule;
 
@@ -11,7 +11,7 @@ use crate::rules::Rule;
 ///
 /// This rule detects and reports uses of `console.warn()` in TypeScript/JavaScript code.
 /// It leverages the visitor pattern for efficient traversal of the AST.
-/// 
+///
 /// ## Rule Details
 ///
 /// Examples of **incorrect** code:
@@ -45,7 +45,7 @@ impl<'a> ObservableInputsVisitor<'a> {
             file_path,
         }
     }
-    
+
     /// Helper method to create a diagnostic for console.warn usage
     fn create_diagnostic(&self, span: Span) -> OxcDiagnostic {
         OxcDiagnostic::warn("Unexpected console.warn")
@@ -62,7 +62,8 @@ impl<'a> Visit<'a> for ObservableInputsVisitor<'a> {
                 if ident.name.as_str() == "console" {
                     if let Some(prop_name) = member_expr.static_property_name() {
                         if prop_name == "warn" {
-                            self.diagnostics.push(self.create_diagnostic(member_expr.span()));
+                            self.diagnostics
+                                .push(self.create_diagnostic(member_expr.span()));
                         }
                     }
                 }
@@ -90,8 +91,8 @@ impl Rule for AngularObservableInputsRule {
             // We only care about call expressions, so skip other node types
             _ => {}
         }
-        
+
         // Return the first diagnostic if any exist, otherwise None
         visitor.diagnostics.first().cloned()
     }
-} 
+}

@@ -6,9 +6,9 @@ pub mod metrics;
 pub mod rules;
 pub mod rules_registry;
 
-use std::time::Duration;
-use std::collections::HashMap;
 use oxc_diagnostics::OxcDiagnostic;
+use std::collections::HashMap;
+use std::time::Duration;
 
 /// Structure to hold analysis results for a single file
 #[derive(Debug)]

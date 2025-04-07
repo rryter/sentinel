@@ -1,2 +1,2 @@
 // Angular module tests
-mod angular_decorator_test; 
+mod angular_decorator_test;

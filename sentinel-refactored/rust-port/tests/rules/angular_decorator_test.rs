@@ -3,8 +3,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use typescript_analyzer::rules::{
-    Rule, RuleMatch,
-    custom::angular::decorator_detection_rule::AngularDecoratorDetectionRule
+    custom::angular::decorator_detection_rule::AngularDecoratorDetectionRule, Rule, RuleMatch,
 };
 
 // Test utilities
@@ -12,25 +11,33 @@ fn test_rule_with_code(code: &str) -> RuleMatch {
     // Create an allocator for each test
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);
-    
+
     // Parse the TypeScript code
     let parser_return = Parser::new(&allocator, code, source_type).parse();
-    
+
     // Create the rule
     let rule = AngularDecoratorDetectionRule::new();
-    
+
     // Evaluate the rule on the parsed program
-    rule.evaluate(&parser_return.program, "test-file.ts").expect("Rule evaluation failed")
+    rule.evaluate(&parser_return.program, "test-file.ts")
+        .expect("Rule evaluation failed")
 }
 
 fn assert_decorator_match(result: &RuleMatch, expected_match: bool, decorator_name: Option<&str>) {
-    assert_eq!(result.matched, expected_match, "Rule match status should be {}", expected_match);
-    
+    assert_eq!(
+        result.matched, expected_match,
+        "Rule match status should be {}",
+        expected_match
+    );
+
     if let Some(decorator) = decorator_name {
         if expected_match {
             // If a decorator name was provided and we expect a match, check the metadata
             let found_decorators = result.metadata.get("found_decorators");
-            assert!(found_decorators.is_some(), "Metadata should contain found_decorators");
+            assert!(
+                found_decorators.is_some(),
+                "Metadata should contain found_decorators"
+            );
             assert!(
                 found_decorators.unwrap().contains(decorator),
                 "Metadata should contain the decorator: {}",
@@ -50,7 +57,7 @@ fn test_no_angular_imports() {
           @Input() property: string;
         }
     "#;
-    
+
     let result = test_rule_with_code(code);
     assert_decorator_match(&result, false, None);
 }
@@ -69,10 +76,13 @@ fn test_angular_import_no_decorators() {
           property: string;
         }
     "#;
-    
+
     let result = test_rule_with_code(code);
     assert_decorator_match(&result, false, None);
-    assert!(result.message.unwrap().contains("no property decorators"), "Should mention no decorators found");
+    assert!(
+        result.message.unwrap().contains("no property decorators"),
+        "Should mention no decorators found"
+    );
 }
 
 #[test]
@@ -89,7 +99,7 @@ fn test_input_decorator() {
           @Input() property: string;
         }
     "#;
-    
+
     let result = test_rule_with_code(code);
     assert_decorator_match(&result, true, Some("Input"));
 }
@@ -108,7 +118,7 @@ fn test_output_decorator() {
           @Output() event = new EventEmitter<string>();
         }
     "#;
-    
+
     let result = test_rule_with_code(code);
     assert_decorator_match(&result, true, Some("Output"));
 }
@@ -129,15 +139,24 @@ fn test_multiple_decorators() {
           @ViewChild('ref') elementRef: ElementRef;
         }
     "#;
-    
+
     let result = test_rule_with_code(code);
     assert_decorator_match(&result, true, Some("Input"));
-    
+
     // Check that multiple decorators are found
     let found_decorators = result.metadata.get("found_decorators").unwrap();
-    assert!(found_decorators.contains("Input"), "Should find Input decorator");
-    assert!(found_decorators.contains("Output"), "Should find Output decorator");
-    assert!(found_decorators.contains("ViewChild"), "Should find ViewChild decorator");
+    assert!(
+        found_decorators.contains("Input"),
+        "Should find Input decorator"
+    );
+    assert!(
+        found_decorators.contains("Output"),
+        "Should find Output decorator"
+    );
+    assert!(
+        found_decorators.contains("ViewChild"),
+        "Should find ViewChild decorator"
+    );
 }
 
 #[test]
@@ -157,9 +176,12 @@ fn test_method_decorators() {
           }
         }
     "#;
-    
+
     // Note: HostListener isn't in our target list, so this shouldn't match
     let result = test_rule_with_code(code);
     assert_decorator_match(&result, false, None);
-    assert!(result.message.unwrap().contains("no property decorators"), "Should mention no property decorators found");
-} 
+    assert!(
+        result.message.unwrap().contains("no property decorators"),
+        "Should mention no property decorators found"
+    );
+}

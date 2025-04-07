@@ -1,2 +1,2 @@
 // Test modules
-mod rules; 
+mod rules;
