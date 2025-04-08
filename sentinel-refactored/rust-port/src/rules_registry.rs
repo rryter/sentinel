@@ -285,3 +285,68 @@ pub fn configure_registry(registry: &mut RulesRegistry, enabled_rules: &[String]
         registry.enable_rule(rule);
     }
 }
+
+/// Add the rule registry setup functions from main.rs at the end of the file
+
+use crate::utilities::{DebugLevel, log};
+use crate::utilities::config::Config;
+
+/// Set up and configure the rules registry based on configuration and command line arguments
+pub fn setup_rules_registry(config: &Config, args: &[String], debug_level: DebugLevel) -> RulesRegistry {
+    let mut registry = create_default_registry();
+    
+    // Apply configuration in order of priority
+    if let Some(rules) = super::utilities::config::get_enabled_rules(args) {
+        // Command line arguments have highest priority
+        configure_registry(&mut registry, &rules);
+        log(
+            DebugLevel::Info,
+            debug_level,
+            &format!("Using command line rules: {:?}", registry.get_enabled_rules()),
+        );
+    } else if let Some(rules_config_path) = &config.rules_config {
+        // Config file comes next
+        apply_rules_from_config(&mut registry, rules_config_path, debug_level);
+    } else {
+        // Default rules as fallback
+        log(
+            DebugLevel::Info,
+            debug_level,
+            &format!("Using default rules: {:?}", registry.get_enabled_rules()),
+        );
+    }
+    
+    registry
+}
+
+/// Apply rules from configuration file
+pub fn apply_rules_from_config(registry: &mut RulesRegistry, config_path: &str, debug_level: DebugLevel) {
+    log(
+        DebugLevel::Trace,
+        debug_level,
+        &format!("Loading rules configuration from {}", config_path),
+    );
+    
+    match load_rule_config(config_path) {
+        Ok(enabled_rules) => {
+            configure_registry(registry, &enabled_rules);
+            log(
+                DebugLevel::Info,
+                debug_level,
+                &format!("Enabled rules: {:?}", registry.get_enabled_rules()),
+            );
+        }
+        Err(err) => {
+            log(
+                DebugLevel::Error,
+                debug_level,
+                &format!("Failed to load rules configuration: {}", err),
+            );
+            log(
+                DebugLevel::Info,
+                debug_level,
+                &format!("Using default rules: {:?}", registry.get_enabled_rules()),
+            );
+        }
+    }
+}

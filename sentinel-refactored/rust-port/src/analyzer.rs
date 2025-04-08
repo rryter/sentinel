@@ -13,6 +13,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use rayon::prelude::*;
 
 /// Analyze a file and return detailed results
 pub fn analyze_file(
@@ -120,4 +121,25 @@ pub fn analyze_file(
         total_duration,
         diagnostics,
     }
+}
+
+/// Process files in parallel using rayon
+pub fn process_files(
+    files: &[String],
+    rules_registry_arc: &Arc<RulesRegistry>,
+    debug_level: DebugLevel,
+) -> (Vec<FileAnalysisResult>, Duration) {
+    let analysis_start = Instant::now();
+    
+    let analysis_results: Vec<FileAnalysisResult> = files
+        .par_iter()
+        .map(|file_path| {
+            let rules_ref = Arc::clone(rules_registry_arc);
+            analyze_file(file_path, rules_ref, debug_level)
+        })
+        .collect();
+        
+    let analysis_duration = analysis_start.elapsed();
+    
+    (analysis_results, analysis_duration)
 } 
