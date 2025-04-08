@@ -1,6 +1,6 @@
-use std::time::{Instant, Duration};
+use crate::utilities::{log, DebugLevel};
+use std::time::{Duration, Instant};
 use walkdir::WalkDir;
-use crate::utilities::{DebugLevel, log};
 
 /// Find all TypeScript files in the given directory and subdirectories
 pub fn find_typescript_files(dir: &str) -> Vec<String> {
@@ -25,11 +25,11 @@ pub fn find_files(dir_path: &str, debug_level: DebugLevel) -> (Vec<String>, Dura
         debug_level,
         &format!("Scanning directory: {}", dir_path),
     );
-    
+
     let scan_start = Instant::now();
     let files = find_typescript_files(dir_path);
     let scan_duration = scan_start.elapsed();
-    
+
     log(
         DebugLevel::Info,
         debug_level,
@@ -40,6 +40,6 @@ pub fn find_files(dir_path: &str, debug_level: DebugLevel) -> (Vec<String>, Dura
         debug_level,
         &format!("Processing with {} threads", rayon::current_num_threads()),
     );
-    
+
     (files, scan_duration)
-} 
+}

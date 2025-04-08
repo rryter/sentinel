@@ -1,6 +1,7 @@
-use crate::utilities::{DebugLevel, log};
-use crate::FileAnalysisResult;
 use crate::rules_registry::RulesRegistry;
+use crate::utilities::{log, DebugLevel};
+use crate::FileAnalysisResult;
+use crate::RuleDiagnostic;
 
 use oxc_allocator::Allocator;
 use oxc_diagnostics::NamedSource;
@@ -8,12 +9,12 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use rayon::prelude::*;
 
 /// Analyze a file and return detailed results
 pub fn analyze_file(
@@ -74,13 +75,24 @@ pub fn analyze_file(
                 parse_result.errors.len()
             ),
         );
+
+        // Convert parse errors to RuleDiagnostics with "parser" as the rule_id
+        let parser_diagnostics = parse_result
+            .errors
+            .into_iter()
+            .map(|err| RuleDiagnostic {
+                rule_id: "parser".to_string(),
+                diagnostic: err,
+            })
+            .collect();
+
         return FileAnalysisResult {
             file_path: file_path.to_string(),
             parse_duration: Duration::from_secs(0),
             semantic_duration: Duration::from_secs(0),
             rule_durations: HashMap::new(),
             total_duration: Duration::from_secs(0),
-            diagnostics: parse_result.errors,
+            diagnostics: parser_diagnostics,
         };
     }
 
@@ -102,10 +114,13 @@ pub fn analyze_file(
 
     if !diagnostics.is_empty() && debug_level >= DebugLevel::Info {
         println!("Found {} issues in {}", diagnostics.len(), file_path);
-        for diagnostic in &diagnostics {
+        for rule_diagnostic in &diagnostics {
             // Iterate over reference
             let named_source = NamedSource::new(file_path, source.clone());
-            let error = diagnostic.clone().with_source_code(named_source);
+            let error = rule_diagnostic
+                .diagnostic
+                .clone()
+                .with_source_code(named_source);
             println!("{:?}", error);
         }
     }
@@ -130,7 +145,7 @@ pub fn process_files(
     debug_level: DebugLevel,
 ) -> (Vec<FileAnalysisResult>, Duration) {
     let analysis_start = Instant::now();
-    
+
     let analysis_results: Vec<FileAnalysisResult> = files
         .par_iter()
         .map(|file_path| {
@@ -138,8 +153,8 @@ pub fn process_files(
             analyze_file(file_path, rules_ref, debug_level)
         })
         .collect();
-        
+
     let analysis_duration = analysis_start.elapsed();
-    
+
     (analysis_results, analysis_duration)
-} 
+}

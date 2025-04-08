@@ -61,21 +61,36 @@ pub fn get_debug_level(config: &Config, args: &[String]) -> DebugLevel {
 
 /// Helper function to get enabled rules from command line
 pub fn get_enabled_rules(args: &[String]) -> Option<Vec<String>> {
+    let mut rules = Vec::new();
+
+    // Process --rules or -r flag with comma-separated values
     for i in 0..args.len().saturating_sub(1) {
         if args[i] == "--rules" || args[i] == "-r" {
             // Split the comma-separated list into individual rule names
-            let rules = args[i + 1]
+            let parsed_rules = args[i + 1]
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
                 .collect::<Vec<String>>();
-            
-            if !rules.is_empty() {
-                return Some(rules);
+
+            rules.extend(parsed_rules);
+        }
+    }
+
+    // Process --enable-rule flags (each takes one rule name)
+    for i in 0..args.len().saturating_sub(1) {
+        if args[i] == "--enable-rule" {
+            let rule = args[i + 1].trim().to_string();
+            if !rule.is_empty() {
+                rules.push(rule);
             }
         }
     }
-    
+
+    if !rules.is_empty() {
+        return Some(rules);
+    }
+
     None
 }
 
@@ -90,4 +105,4 @@ pub fn get_target_path(config: &Config, args: &[String]) -> String {
             .as_ref()
             .map_or_else(|| ".".to_string(), |p| p.clone())
     }
-} 
+}

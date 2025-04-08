@@ -9,12 +9,13 @@ use std::time::Instant;
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
 pub use crate::rules::{NoDebuggerRule, NoEmptyPatternRule};
+use crate::RuleDiagnostic;
 
 /// The result of running a rule on a file
 pub struct RuleResult {
     #[allow(dead_code)]
     pub file_path: String,
-    pub diagnostics: Vec<OxcDiagnostic>,
+    pub diagnostics: Vec<RuleDiagnostic>,
 }
 
 /// A registry for all available rules
@@ -78,7 +79,7 @@ impl RulesRegistry {
         &self,
         semantic_result: &SemanticBuilderReturn,
         file_path: &str,
-    ) -> (Vec<OxcDiagnostic>, HashMap<String, Duration>) {
+    ) -> (Vec<RuleDiagnostic>, HashMap<String, Duration>) {
         let mut diagnostics = Vec::new();
         let mut rule_durations = HashMap::new();
 
@@ -91,8 +92,15 @@ impl RulesRegistry {
                     let rule_start = Instant::now();
 
                     // Run visitor-based analysis
-                    let mut visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
-                    diagnostics.append(&mut visitor_diagnostics);
+                    let visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
+
+                    // Wrap each diagnostic with rule ID
+                    for diagnostic in visitor_diagnostics {
+                        diagnostics.push(RuleDiagnostic {
+                            rule_id: rule_name.clone(),
+                            diagnostic,
+                        });
+                    }
 
                     // Record the time taken locally
                     let duration = rule_start.elapsed();
@@ -102,7 +110,7 @@ impl RulesRegistry {
 
             // Check if any enabled rule actually uses node-based processing
             let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
-                self.rules.get(rule_name.as_str()).map_or(false, |rule| {
+                self.rules.get(rule_name.as_str()).map_or(false, |_rule| {
                     // Heuristic: Check if the rule implements run_on_node.
                     // Since run_on_node now has a default `None` implementation,
                     // we need a way to know if a specific rule *overrides* it.
@@ -141,7 +149,10 @@ impl RulesRegistry {
                             if let Some(diagnostic) = diagnostic_option {
                                 // Record time only when rule yielded a result for this node
                                 rule_durations.insert(rule_name.to_string(), duration);
-                                diagnostics.push(diagnostic);
+                                diagnostics.push(RuleDiagnostic {
+                                    rule_id: rule_name.clone(),
+                                    diagnostic,
+                                });
                             }
                         }
                     }
@@ -166,27 +177,23 @@ impl RulesRegistry {
             for rule_name in &self.enabled_rules {
                 if let Some(rule) = self.rules.get(rule_name.as_str()) {
                     // Run visitor-based analysis
-                    let mut visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
-                    diagnostics.append(&mut visitor_diagnostics);
+                    let visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
+
+                    // Wrap each diagnostic with rule ID
+                    for diagnostic in visitor_diagnostics {
+                        diagnostics.push(RuleDiagnostic {
+                            rule_id: rule_name.clone(),
+                            diagnostic,
+                        });
+                    }
                 }
             }
 
             // Check if any enabled rule actually uses node-based processing
             let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
-                self.rules.get(rule_name.as_str()).map_or(false, |rule| {
-                    // Heuristic: Check if the rule implements run_on_node.
-                    // Since run_on_node now has a default `None` implementation,
-                    // we need a way to know if a specific rule *overrides* it.
-                    // Comparing function pointers for default methods is complex.
-                    // A practical approach is to assume if a rule *might* return
-                    // Some(...) from run_on_node, it's considered node-based.
-                    // For now, we simplify: if a rule *could* be node-based, we run the loop.
-                    // This avoids needing complex reflection or trait checks.
-                    // TODO: A better long-term solution might involve adding metadata
-                    // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
-                    true // Keep simplified check for now - run loop if any rule enabled.
-                         // We accept the overhead if only visitor rules are present,
-                         // as the inner loop won't record metrics anyway.
+                self.rules.get(rule_name.as_str()).map_or(false, |_rule| {
+                    // Heuristic check - see comments in run_rules_with_metrics
+                    true
                 })
             });
 
@@ -201,7 +208,10 @@ impl RulesRegistry {
                         if let Some(rule) = self.rules.get(rule_name.as_str()) {
                             if let Some(diagnostic) = rule.run_on_node(&node_kind, span, file_path)
                             {
-                                diagnostics.push(diagnostic);
+                                diagnostics.push(RuleDiagnostic {
+                                    rule_id: rule_name.clone(),
+                                    diagnostic,
+                                });
                             }
                         }
                     }
@@ -286,15 +296,18 @@ pub fn configure_registry(registry: &mut RulesRegistry, enabled_rules: &[String]
     }
 }
 
-/// Add the rule registry setup functions from main.rs at the end of the file
-
-use crate::utilities::{DebugLevel, log};
 use crate::utilities::config::Config;
+/// Add the rule registry setup functions from main.rs at the end of the file
+use crate::utilities::{log, DebugLevel};
 
 /// Set up and configure the rules registry based on configuration and command line arguments
-pub fn setup_rules_registry(config: &Config, args: &[String], debug_level: DebugLevel) -> RulesRegistry {
+pub fn setup_rules_registry(
+    config: &Config,
+    args: &[String],
+    debug_level: DebugLevel,
+) -> RulesRegistry {
     let mut registry = create_default_registry();
-    
+
     // Apply configuration in order of priority
     if let Some(rules) = super::utilities::config::get_enabled_rules(args) {
         // Command line arguments have highest priority
@@ -302,7 +315,10 @@ pub fn setup_rules_registry(config: &Config, args: &[String], debug_level: Debug
         log(
             DebugLevel::Info,
             debug_level,
-            &format!("Using command line rules: {:?}", registry.get_enabled_rules()),
+            &format!(
+                "Using command line rules: {:?}",
+                registry.get_enabled_rules()
+            ),
         );
     } else if let Some(rules_config_path) = &config.rules_config {
         // Config file comes next
@@ -315,18 +331,22 @@ pub fn setup_rules_registry(config: &Config, args: &[String], debug_level: Debug
             &format!("Using default rules: {:?}", registry.get_enabled_rules()),
         );
     }
-    
+
     registry
 }
 
 /// Apply rules from configuration file
-pub fn apply_rules_from_config(registry: &mut RulesRegistry, config_path: &str, debug_level: DebugLevel) {
+pub fn apply_rules_from_config(
+    registry: &mut RulesRegistry,
+    config_path: &str,
+    debug_level: DebugLevel,
+) {
     log(
         DebugLevel::Trace,
         debug_level,
         &format!("Loading rules configuration from {}", config_path),
     );
-    
+
     match load_rule_config(config_path) {
         Ok(enabled_rules) => {
             configure_registry(registry, &enabled_rules);

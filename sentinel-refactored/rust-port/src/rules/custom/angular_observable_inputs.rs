@@ -72,19 +72,21 @@ impl<'a> Visit<'a> for ObservableInputsVisitor<'a> {
             Expression::Identifier(ident) => {
                 let name = ident.name.as_str();
                 if self.restricted_decorators.contains(name) {
-                    self.diagnostics.push(self.create_decorator_diagnostic(name, decorator.span()));
+                    self.diagnostics
+                        .push(self.create_decorator_diagnostic(name, decorator.span()));
                 }
-            },
+            }
             // Decorator with arguments: @Input() or @Input('propName')
             Expression::CallExpression(call_expr) => {
                 // Check if the callee is an identifier (most common case)
                 if let Expression::Identifier(callee_ident) = &call_expr.callee {
                     let name = callee_ident.name.as_str();
                     if self.restricted_decorators.contains(name) {
-                        self.diagnostics.push(self.create_decorator_diagnostic(name, decorator.span()));
+                        self.diagnostics
+                            .push(self.create_decorator_diagnostic(name, decorator.span()));
                     }
                 }
-            },
+            }
             _ => {}
         }
     }

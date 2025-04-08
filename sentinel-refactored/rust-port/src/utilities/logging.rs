@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 /// Debug level enum for controlling output verbosity
@@ -46,4 +46,4 @@ pub fn log(level: DebugLevel, current_level: DebugLevel, message: &str) {
             DebugLevel::None => {}
         }
     }
-} 
+}

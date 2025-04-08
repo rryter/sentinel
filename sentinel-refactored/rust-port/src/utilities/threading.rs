@@ -1,5 +1,5 @@
-use crate::utilities::{DebugLevel, log};
 use crate::utilities::config::Config;
+use crate::utilities::{log, DebugLevel};
 
 /// Configure the thread pool for parallel processing
 pub fn configure_thread_pool(config: &Config, debug_level: DebugLevel) {
@@ -15,4 +15,4 @@ pub fn configure_thread_pool(config: &Config, debug_level: DebugLevel) {
                 )
             });
     }
-} 
+}

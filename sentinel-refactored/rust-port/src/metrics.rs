@@ -1,3 +1,6 @@
+use crate::exporter::export_findings_json;
+use crate::utilities::config::Config;
+use crate::utilities::{log, DebugLevel};
 use crate::FileAnalysisResult;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -6,9 +9,6 @@ use std::io::{Read, Write};
 use std::ops::AddAssign;
 use std::path::Path;
 use std::time::{Duration, Instant};
-use crate::utilities::{DebugLevel, log};
-use crate::utilities::config::Config;
-use crate::exporter::export_findings_json;
 
 /// Performance metrics for tracking execution time of different operations
 /// Now aggregates results after parallel processing.
@@ -536,14 +536,14 @@ pub fn aggregate_metrics(
             semantic_duration: result.semantic_duration,
             rule_durations: result.rule_durations.clone(),
             total_duration: result.total_duration,
-            diagnostics: Vec::new(),
+            diagnostics: Vec::new(), // Empty vec as diagnostics aren't needed for metrics
         };
         metrics.aggregate_file_result(result_to_aggregate);
     }
 
     metrics.stop();
     metrics.print_summary(None);
-    
+
     metrics
 }
 
@@ -565,7 +565,7 @@ pub fn export_metrics(config: &Config, metrics: &Metrics, debug_level: DebugLeve
 /// Export analysis results and metrics
 pub fn export_results(
     config: &Config,
-    metrics: &Metrics, 
+    metrics: &Metrics,
     analysis_results: &[FileAnalysisResult],
     debug_level: DebugLevel,
 ) {
