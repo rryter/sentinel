@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use std::str::FromStr;
 
 /// Debug level enum for controlling output verbosity
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -17,7 +18,7 @@ impl Default for DebugLevel {
     }
 }
 
-impl std::str::FromStr for DebugLevel {
+impl FromStr for DebugLevel {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
