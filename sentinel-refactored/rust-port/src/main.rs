@@ -1,5 +1,5 @@
 use oxc_allocator::Allocator;
-use oxc_diagnostics::OxcDiagnostic;
+use oxc_diagnostics::{NamedSource, OxcDiagnostic};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
@@ -7,6 +7,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::env;
+use std::error::Error;
 use std::fs;
 use std::io::Read;
 use std::path::Path;
@@ -21,6 +22,7 @@ use typescript_analyzer::rules_registry::{
     configure_registry, create_default_registry, load_rule_config, RulesRegistry,
 };
 use typescript_analyzer::FileAnalysisResult;
+use typescript_analyzer::exporter::export_findings_json;
 
 /// Debug level enum for controlling output verbosity
 #[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -133,6 +135,26 @@ fn get_debug_level(config: &Config, args: &[String]) -> DebugLevel {
     config.debug_level.unwrap_or_default()
 }
 
+/// Helper function to get enabled rules from command line
+fn get_enabled_rules(args: &[String]) -> Option<Vec<String>> {
+    for i in 0..args.len().saturating_sub(1) {
+        if args[i] == "--rules" || args[i] == "-r" {
+            // Split the comma-separated list into individual rule names
+            let rules = args[i + 1]
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<String>>();
+            
+            if !rules.is_empty() {
+                return Some(rules);
+            }
+        }
+    }
+    
+    None
+}
+
 /// Log function that respects debug level
 fn log(level: DebugLevel, current_level: DebugLevel, message: &str) {
     if level as usize <= current_level as usize {
@@ -145,6 +167,20 @@ fn log(level: DebugLevel, current_level: DebugLevel, message: &str) {
             DebugLevel::None => {}
         }
     }
+}
+
+/// Simple representation of a diagnostic finding for JSON serialization
+#[derive(Serialize)]
+struct FindingEntry {
+    rule: String,
+    message: String,
+    file: String,
+    start_line: usize,
+    start_column: usize,
+    end_line: usize,
+    end_column: usize,
+    severity: String,
+    help: Option<String>,
 }
 
 fn main() {
@@ -174,8 +210,21 @@ fn main() {
     // Initialize the rules registry
     let mut rules_registry = create_default_registry();
 
-    // If a custom rules config is specified, load it
-    if let Some(rules_config_path) = &config.rules_config {
+    // Check for command line rules override
+    let cmd_line_rules = get_enabled_rules(&args);
+
+    // If a custom rules config is specified (and no command line override), load it
+    if cmd_line_rules.is_some() {
+        // Command line rules take precedence
+        if let Some(rules) = cmd_line_rules {
+            configure_registry(&mut rules_registry, &rules);
+            log(
+                DebugLevel::Info,
+                debug_level,
+                &format!("Using command line rules: {:?}", rules_registry.get_enabled_rules()),
+            );
+        }
+    } else if let Some(rules_config_path) = &config.rules_config {
         log(
             DebugLevel::Trace,
             debug_level,
@@ -285,8 +334,17 @@ fn main() {
     final_metrics.record_scan_time(scan_start.elapsed()); // Record scan time here too
 
     // Aggregate data from each file result
-    for result in analysis_results {
-        final_metrics.aggregate_file_result(result);
+    for result in &analysis_results {  // Use a reference to avoid consuming the Vec
+        // Clone the FileAnalysisResult to satisfy aggregate_file_result's ownership requirements
+        let result_to_aggregate = FileAnalysisResult {
+            file_path: result.file_path.clone(),
+            parse_duration: result.parse_duration,
+            semantic_duration: result.semantic_duration,
+            rule_durations: result.rule_durations.clone(),
+            total_duration: result.total_duration,
+            diagnostics: Vec::new(), // Metrics doesn't need the diagnostics
+        };
+        final_metrics.aggregate_file_result(result_to_aggregate);
     }
 
     // Stop the final metrics timer AFTER aggregation
@@ -301,6 +359,9 @@ fn main() {
 
     // Export metrics if configured (pass the final aggregated metrics)
     export_metrics(&config, &final_metrics, debug_level);
+    
+    // Export findings to findings.json
+    export_findings_json(&analysis_results, debug_level);
 }
 
 /// Export metrics to files if configured
@@ -400,7 +461,7 @@ fn analyze_file(
             semantic_duration: Duration::from_secs(0),
             rule_durations: HashMap::new(),
             total_duration: Duration::from_secs(0),
-            diagnostics: parse_result.errors.into_iter().map(|e| e.into()).collect(),
+            diagnostics: parse_result.errors,
         };
     }
 
@@ -434,7 +495,8 @@ fn analyze_file(
         println!("Found {} issues in {}", diagnostics.len(), file_path);
         for diagnostic in &diagnostics {
             // Iterate over reference
-            let error = diagnostic.clone().with_source_code(source.clone());
+            let named_source = NamedSource::new(file_path, source.clone());
+            let error = diagnostic.clone().with_source_code(named_source);
             println!("{:?}", error);
         }
     }
@@ -457,3 +519,5 @@ fn analyze_file(
         diagnostics: diagnostics, // Store the returned diagnostics
     }
 }
+
+

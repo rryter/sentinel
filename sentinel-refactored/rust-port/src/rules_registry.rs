@@ -229,7 +229,7 @@ pub fn create_default_registry() -> RulesRegistry {
     register_custom_rules(&mut registry);
 
     // Enable the default rules
-    registry.enable_rules(&["no-debugger", "no-empty-pattern"]);
+    registry.enable_rules(&["no-debugger", "angular_observable_inputs"]);
 
     registry
 }
