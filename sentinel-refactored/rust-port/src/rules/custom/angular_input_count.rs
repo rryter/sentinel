@@ -1,4 +1,6 @@
-use oxc_ast::ast::{Decorator, CallExpression, PropertyDefinition,ImportDeclaration, ImportDeclarationSpecifier};
+use oxc_ast::ast::{
+    Decorator, Expression, ImportDeclaration, ImportDeclarationSpecifier, PropertyDefinition,
+};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
@@ -74,21 +76,38 @@ impl<'a> InputCountVisitor<'a> {
 
 impl<'a> Visit<'a> for InputCountVisitor<'a> {
     fn visit_property_definition(&mut self, property_definition: &PropertyDefinition<'a>) {
-        match &property_definition. {
-            CallExpression::Identifier(ident) => {
-                let name = ident.name.as_str();
-                if name == "input" {
-                    // Count the number of input properties in the class
-                    self.input_count = self.input_count + 1;
-                    if self.input_count > 5 {
-                        self.diagnostics.push(
-                            self.create_decorator_diagnostic(name, property_definition.span()),
-                        );
+        println!("property_definition: {:?}", property_definition);
+        if let Some(value) = &property_definition.value {
+            // Match on the Expression
+            match value {
+                // Call expression: input<type>() or input()
+                Expression::CallExpression(call_expr) => {
+                    println!("value: {:?}", call_expr);
+
+                    if let Expression::Identifier(callee_ident) = &call_expr.callee {
+                        let name = callee_ident.name.as_str();
+                        if name == "input" {
+                            println!(">>>name: {:?}", name);
+                            
+                            // Count the number of input properties in the class
+                            self.input_count += 1;
+                            println!(">>>input count: {:?}", self.input_count);
+                            
+                            // Only add diagnostic if we exceed the limit
+                            if self.input_count > 5 && self.diagnostics.is_empty() {
+                                self.diagnostics.push(
+                                    OxcDiagnostic::warn("Too many Angular input properties detected")
+                                        .with_help("Consider breaking this component into smaller components with fewer inputs")
+                                        .with_label(property_definition.span().label(
+                                            format!("Component has {} inputs, which exceeds the recommended maximum of 5", self.input_count)
+                                        ))
+                                );
+                            }
+                        }
                     }
                 }
+                _ => {}
             }
-
-            _ => {}
         }
     }
 }
@@ -106,13 +125,14 @@ impl Rule for AngularInputCountRule {
         let mut visitor = InputCountVisitor::new(file_path);
 
         match node {
-            AstKind::PropertyDefinition(property_definition) => {
-                visitor.visit_property_definition(property_definition);
+            AstKind::Class(class) => {
+                // Visit the entire class, which contains all properties
+                visitor.visit_class(class);
             }
             _ => {}
         }
 
-        // Return the first diagnostic if any exist, otherwise None
         visitor.diagnostics.first().cloned()
+
     }
 }

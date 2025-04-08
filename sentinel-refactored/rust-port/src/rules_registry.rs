@@ -1,8 +1,6 @@
-use oxc_diagnostics::OxcDiagnostic;
 use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::GetSpan;
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::time::Instant;
 
@@ -239,7 +237,12 @@ pub fn create_default_registry() -> RulesRegistry {
     register_custom_rules(&mut registry);
 
     // Enable the default rules
-    registry.enable_rules(&["no-debugger", "angular_observable_inputs"]);
+    registry.enable_rules(&[
+        "no-debugger",
+        "no-console-warn-visitor",
+        "angular-observable-inputs",
+        "angular-input-count",
+    ]);
 
     registry
 }
@@ -247,14 +250,18 @@ pub fn create_default_registry() -> RulesRegistry {
 /// Register all custom rules with the registry
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
-    use crate::rules::custom::{AngularObservableInputsRule, NoConsoleWarnVisitorRule};
+    use crate::rules::custom::{
+        AngularInputCountRule, AngularObservableInputsRule, NoConsoleWarnVisitorRule,
+    };
 
     // Register the NoConsoleWarnVisitorRule
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
 
     // Register the AngularObservableInputsRule
-    registry.register_rule(Box::new(AngularObservableInputsRule));
+    // registry.register_rule(Box::new(AngularObservableInputsRule));
 
+    // Register the AngularInputCountRule
+    registry.register_rule(Box::new(AngularInputCountRule));
     // Add more custom rules here as they are created
 }
 
