@@ -11,6 +11,7 @@ use oxc_ast::AstKind;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::Span;
+use serde_json::Value;
 
 /// Trait that all rules must implement
 pub trait Rule: Send + Sync {
@@ -20,6 +21,10 @@ pub trait Rule: Send + Sync {
     /// Get a description of what the rule checks for
     #[allow(dead_code)]
     fn description(&self) -> &'static str;
+
+    /// Set configuration for this rule
+    /// Default implementation does nothing - rules must override to use configuration
+    fn set_config(&mut self, _config: Value) {}
 
     /// Run the rule on a specific AST node (optional)
     /// Rules primarily using the visitor pattern might not implement this.

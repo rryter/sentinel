@@ -1,7 +1,7 @@
 {
-  "rules": [
-    "no-console-warn-visitor",
-    "angular-observable-inputs",
-    "angular-input-count"
-  ]
+  "rules": {
+    "no-console-warn-visitor": "error",
+    "angular-observable-inputs": "warn",
+    "angular-input-count": ["error", { "maxInputs": 1 }]
+  }
 } 

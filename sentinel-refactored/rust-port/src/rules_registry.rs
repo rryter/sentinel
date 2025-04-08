@@ -3,6 +3,7 @@ use oxc_span::GetSpan;
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::Instant;
+use serde_json::Value;
 
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
@@ -20,6 +21,7 @@ pub struct RuleResult {
 pub struct RulesRegistry {
     rules: HashMap<&'static str, Box<dyn Rule>>,
     enabled_rules: HashSet<String>,
+    rule_severity: HashMap<String, String>,
 }
 
 impl RulesRegistry {
@@ -28,6 +30,7 @@ impl RulesRegistry {
         Self {
             rules: HashMap::new(),
             enabled_rules: HashSet::new(),
+            rule_severity: HashMap::new(),
         }
     }
 
@@ -64,6 +67,16 @@ impl RulesRegistry {
     #[allow(dead_code)]
     pub fn get_registered_rules(&self) -> Vec<&'static str> {
         self.rules.keys().cloned().collect()
+    }
+
+    /// Set the severity for a rule
+    pub fn set_rule_severity(&mut self, rule_name: &str, severity: &str) {
+        self.rule_severity.insert(rule_name.to_string(), severity.to_string());
+    }
+
+    /// Get the severity for a rule
+    pub fn get_rule_severity(&self, rule_name: &str) -> Option<&String> {
+        self.rule_severity.get(rule_name)
     }
 
     /// Get all enabled rules
@@ -236,13 +249,19 @@ pub fn create_default_registry() -> RulesRegistry {
     #[cfg(feature = "custom_rules")]
     register_custom_rules(&mut registry);
 
-    // Enable the default rules
+    // Enable the default rules with error severity
     registry.enable_rules(&[
         "no-debugger",
-        "no-console-warn-visitor",
+        "no-console-warn-visitor", 
         "angular-observable-inputs",
         "angular-input-count",
     ]);
+    
+    // Set default severities for rules
+    registry.set_rule_severity("no-debugger", "error");
+    registry.set_rule_severity("no-console-warn-visitor", "error");
+    registry.set_rule_severity("angular-observable-inputs", "warn");
+    registry.set_rule_severity("angular-input-count", "error");
 
     registry
 }
@@ -258,15 +277,16 @@ fn register_custom_rules(registry: &mut RulesRegistry) {
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
 
     // Register the AngularObservableInputsRule
-    // registry.register_rule(Box::new(AngularObservableInputsRule));
+    registry.register_rule(Box::new(AngularObservableInputsRule));
 
-    // Register the AngularInputCountRule
-    registry.register_rule(Box::new(AngularInputCountRule));
+    // Register the AngularInputCountRule with default settings
+    registry.register_rule(Box::new(AngularInputCountRule::new()));
+    
     // Add more custom rules here as they are created
 }
 
 /// Load a rule configuration from a JSON file
-pub fn load_rule_config(path: &str) -> Result<Vec<String>, String> {
+pub fn load_rule_config(path: &str) -> Result<Vec<(String, Option<serde_json::Value>, String)>, String> {
     let content = match std::fs::read_to_string(path) {
         Ok(content) => content,
         Err(err) => return Err(format!("Failed to read config file: {}", err)),
@@ -278,28 +298,61 @@ pub fn load_rule_config(path: &str) -> Result<Vec<String>, String> {
     };
 
     if let Some(rules) = config.get("rules") {
-        if let Some(rules_array) = rules.as_array() {
-            let rule_names = rules_array
-                .iter()
-                .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                .collect();
-            return Ok(rule_names);
+        if let Some(rules_obj) = rules.as_object() {
+            let mut rule_config = Vec::new();
+
+            for (rule_name, value) in rules_obj.iter() {
+                match value {
+                    // Simple case: "rule-name": "error" or "rule-name": "warn"
+                    serde_json::Value::String(severity) => {
+                        rule_config.push((rule_name.clone(), None, severity.clone()));
+                    },
+                    // Complex case: "rule-name": ["error", { config object }]
+                    serde_json::Value::Array(arr) if !arr.is_empty() => {
+                        // First element should be severity string
+                        let severity = match arr[0].as_str() {
+                            Some(s) => s.to_string(),
+                            None => "error".to_string(), // Default to error if not specified
+                        };
+                        
+                        // Get the configuration object if it exists
+                        let config = if arr.len() > 1 { Some(arr[1].clone()) } else { None };
+                        rule_config.push((rule_name.clone(), config, severity));
+                    },
+                    // Invalid format
+                    _ => {
+                        return Err(format!("Invalid rule configuration for '{}'", rule_name));
+                    }
+                }
+            }
+            return Ok(rule_config);
         }
     }
 
-    Err("Config file does not contain a 'rules' array".to_string())
+    Err("Config file does not contain a valid 'rules' object".to_string())
 }
 
-/// Configure a registry from a list of rule names to enable
-pub fn configure_registry(registry: &mut RulesRegistry, enabled_rules: &[String]) {
+/// Configure a registry from a list of rule names, configs, and severities
+pub fn configure_registry(
+    registry: &mut RulesRegistry,
+    enabled_rules: &[(String, Option<serde_json::Value>, String)],
+) {
     // Clear all previously enabled rules
     for rule in registry.get_enabled_rules() {
         registry.disable_rule(&rule);
     }
 
     // Enable the specified rules
-    for rule in enabled_rules {
-        registry.enable_rule(rule);
+    for (rule_name, rule_config, severity) in enabled_rules {
+        registry.enable_rule(rule_name);
+        registry.set_rule_severity(rule_name, severity);
+        
+        // If configuration is provided, set it on the rule
+        if let Some(config) = rule_config {
+            if let Some(rule) = registry.rules.get_mut(rule_name.as_str()) {
+                rule.set_config(config.clone());
+            }
+        }
     }
 }
 

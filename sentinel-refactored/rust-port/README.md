@@ -88,38 +88,52 @@ OPTIONS:
 
 ## Configuration
 
-You can configure the analyzer using a `sentinel.yaml` file in your project root:
+You can configure the analyzer using a `rules.json` file:
 
-```yaml
-rules:
-  # Explicitly enable specific rules by their ID
-  enable:
-    - import-count
-    - typescript-assertion-detection
+```json
+{
+  "rules": {
+    "no-console-warn-visitor": "error",
+    "angular-observable-inputs": "warn",
+    "angular-input-count": ["error", { "maxInputs": 5 }]
+  }
+}
+```
 
-  # Explicitly disable specific rules by their ID
-  disable:
-    - import-rxjs
+The rules object maps rule names to their configuration. There are three ways to specify a rule's configuration:
 
-  # Enable all rules that have ANY of the specified tags
-  enable_tags:
-    - angular
-    - security
+1. `"rule-name": "error"` or `"rule-name": "warn"` - Simple rule activation with specified severity
+2. `"rule-name": ["error", { options }]` - Rule with severity and configuration options
+3. `"rule-name": ["warn", { options }]` - Rule with severity and configuration options
 
-  # Disable all rules that have ANY of the specified tags
-  disable_tags:
-    - deprecated
+### Command Line Configuration
 
-  # Set the minimum severity level for rules to be enabled
-  min_severity: Warning
+For simple use cases, you can enable rules from the command line:
 
-  # Export rule findings to a JSON file
-  export_json: "./results/findings.json"
+```bash
+# Enable simple rules
+./typescript-analyzer --rules no-console-warn-visitor,angular-observable-inputs
 
-# Enable verbose debug logging
-debug:
-  # Enable logging for the rule registry and evaluation process
-  rules: true
+# Enable a single rule
+./typescript-analyzer --enable-rule angular-input-count
+```
+
+For more complex configuration including rule options and severity levels, use a rules.json file:
+
+```bash
+./typescript-analyzer --rules-config rules.json
+```
+
+### Rule Configuration Options
+
+Different rules accept different configuration options:
+
+#### angular-input-count
+
+Controls the maximum number of Angular inputs allowed in a component.
+
+```json
+{ "maxInputs": 5 }
 ```
 
 ## Understanding Rule Results
