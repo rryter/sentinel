@@ -2,7 +2,7 @@ use std::{env, sync::Arc};
 
 use typescript_analyzer::{
     analyzer::process_files,
-    metrics_exporter::{aggregate_metrics, export_results},
+    metrics::{aggregate_metrics, export_results},
     rules_registry::setup_rules_registry,
     utilities::{
         config::{get_debug_level, get_target_path, Config},

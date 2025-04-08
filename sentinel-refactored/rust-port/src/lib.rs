@@ -5,7 +5,6 @@ pub mod rules_registry;
 pub mod exporter;
 pub mod utilities;
 pub mod analyzer;
-pub mod metrics_exporter;
 
 use oxc_diagnostics::OxcDiagnostic;
 use serde::{Serialize, Deserialize};
