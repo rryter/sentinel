@@ -1,101 +1,13 @@
 [
   {
     "rule": "",
-    "message": "Angular @Input decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
+    "message": "`debugger` statement is not allowed",
+    "file": "./src/test.ts",
     "start_line": 1,
     "start_column": 0,
     "end_line": 1,
     "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Input decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Input decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Input decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Input decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Input decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Output decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Output decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
-  },
-  {
-    "rule": "",
-    "message": "Angular @Output decorator detected",
-    "file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/profile/payment-details/payout-mutation/page/payout-details-mutation-page.component.ts",
-    "start_line": 1,
-    "start_column": 0,
-    "end_line": 1,
-    "end_column": 0,
-    "severity": "warning",
-    "help": "Ensure Input properties are not Observables, and Output properties are Observable-like."
+    "severity": "error",
+    "help": null
   }
 ]

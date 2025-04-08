@@ -21,63 +21,9 @@ use typescript_analyzer::metrics::Metrics;
 use typescript_analyzer::rules_registry::{
     configure_registry, create_default_registry, load_rule_config, RulesRegistry,
 };
-use typescript_analyzer::FileAnalysisResult;
+use typescript_analyzer::{FileAnalysisResult, DebugLevel};
 use typescript_analyzer::exporter::export_findings_json;
-
-/// Debug level enum for controlling output verbosity
-#[derive(Serialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DebugLevel {
-    None,
-    Error,
-    Warn,
-    Info,
-    Debug,
-    Trace,
-}
-
-// Custom deserialize implementation to handle case-insensitive values
-impl<'de> Deserialize<'de> for DebugLevel {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.to_lowercase().as_str() {
-            "none" => Ok(DebugLevel::None),
-            "error" => Ok(DebugLevel::Error),
-            "warn" => Ok(DebugLevel::Warn),
-            "info" => Ok(DebugLevel::Info),
-            "debug" => Ok(DebugLevel::Debug),
-            "trace" => Ok(DebugLevel::Trace),
-            _ => Err(serde::de::Error::custom(format!(
-                "Invalid debug level: {}",
-                s
-            ))),
-        }
-    }
-}
-
-impl Default for DebugLevel {
-    fn default() -> Self {
-        DebugLevel::Info
-    }
-}
-
-impl std::str::FromStr for DebugLevel {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "none" => Ok(DebugLevel::None),
-            "error" => Ok(DebugLevel::Error),
-            "warn" => Ok(DebugLevel::Warn),
-            "info" => Ok(DebugLevel::Info),
-            "debug" => Ok(DebugLevel::Debug),
-            "trace" => Ok(DebugLevel::Trace),
-            _ => Err(format!("Invalid debug level: {}", s)),
-        }
-    }
-}
+use typescript_analyzer::utilities::log;
 
 /// Configuration structure for the TypeScript analyzer
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -153,20 +99,6 @@ fn get_enabled_rules(args: &[String]) -> Option<Vec<String>> {
     }
     
     None
-}
-
-/// Log function that respects debug level
-fn log(level: DebugLevel, current_level: DebugLevel, message: &str) {
-    if level as usize <= current_level as usize {
-        match level {
-            DebugLevel::Error => eprintln!("ERROR: {}", message),
-            DebugLevel::Warn => eprintln!("WARN: {}", message),
-            DebugLevel::Info => println!("INFO: {}", message),
-            DebugLevel::Debug => println!("DEBUG: {}", message),
-            DebugLevel::Trace => println!("TRACE: {}", message),
-            DebugLevel::None => {}
-        }
-    }
 }
 
 /// Simple representation of a diagnostic finding for JSON serialization

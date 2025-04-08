@@ -1,12 +1,15 @@
 // Minimal lib.rs - just empty or with basic re-exports
 // This file is not actually needed for the simplified version
 
-// Expose the metrics module
+// Expose the modules
 pub mod metrics;
 pub mod rules;
 pub mod rules_registry;
+pub mod exporter;
+pub mod utilities;
 
 use oxc_diagnostics::OxcDiagnostic;
+use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -25,3 +28,4 @@ pub struct FileAnalysisResult {
 pub use metrics::Metrics;
 pub use rules::Rule;
 pub use rules_registry::RulesRegistry;
+pub use utilities::DebugLevel;

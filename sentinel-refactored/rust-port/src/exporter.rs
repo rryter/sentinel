@@ -1,3 +1,23 @@
+use crate::FileAnalysisResult;
+use crate::utilities::{DebugLevel, log};
+use oxc_diagnostics::Severity;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+/// Structure for JSON export of findings
+#[derive(Serialize, Deserialize)]
+pub struct FindingEntry {
+    pub rule: String,
+    pub message: String,
+    pub file: String,
+    pub start_line: u32,
+    pub start_column: u32,
+    pub end_line: u32,
+    pub end_column: u32,
+    pub severity: String,
+    pub help: Option<String>,
+}
+
 /// Export diagnostics to findings.json
 pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLevel) {
     let mut findings = Vec::new();
@@ -10,9 +30,13 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
             // Get the message text and try to determine rule name
             let message = diagnostic.message.to_string();
             
+            // Count occurrences by rule
+            let rule_name = diagnostic.code.to_string();
+            *rule_counts.entry(rule_name.clone()).or_insert(0) += 1;
+            
             // Create a basic finding entry
             let finding = FindingEntry {
-                rule: diagnostic.code.to_string(),
+                rule: rule_name,
                 message,
                 file: result.file_path.clone(),
                 start_line: 1,   // We don't have accurate location info
@@ -20,8 +44,8 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
                 end_line: 1,
                 end_column: 0,
                 severity: match diagnostic.severity {
-                    oxc_diagnostics::Severity::Error => "error".to_string(),
-                    oxc_diagnostics::Severity::Warning => "warning".to_string(),
+                    Severity::Error => "error".to_string(),
+                    Severity::Warning => "warning".to_string(),
                     _ => "info".to_string(),
                 },
                 help: diagnostic.help.as_ref().map(|h| h.to_string()),
