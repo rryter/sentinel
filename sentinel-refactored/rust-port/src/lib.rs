@@ -7,7 +7,6 @@ pub mod rules_registry;
 pub mod utilities;
 
 use oxc_diagnostics::OxcDiagnostic;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::time::Duration;
 

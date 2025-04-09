@@ -40,8 +40,8 @@ pub trait Rule: Send + Sync {
     /// @param file_path The path of the file being analyzed
     fn run_on_semantic(
         &self,
-        semantic_result: &SemanticBuilderReturn,
-        file_path: &str,
+        _semantic_result: &SemanticBuilderReturn,
+        _file_path: &str,
     ) -> Vec<OxcDiagnostic> {
         Vec::new()
     }

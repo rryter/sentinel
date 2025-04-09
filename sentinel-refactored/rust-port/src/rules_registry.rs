@@ -3,7 +3,6 @@ use oxc_span::GetSpan;
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::Instant;
-use serde_json::Value;
 
 // Import the Rule trait and rule implementations
 pub use crate::rules::Rule;
