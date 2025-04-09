@@ -120,8 +120,8 @@ pub fn analyze_file(
             let error = rule_diagnostic
                 .diagnostic
                 .clone()
-                .with_source_code(named_source);
-            println!("{:?}", error);
+                .with_source_code(named_source.clone());
+            println!("AAA{:?}", error);
         }
     }
 
