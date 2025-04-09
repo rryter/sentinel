@@ -91,23 +91,16 @@ impl<'a> InputCountVisitor<'a> {
 
 impl<'a> Visit<'a> for InputCountVisitor<'a> {
     fn visit_property_definition(&mut self, property_definition: &PropertyDefinition<'a>) {
-        println!("property_definition: {:?}", property_definition);
         if let Some(value) = &property_definition.value {
             // Match on the Expression
             match value {
                 // Call expression: input<type>() or input()
                 Expression::CallExpression(call_expr) => {
-                    println!("value: {:?}", call_expr);
-
                     if let Expression::Identifier(callee_ident) = &call_expr.callee {
                         let name = callee_ident.name.as_str();
                         if name == "input" {
-                            println!(">>>name: {:?}", name);
-
                             // Count the number of input properties in the class
                             self.input_count += 1;
-                            println!(">>>input count: {:?}", self.input_count);
-
                             // Only add diagnostic if we exceed the limit
                             if self.input_count > self.max_inputs && self.diagnostics.is_empty() {
                                 self.diagnostics.push(

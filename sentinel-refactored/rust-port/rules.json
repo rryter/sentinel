@@ -2,6 +2,6 @@
   "rules": {
     "no-console-warn-visitor": "error",
     "angular-observable-inputs": "warn",
-    "angular-input-count": ["error", { "maxInputs": 1 }]
+    "angular-input-count": ["error", { "maxInputs": 9 }]
   }
 } 

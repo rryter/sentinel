@@ -116,12 +116,22 @@ pub fn analyze_file(
         println!("Found {} issues in {}", diagnostics.len(), file_path);
         for rule_diagnostic in &diagnostics {
             // Iterate over reference
-            let named_source = NamedSource::new(file_path, source.clone());
+            let named_source = NamedSource::new(file_path, source.clone()).with_language("typescript");
             let error = rule_diagnostic
                 .diagnostic
                 .clone()
                 .with_source_code(named_source.clone());
             println!("AAA{:?}", error);
+
+            // Get the labels (spans) associated with the diagnostic
+            if let Some(labels) = &rule_diagnostic.diagnostic.labels{
+                for label in labels {
+                    let span = label.inner(); // Get the miette::SourceSpan
+                    let offset = span.offset();
+                    let length = span.len();
+                    let line = get_line_number(named_source.inner(), offset);
+                }
+            }
         }
     }
 
@@ -136,6 +146,11 @@ pub fn analyze_file(
         total_duration,
         diagnostics,
     }
+}
+
+
+fn get_line_number(source_text: &str, offset: usize) -> usize {
+    source_text[..offset].lines().count()
 }
 
 /// Process files in parallel using rayon

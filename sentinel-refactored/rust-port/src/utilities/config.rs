@@ -60,7 +60,9 @@ pub fn get_debug_level(config: &Config, args: &[String]) -> DebugLevel {
 }
 
 /// Helper function to get enabled rules from command line
-pub fn get_enabled_rules(args: &[String]) -> Option<Vec<(String, Option<serde_json::Value>, String)>> {
+pub fn get_enabled_rules(
+    args: &[String],
+) -> Option<Vec<(String, Option<serde_json::Value>, String)>> {
     let mut rules = Vec::new();
 
     // Process --rules or -r flag with comma-separated values
@@ -71,7 +73,7 @@ pub fn get_enabled_rules(args: &[String]) -> Option<Vec<(String, Option<serde_js
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
-                .map(|s| (s, None, "error".to_string()))  // Simple rules with default error severity
+                .map(|s| (s, None, "error".to_string())) // Simple rules with default error severity
                 .collect::<Vec<(String, Option<serde_json::Value>, String)>>();
 
             rules.extend(parsed_rules);
@@ -83,7 +85,7 @@ pub fn get_enabled_rules(args: &[String]) -> Option<Vec<(String, Option<serde_js
         if args[i] == "--enable-rule" {
             let rule = args[i + 1].trim().to_string();
             if !rule.is_empty() {
-                rules.push((rule, None, "error".to_string()));  // Simple rule with default error severity
+                rules.push((rule, None, "error".to_string())); // Simple rule with default error severity
             }
         }
     }

@@ -70,7 +70,8 @@ impl RulesRegistry {
 
     /// Set the severity for a rule
     pub fn set_rule_severity(&mut self, rule_name: &str, severity: &str) {
-        self.rule_severity.insert(rule_name.to_string(), severity.to_string());
+        self.rule_severity
+            .insert(rule_name.to_string(), severity.to_string());
     }
 
     /// Get the severity for a rule
@@ -251,11 +252,11 @@ pub fn create_default_registry() -> RulesRegistry {
     // Enable the default rules with error severity
     registry.enable_rules(&[
         "no-debugger",
-        "no-console-warn-visitor", 
+        "no-console-warn-visitor",
         "angular-observable-inputs",
         "angular-input-count",
     ]);
-    
+
     // Set default severities for rules
     registry.set_rule_severity("no-debugger", "error");
     registry.set_rule_severity("no-console-warn-visitor", "error");
@@ -280,12 +281,14 @@ fn register_custom_rules(registry: &mut RulesRegistry) {
 
     // Register the AngularInputCountRule with default settings
     registry.register_rule(Box::new(AngularInputCountRule::new()));
-    
+
     // Add more custom rules here as they are created
 }
 
 /// Load a rule configuration from a JSON file
-pub fn load_rule_config(path: &str) -> Result<Vec<(String, Option<serde_json::Value>, String)>, String> {
+pub fn load_rule_config(
+    path: &str,
+) -> Result<Vec<(String, Option<serde_json::Value>, String)>, String> {
     let content = match std::fs::read_to_string(path) {
         Ok(content) => content,
         Err(err) => return Err(format!("Failed to read config file: {}", err)),
@@ -305,7 +308,7 @@ pub fn load_rule_config(path: &str) -> Result<Vec<(String, Option<serde_json::Va
                     // Simple case: "rule-name": "error" or "rule-name": "warn"
                     serde_json::Value::String(severity) => {
                         rule_config.push((rule_name.clone(), None, severity.clone()));
-                    },
+                    }
                     // Complex case: "rule-name": ["error", { config object }]
                     serde_json::Value::Array(arr) if !arr.is_empty() => {
                         // First element should be severity string
@@ -313,11 +316,15 @@ pub fn load_rule_config(path: &str) -> Result<Vec<(String, Option<serde_json::Va
                             Some(s) => s.to_string(),
                             None => "error".to_string(), // Default to error if not specified
                         };
-                        
+
                         // Get the configuration object if it exists
-                        let config = if arr.len() > 1 { Some(arr[1].clone()) } else { None };
+                        let config = if arr.len() > 1 {
+                            Some(arr[1].clone())
+                        } else {
+                            None
+                        };
                         rule_config.push((rule_name.clone(), config, severity));
-                    },
+                    }
                     // Invalid format
                     _ => {
                         return Err(format!("Invalid rule configuration for '{}'", rule_name));
@@ -345,7 +352,7 @@ pub fn configure_registry(
     for (rule_name, rule_config, severity) in enabled_rules {
         registry.enable_rule(rule_name);
         registry.set_rule_severity(rule_name, severity);
-        
+
         // If configuration is provided, set it on the rule
         if let Some(config) = rule_config {
             if let Some(rule) = registry.rules.get_mut(rule_name.as_str()) {
