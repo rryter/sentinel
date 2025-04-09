@@ -1,4 +1,4 @@
-use oxc_ast::ast::{Decorator, Expression, ImportDeclaration, ImportDeclarationSpecifier};
+use oxc_ast::ast::{Decorator, Expression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
@@ -31,17 +31,15 @@ use crate::rules::Rule;
 pub struct AngularObservableInputsRule;
 
 /// Visitor implementation that tracks Angular decorator imports and usage
-struct ObservableInputsVisitor<'a> {
+struct ObservableInputsVisitor {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
-    /// File path for context in diagnostics
-    file_path: &'a str,
     /// Set of decorator names to check
     restricted_decorators: HashSet<&'static str>,
 }
 
-impl<'a> ObservableInputsVisitor<'a> {
-    fn new(file_path: &'a str) -> Self {
+impl ObservableInputsVisitor {
+    fn new() -> Self {
         let mut restricted_decorators = HashSet::new();
         restricted_decorators.insert("Input");
         restricted_decorators.insert("Output");
@@ -52,7 +50,6 @@ impl<'a> ObservableInputsVisitor<'a> {
 
         Self {
             diagnostics: Vec::new(),
-            file_path,
             restricted_decorators,
         }
     }
@@ -65,7 +62,7 @@ impl<'a> ObservableInputsVisitor<'a> {
     }
 }
 
-impl<'a> Visit<'a> for ObservableInputsVisitor<'a> {
+impl<'a> Visit<'a> for ObservableInputsVisitor {
     fn visit_decorator(&mut self, decorator: &Decorator<'a>) {
         match &decorator.expression {
             // Simple identifier decorator: @Input
@@ -101,8 +98,8 @@ impl Rule for AngularObservableInputsRule {
         "Checks for proper usage of Observable inputs in Angular components"
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Option<OxcDiagnostic> {
-        let mut visitor = ObservableInputsVisitor::new(file_path);
+    fn run_on_node(&self, node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
+        let mut visitor = ObservableInputsVisitor::new();
 
         match node {
             AstKind::Decorator(decorator) => {

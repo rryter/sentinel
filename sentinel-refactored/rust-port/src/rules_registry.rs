@@ -151,7 +151,7 @@ impl RulesRegistry {
                             let rule_start = Instant::now();
 
                             // Run the rule
-                            let diagnostic_option = rule.run_on_node(&node_kind, span, file_path);
+                            let diagnostic_option = rule.run_on_node(&node_kind, span);
 
                             // Record the time taken *only if* a diagnostic was produced
                             let duration = rule_start.elapsed();
@@ -217,8 +217,7 @@ impl RulesRegistry {
                     // Run each enabled rule on this node
                     for rule_name in &self.enabled_rules {
                         if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                            if let Some(diagnostic) = rule.run_on_node(&node_kind, span, file_path)
-                            {
+                            if let Some(diagnostic) = rule.run_on_node(&node_kind, span) {
                                 diagnostics.push(RuleDiagnostic {
                                     rule_id: rule_name.clone(),
                                     diagnostic,

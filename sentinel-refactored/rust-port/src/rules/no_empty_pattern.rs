@@ -16,7 +16,7 @@ impl Rule for NoEmptyPatternRule {
         "Disallow empty destructuring patterns"
     }
 
-    fn run_on_node(&self, node: &AstKind, span: Span, _file_path: &str) -> Option<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, span: Span) -> Option<OxcDiagnostic> {
         match node {
             AstKind::ArrayPattern(array) if array.elements.is_empty() => Some(
                 OxcDiagnostic::error("empty destructuring pattern is not allowed")

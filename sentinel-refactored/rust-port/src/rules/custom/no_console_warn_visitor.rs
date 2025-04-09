@@ -2,7 +2,6 @@ use oxc_ast::ast::{CallExpression, Expression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::{GetSpan, Span};
 
 use crate::rules::Rule;
@@ -31,18 +30,15 @@ use crate::rules::Rule;
 pub struct NoConsoleWarnVisitorRule;
 
 /// Visitor implementation that tracks console.warn calls
-struct ConsoleWarnVisitor<'a> {
+struct ConsoleWarnVisitor {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
-    /// File path for context in diagnostics
-    file_path: &'a str,
 }
 
-impl<'a> ConsoleWarnVisitor<'a> {
-    fn new(file_path: &'a str) -> Self {
+impl ConsoleWarnVisitor {
+    fn new() -> Self {
         Self {
             diagnostics: Vec::new(),
-            file_path,
         }
     }
 
@@ -54,7 +50,7 @@ impl<'a> ConsoleWarnVisitor<'a> {
     }
 }
 
-impl<'a> Visit<'a> for ConsoleWarnVisitor<'a> {
+impl<'a> Visit<'a> for ConsoleWarnVisitor {
     fn visit_call_expression(&mut self, call_expr: &CallExpression<'a>) {
         if let Some(member_expr) = call_expr.callee.as_member_expression() {
             // Check if it's a console.warn call
@@ -81,8 +77,8 @@ impl Rule for NoConsoleWarnVisitorRule {
         "Disallows the use of console.warn (Visitor Pattern implementation)"
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Option<OxcDiagnostic> {
-        let mut visitor = ConsoleWarnVisitor::new(file_path);
+    fn run_on_node(&self, node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
+        let mut visitor = ConsoleWarnVisitor::new();
 
         match node {
             AstKind::CallExpression(call_expr) => {

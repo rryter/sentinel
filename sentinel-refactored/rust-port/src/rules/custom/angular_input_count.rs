@@ -1,12 +1,9 @@
-use oxc_ast::ast::{
-    Decorator, Expression, ImportDeclaration, ImportDeclarationSpecifier, PropertyDefinition,
-};
+use oxc_ast::ast::{Expression, PropertyDefinition};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_span::{GetSpan, Span};
+use oxc_span::Span;
 use serde_json::Value;
-use std::collections::HashSet;
 
 use crate::rules::Rule;
 
@@ -60,36 +57,35 @@ impl AngularInputCountRule {
 }
 
 /// Visitor implementation that tracks Angular decorator imports and usage
-struct InputCountVisitor<'a> {
+struct InputCountVisitor {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
-    /// File path for context in diagnostics
-    file_path: &'a str,
     /// input count
     input_count: usize,
     /// Maximum number of inputs allowed
     max_inputs: usize,
 }
 
-impl<'a> InputCountVisitor<'a> {
-    fn new(file_path: &'a str, max_inputs: usize) -> Self {
+impl InputCountVisitor {
+    fn new(max_inputs: usize) -> Self {
         Self {
             diagnostics: Vec::new(),
-            file_path,
             input_count: 0,
             max_inputs,
         }
     }
 
-    /// Helper method to create a diagnostic for Angular decorator usage
-    fn create_decorator_diagnostic(&self, name: &str, span: Span) -> OxcDiagnostic {
-        OxcDiagnostic::warn(format!("Angular @{} decorator detected", name))
-            .with_help("Ensure Input properties are not Observables, and Output properties are Observable-like.")
-            .with_label(span.label(format!("@{} decorator usage", name)))
+    fn create_decorator_diagnostic(&self, span: Span) -> OxcDiagnostic {
+        OxcDiagnostic::warn("Too many Angular input properties detected")
+            .with_help("Consider breaking this component into smaller components with fewer inputs")
+            .with_label(span.label(format!(
+                "Component has {} inputs, which exceeds the recommended maximum of {}",
+                self.input_count, self.max_inputs
+            )))
     }
 }
 
-impl<'a> Visit<'a> for InputCountVisitor<'a> {
+impl<'a> Visit<'a> for InputCountVisitor {
     fn visit_property_definition(&mut self, property_definition: &PropertyDefinition<'a>) {
         if let Some(value) = &property_definition.value {
             // Match on the Expression
@@ -103,14 +99,8 @@ impl<'a> Visit<'a> for InputCountVisitor<'a> {
                             self.input_count += 1;
                             // Only add diagnostic if we exceed the limit
                             if self.input_count > self.max_inputs && self.diagnostics.is_empty() {
-                                self.diagnostics.push(
-                                    OxcDiagnostic::warn("Too many Angular input properties detected")
-                                        .with_help("Consider breaking this component into smaller components with fewer inputs")
-                                        .with_label(property_definition.span().label(
-                                            format!("Component has {} inputs, which exceeds the recommended maximum of {}", 
-                                                self.input_count, self.max_inputs)
-                                        ))
-                                );
+                                self.diagnostics
+                                    .push(self.create_decorator_diagnostic(call_expr.span));
                             }
                         }
                     }
@@ -140,8 +130,8 @@ impl Rule for AngularInputCountRule {
         }
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Option<OxcDiagnostic> {
-        let mut visitor = InputCountVisitor::new(file_path, self.max_inputs);
+    fn run_on_node(&self, node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
+        let mut visitor = InputCountVisitor::new(self.max_inputs);
 
         match node {
             AstKind::Class(class) => {
