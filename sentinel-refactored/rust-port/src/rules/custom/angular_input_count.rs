@@ -134,7 +134,7 @@ impl Rule for AngularInputCountRule {
         }
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
         let mut visitor = InputCountVisitor::new(self.max_inputs);
         
         // Visit the entire node tree to count all inputs
@@ -144,7 +144,7 @@ impl Rule for AngularInputCountRule {
             }
             _ => {}
         }
-
-        visitor.diagnostics.first().cloned()
+        println!("debug:::::");
+        visitor.diagnostics
     }
 }

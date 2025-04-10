@@ -16,17 +16,17 @@ impl Rule for NoEmptyPatternRule {
         "Disallow empty destructuring patterns"
     }
 
-    fn run_on_node(&self, node: &AstKind, span: Span) -> Option<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, span: Span) -> Vec<OxcDiagnostic> {
         match node {
-            AstKind::ArrayPattern(array) if array.elements.is_empty() => Some(
+            AstKind::ArrayPattern(array) if array.elements.is_empty() => vec![
                 OxcDiagnostic::error("empty destructuring pattern is not allowed")
                     .with_label(span.label("Empty array binding pattern")),
-            ),
-            AstKind::ObjectPattern(object) if object.properties.is_empty() => Some(
+            ],
+            AstKind::ObjectPattern(object) if object.properties.is_empty() => vec![
                 OxcDiagnostic::error("empty destructuring pattern is not allowed")
                     .with_label(span.label("Empty object binding pattern")),
-            ),
-            _ => None,
+            ],
+            _ => Vec::new(),
         }
     }
 }

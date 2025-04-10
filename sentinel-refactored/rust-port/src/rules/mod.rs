@@ -28,9 +28,9 @@ pub trait Rule: Send + Sync {
 
     /// Run the rule on a specific AST node (optional)
     /// Rules primarily using the visitor pattern might not implement this.
-    /// Default implementation returns None.
-    fn run_on_node(&self, _node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
-        None
+    /// Default implementation returns an empty Vec.
+    fn run_on_node(&self, _node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
+        Vec::new()
     }
 
     /// Run the rule using the visitor pattern (optional)

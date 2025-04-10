@@ -77,7 +77,7 @@ impl Rule for NoConsoleWarnVisitorRule {
         "Disallows the use of console.warn (Visitor Pattern implementation)"
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
         let mut visitor = ConsoleWarnVisitor::new();
 
         match node {
@@ -88,7 +88,6 @@ impl Rule for NoConsoleWarnVisitorRule {
             _ => {}
         }
 
-        // Return the first diagnostic if any exist, otherwise None
-        visitor.diagnostics.first().cloned()
+        visitor.diagnostics
     }
 }

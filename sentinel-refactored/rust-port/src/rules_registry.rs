@@ -151,19 +151,22 @@ impl RulesRegistry {
                             let rule_start = Instant::now();
 
                             // Run the rule
-                            let diagnostic_option = rule.run_on_node(&node_kind, span);
+                            let diagnostics_vec = rule.run_on_node(&node_kind, span);
 
                             // Record the time taken *only if* a diagnostic was produced
                             let duration = rule_start.elapsed();
 
-                            // Add any diagnostic that was produced
-                            if let Some(diagnostic) = diagnostic_option {
-                                // Record time only when rule yielded a result for this node
+                            if !diagnostics_vec.is_empty() {
+                                // Record time only when rule yielded results for this node
                                 rule_durations.insert(rule_name.to_string(), duration);
-                                diagnostics.push(RuleDiagnostic {
-                                    rule_id: rule_name.clone(),
-                                    diagnostic,
-                                });
+
+                                // Add all diagnostics from the Vec to your collection
+                                for diagnostic in diagnostics_vec {
+                                    diagnostics.push(RuleDiagnostic {
+                                        rule_id: rule_name.clone(),
+                                        diagnostic,
+                                    });
+                                }
                             }
                         }
                     }
@@ -217,12 +220,19 @@ impl RulesRegistry {
                     // Run each enabled rule on this node
                     for rule_name in &self.enabled_rules {
                         if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                            if let Some(diagnostic) = rule.run_on_node(&node_kind, span) {
-                                diagnostics.push(RuleDiagnostic {
-                                    rule_id: rule_name.clone(),
-                                    diagnostic,
-                                });
+
+                            let diagnostic_vec = rule.run_on_node(&node_kind, span);
+
+                            if(!diagnostic_vec.is_empty()){
+                                // Wrap each diagnostic with rule ID
+                                for diagnostic in diagnostic_vec {
+                                    diagnostics.push(RuleDiagnostic {
+                                        rule_id: rule_name.clone(),
+                                        diagnostic,
+                                    });
+                                }
                             }
+
                         }
                     }
                 }
