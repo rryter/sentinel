@@ -18,6 +18,22 @@ pub struct FindingEntry {
     pub help: Option<String>,
 }
 
+/// Structure for findings export with summary
+#[derive(Serialize, Deserialize)]
+pub struct FindingsExport {
+    pub findings_by_rule: HashMap<String, Vec<FindingEntry>>,
+    pub summary: FindingsSummary,
+}
+
+/// Structure for findings summary
+#[derive(Serialize, Deserialize)]
+pub struct FindingsSummary {
+    pub total_findings: usize,
+    pub findings_by_rule: HashMap<String, usize>,
+    pub findings_by_severity: HashMap<String, usize>,
+    pub timestamp: String,
+}
+
 /// Extract position information from diagnostic when available
 fn extract_position_info(_diagnostic: &oxc_diagnostics::OxcDiagnostic) -> (u32, u32, u32, u32) {
     // Default position info if we can't extract better data
@@ -29,8 +45,9 @@ fn extract_position_info(_diagnostic: &oxc_diagnostics::OxcDiagnostic) -> (u32, 
 
 /// Export diagnostics to findings.json
 pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLevel) {
-    let mut findings = Vec::new();
-    let mut rule_counts = HashMap::new();
+    let mut findings_by_rule: HashMap<String, Vec<FindingEntry>> = HashMap::new();
+    let mut rule_counts: HashMap<String, usize> = HashMap::new();
+    let mut severity_counts: HashMap<String, usize> = HashMap::new();
 
     // Process each file result
     for result in results {
@@ -55,20 +72,26 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
             let (start_line, start_column, end_line, end_column) =
                 extract_position_info(&rule_diagnostic.diagnostic);
 
+            // Get severity
+            let severity = match rule_diagnostic.diagnostic.severity {
+                Severity::Error => "error".to_string(),
+                Severity::Warning => "warning".to_string(),
+                _ => "info".to_string(),
+            };
+
+            // Count occurrences by severity
+            *severity_counts.entry(severity.clone()).or_insert(0) += 1;
+
             // Create a basic finding entry
             let finding = FindingEntry {
-                rule: rule_name,
+                rule: rule_name.clone(),
                 message,
                 file: result.file_path.clone(),
                 start_line,
                 start_column,
                 end_line,
                 end_column,
-                severity: match rule_diagnostic.diagnostic.severity {
-                    Severity::Error => "error".to_string(),
-                    Severity::Warning => "warning".to_string(),
-                    _ => "info".to_string(),
-                },
+                severity,
                 help: rule_diagnostic
                     .diagnostic
                     .help
@@ -76,7 +99,8 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
                     .map(|h| h.to_string()),
             };
 
-            findings.push(finding);
+            // Add finding to findings_by_rule
+            findings_by_rule.entry(rule_name).or_default().push(finding);
         }
     }
 
@@ -90,10 +114,21 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
         println!("{}: {} hits", rule, count);
     }
     println!("----------------");
-    println!("Total: {} issues found\n", findings.len());
+    println!("Total: {} issues found\n", rule_counts.values().sum::<usize>());
+
+    // Create findings export structure
+    let findings_export = FindingsExport {
+        findings_by_rule,
+        summary: FindingsSummary {
+            total_findings: rule_counts.values().sum::<usize>(),
+            findings_by_rule: rule_counts,
+            findings_by_severity: severity_counts,
+            timestamp: chrono::Utc::now().to_rfc3339(),
+        },
+    };
 
     // Save to findings.json
-    if !findings.is_empty() {
+    if !findings_export.findings_by_rule.is_empty() {
         // Create findings directory if needed
         if let Err(e) = std::fs::create_dir_all("findings") {
             log(
@@ -105,7 +140,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
         }
 
         // Write findings to JSON
-        let json = match serde_json::to_string_pretty(&findings) {
+        let json = match serde_json::to_string_pretty(&findings_export) {
             Ok(json) => json,
             Err(e) => {
                 log(
@@ -124,7 +159,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
                 debug_level,
                 &format!(
                     "Exported {} findings to findings/findings.json",
-                    findings.len()
+                    findings_export.summary.total_findings
                 ),
             ),
             Err(e) => log(
