@@ -1,4 +1,4 @@
-use oxc_ast::ast::{Expression, PropertyDefinition, CallExpression};
+use oxc_ast::ast::{Expression, CallExpression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;

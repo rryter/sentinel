@@ -223,7 +223,7 @@ impl RulesRegistry {
 
                             let diagnostic_vec = rule.run_on_node(&node_kind, span);
 
-                            if(!diagnostic_vec.is_empty()){
+                            if !diagnostic_vec.is_empty() {
                                 // Wrap each diagnostic with rule ID
                                 for diagnostic in diagnostic_vec {
                                     diagnostics.push(RuleDiagnostic {
@@ -262,14 +262,14 @@ pub fn create_default_registry() -> RulesRegistry {
     registry.enable_rules(&[
         "no-debugger",
         "no-console-warn-visitor",
-        "angular-observable-inputs",
+        "angular-legacy-decorators",
         "angular-input-count",
     ]);
 
     // Set default severities for rules
     registry.set_rule_severity("no-debugger", "error");
     registry.set_rule_severity("no-console-warn-visitor", "error");
-    registry.set_rule_severity("angular-observable-inputs", "warn");
+    registry.set_rule_severity("angular-legacy-decorators", "error");
     registry.set_rule_severity("angular-input-count", "error");
 
     registry
@@ -279,14 +279,14 @@ pub fn create_default_registry() -> RulesRegistry {
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
     use crate::rules::custom::{
-        AngularInputCountRule, AngularObservableInputsRule, NoConsoleWarnVisitorRule,
+        AngularInputCountRule, AngularLegacyDecoratorsRule, NoConsoleWarnVisitorRule,
     };
 
     // Register the NoConsoleWarnVisitorRule
     registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
 
-    // Register the AngularObservableInputsRule
-    registry.register_rule(Box::new(AngularObservableInputsRule));
+    // Register the AngularLegacyDecoratorsRule
+    registry.register_rule(Box::new(AngularLegacyDecoratorsRule));
 
     // Register the AngularInputCountRule with default settings
     registry.register_rule(Box::new(AngularInputCountRule::new()));

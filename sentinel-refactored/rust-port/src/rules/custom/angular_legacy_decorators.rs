@@ -7,38 +7,39 @@ use std::collections::HashSet;
 
 use crate::rules::Rule;
 
-/// Rule that checks for Angular Input/Output imports and decorators
+/// Rule that checks for legacy Angular decorators that should be replaced with signal-based alternatives
 ///
-/// This rule detects and reports Angular decorators that might have observable-related issues.
+/// This rule detects usage of legacy Angular decorators (@Input, @Output, etc.) that have been 
+/// replaced with more modern signal-based alternatives in newer Angular versions.
 ///
 /// ## Rule Details
 ///
-/// Examples of **incorrect** code:
+/// Examples of **incorrect** code (legacy decorators):
 ///
 /// ```typescript
 /// import { Input, Output } from '@angular/core';
-/// @Input() property: Observable<string>;
-/// @Output() event = new EventEmitter<void>();
-/// ```
-///
-/// Examples of **correct** code:
-///
-/// ```typescript
-/// import { Component } from '@angular/core';
 /// @Input() property: string;
 /// @Output() event = new EventEmitter<void>();
 /// ```
-pub struct AngularObservableInputsRule;
+///
+/// Examples of **correct** code (signal-based alternatives):
+///
+/// ```typescript
+/// import { input, output } from '@angular/core';
+/// property = input<string>();
+/// event = output<void>();
+/// ```
+pub struct AngularLegacyDecoratorsRule;
 
-/// Visitor implementation that tracks Angular decorator imports and usage
-struct ObservableInputsVisitor {
+/// Visitor implementation that detects usage of legacy Angular decorators
+struct LegacyDecoratorsVisitor {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
     /// Set of decorator names to check
     restricted_decorators: HashSet<&'static str>,
 }
 
-impl ObservableInputsVisitor {
+impl LegacyDecoratorsVisitor {
     fn new() -> Self {
         let mut restricted_decorators = HashSet::new();
         restricted_decorators.insert("Input");
@@ -54,15 +55,15 @@ impl ObservableInputsVisitor {
         }
     }
 
-    /// Helper method to create a diagnostic for Angular decorator usage
+    /// Helper method to create a diagnostic for legacy Angular decorator usage
     fn create_decorator_diagnostic(&self, name: &str, span: Span) -> OxcDiagnostic {
-        OxcDiagnostic::warn(format!("Angular @{} decorator detected", name))
-            .with_help("Ensure Input properties are not Observables, and Output properties are Observable-like.")
+        OxcDiagnostic::warn(format!("Legacy Angular @{} decorator detected", name))
+            .with_help(format!("Replace @{} decorator with the signal-based alternative {}()", name, name.to_lowercase()))
             .with_label(span.label(format!("@{} decorator usage", name)))
     }
 }
 
-impl<'a> Visit<'a> for ObservableInputsVisitor {
+impl<'a> Visit<'a> for LegacyDecoratorsVisitor {
     fn visit_decorator(&mut self, decorator: &Decorator<'a>) {
         match &decorator.expression {
             // Simple identifier decorator: @Input
@@ -89,17 +90,17 @@ impl<'a> Visit<'a> for ObservableInputsVisitor {
     }
 }
 
-impl Rule for AngularObservableInputsRule {
+impl Rule for AngularLegacyDecoratorsRule {
     fn name(&self) -> &'static str {
-        "angular-observable-inputs"
+        "angular-legacy-decorators"
     }
 
     fn description(&self) -> &'static str {
-        "Checks for proper usage of Observable inputs in Angular components"
+        "Detects usage of legacy Angular decorators that should be replaced with signal-based alternatives"
     }
 
     fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
-        let mut visitor = ObservableInputsVisitor::new();
+        let mut visitor = LegacyDecoratorsVisitor::new();
 
         match node {
             AstKind::Decorator(decorator) => {
@@ -108,7 +109,6 @@ impl Rule for AngularObservableInputsRule {
             _ => {}
         }
 
-        // Return the first diagnostic if any exist, otherwise None
         visitor.diagnostics
     }
 }
