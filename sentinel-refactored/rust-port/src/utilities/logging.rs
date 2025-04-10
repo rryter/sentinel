@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 /// Debug level enum for controlling output verbosity
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(rename_all = "lowercase")]
 pub enum DebugLevel {
     None,
     Error,
