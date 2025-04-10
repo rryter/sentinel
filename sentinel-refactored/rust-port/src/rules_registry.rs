@@ -262,6 +262,7 @@ pub fn create_default_registry() -> RulesRegistry {
         "no-console-warn-visitor",
         "angular-legacy-decorators",
         "angular-input-count",
+        "angular-component-class-suffix",
     ]);
 
     // Set default severities for rules
@@ -269,6 +270,7 @@ pub fn create_default_registry() -> RulesRegistry {
     registry.set_rule_severity("no-console-warn-visitor", "error");
     registry.set_rule_severity("angular-legacy-decorators", "error");
     registry.set_rule_severity("angular-input-count", "error");
+    registry.set_rule_severity("angular-component-class-suffix", "error");
 
     registry
 }
@@ -277,7 +279,8 @@ pub fn create_default_registry() -> RulesRegistry {
 #[cfg(feature = "custom_rules")]
 fn register_custom_rules(registry: &mut RulesRegistry) {
     use crate::rules::custom::{
-        AngularInputCountRule, AngularLegacyDecoratorsRule, NoConsoleWarnVisitorRule,
+        AngularComponentClassSuffixRule, AngularInputCountRule, AngularLegacyDecoratorsRule,
+        NoConsoleWarnVisitorRule,
     };
 
     // Register the NoConsoleWarnVisitorRule
@@ -288,6 +291,9 @@ fn register_custom_rules(registry: &mut RulesRegistry) {
 
     // Register the AngularInputCountRule with default settings
     registry.register_rule(Box::new(AngularInputCountRule::new()));
+
+    // Register the AngularComponentClassSuffixRule with default settings
+    registry.register_rule(Box::new(AngularComponentClassSuffixRule::new()));
 
     // Add more custom rules here as they are created
 }

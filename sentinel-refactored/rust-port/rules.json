@@ -2,6 +2,9 @@
   "rules": {
     "no-console-warn-visitor": "error",
     "angular-legacy-decorators": "warn",
-    "angular-input-count": ["error", { "maxInputs": 2 }]
+    "angular-input-count": ["error", { "maxInputs": 2 }],
+    "angular-component-class-suffix": ["error", {
+      "suffixes": ["Component", "Page", "View"] 
+    }]
   }
 } 
