@@ -24,7 +24,6 @@ impl Rule for NoConsoleRule {
                     // Get the source text of the expression and check for "console"
                     let expr_str = format!("{:?}", member_expr);
                     if expr_str.contains("console.") {
-                        println!("expr_str: {:?}", expr_str);
                         return Some(
                             OxcDiagnostic::error("console.* calls are not allowed")
                                 .with_label(span)

@@ -9,7 +9,7 @@ use crate::rules::Rule;
 
 /// Rule that checks for legacy Angular decorators that should be replaced with signal-based alternatives
 ///
-/// This rule detects usage of legacy Angular decorators (@Input, @Output, etc.) that have been 
+/// This rule detects usage of legacy Angular decorators (@Input, @Output, etc.) that have been
 /// replaced with more modern signal-based alternatives in newer Angular versions.
 ///
 /// ## Rule Details
@@ -58,7 +58,11 @@ impl LegacyDecoratorsVisitor {
     /// Helper method to create a diagnostic for legacy Angular decorator usage
     fn create_decorator_diagnostic(&self, name: &str, span: Span) -> OxcDiagnostic {
         OxcDiagnostic::warn(format!("Legacy Angular @{} decorator detected", name))
-            .with_help(format!("Replace @{} decorator with the signal-based alternative {}()", name, name.to_lowercase()))
+            .with_help(format!(
+                "Replace @{} decorator with the signal-based alternative {}()",
+                name,
+                name.to_lowercase()
+            ))
             .with_label(span.label(format!("@{} decorator usage", name)))
     }
 }

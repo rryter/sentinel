@@ -122,7 +122,6 @@ pub fn analyze_file(
                 .diagnostic
                 .clone()
                 .with_source_code(named_source.clone());
-            println!("AAA{:?}", error);
 
             // Get the labels (spans) associated with the diagnostic
             if let Some(labels) = &rule_diagnostic.diagnostic.labels {

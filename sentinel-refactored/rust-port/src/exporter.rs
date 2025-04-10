@@ -114,7 +114,10 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
         println!("{}: {} hits", rule, count);
     }
     println!("----------------");
-    println!("Total: {} issues found\n", rule_counts.values().sum::<usize>());
+    println!(
+        "Total: {} issues found\n",
+        rule_counts.values().sum::<usize>()
+    );
 
     // Create findings export structure
     let findings_export = FindingsExport {

@@ -220,7 +220,6 @@ impl RulesRegistry {
                     // Run each enabled rule on this node
                     for rule_name in &self.enabled_rules {
                         if let Some(rule) = self.rules.get(rule_name.as_str()) {
-
                             let diagnostic_vec = rule.run_on_node(&node_kind, span);
 
                             if !diagnostic_vec.is_empty() {
@@ -232,7 +231,6 @@ impl RulesRegistry {
                                     });
                                 }
                             }
-
                         }
                     }
                 }

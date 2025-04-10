@@ -1,4 +1,4 @@
-use oxc_ast::ast::{Expression, CallExpression};
+use oxc_ast::ast::{CallExpression, Expression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
@@ -92,24 +92,24 @@ impl<'a> Visit<'a> for InputCountVisitor {
                 let name = callee.name.as_str();
                 if name == "input" {
                     self.input_count += 1;
+
                     if self.input_count > self.max_inputs {
                         self.diagnostics
                             .push(self.create_decorator_diagnostic(call_expr.span));
                     }
                 }
-            },
+            }
             Expression::StaticMemberExpression(callee) => {
                 let name = callee.property.name.as_str();
                 if name == "required" {
                     self.input_count += 1;
-                    
-                    println!("{:?}", self.input_count);                                
+
                     if self.input_count > self.max_inputs {
                         self.diagnostics
                             .push(self.create_decorator_diagnostic(callee.span));
                     }
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -136,7 +136,7 @@ impl Rule for AngularInputCountRule {
 
     fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
         let mut visitor = InputCountVisitor::new(self.max_inputs);
-        
+
         // Visit the entire node tree to count all inputs
         match node {
             AstKind::Class(class) => {
@@ -144,7 +144,6 @@ impl Rule for AngularInputCountRule {
             }
             _ => {}
         }
-        println!("debug:::::");
         visitor.diagnostics
     }
 }
