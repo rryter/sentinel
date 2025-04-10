@@ -1,4 +1,4 @@
-use oxc_ast::ast::{Expression, PropertyDefinition};
+use oxc_ast::ast::{Expression, PropertyDefinition, CallExpression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
@@ -76,7 +76,7 @@ impl InputCountVisitor {
     }
 
     fn create_decorator_diagnostic(&self, span: Span) -> OxcDiagnostic {
-        OxcDiagnostic::warn("Too many Angular input properties detected")
+        OxcDiagnostic::error("Too many Angular input properties detected")
             .with_help("Consider breaking this component into smaller components with fewer inputs")
             .with_label(span.label(format!(
                 "Component has {} inputs, which exceeds the recommended maximum of {}",
@@ -86,27 +86,31 @@ impl InputCountVisitor {
 }
 
 impl<'a> Visit<'a> for InputCountVisitor {
-    fn visit_property_definition(&mut self, property_definition: &PropertyDefinition<'a>) {
-        if let Some(value) = &property_definition.value {
-            // Match on the Expression
-            match value {
-                // Call expression: input<type>() or input()
-                Expression::CallExpression(call_expr) => {
-                    if let Expression::Identifier(callee_ident) = &call_expr.callee {
-                        let name = callee_ident.name.as_str();
-                        if name == "input" {
-                            // Count the number of input properties in the class
-                            self.input_count += 1;
-                            // Only add diagnostic if we exceed the limit
-                            if self.input_count > self.max_inputs && self.diagnostics.is_empty() {
-                                self.diagnostics
-                                    .push(self.create_decorator_diagnostic(call_expr.span));
-                            }
-                        }
+    fn visit_call_expression(&mut self, call_expr: &CallExpression<'a>) {
+        match &call_expr.callee {
+            Expression::Identifier(callee) => {
+                let name = callee.name.as_str();
+                if name == "input" {
+                    self.input_count += 1;
+                    if self.input_count > self.max_inputs {
+                        self.diagnostics
+                            .push(self.create_decorator_diagnostic(call_expr.span));
                     }
                 }
-                _ => {}
-            }
+            },
+            Expression::StaticMemberExpression(callee) => {
+                let name = callee.property.name.as_str();
+                if name == "required" {
+                    self.input_count += 1;
+                    
+                    println!("{:?}", self.input_count);                                
+                    if self.input_count > self.max_inputs {
+                        self.diagnostics
+                            .push(self.create_decorator_diagnostic(callee.span));
+                    }
+                }
+            },
+            _ => {}
         }
     }
 }
@@ -132,10 +136,10 @@ impl Rule for AngularInputCountRule {
 
     fn run_on_node(&self, node: &AstKind, _span: Span) -> Option<OxcDiagnostic> {
         let mut visitor = InputCountVisitor::new(self.max_inputs);
-
+        
+        // Visit the entire node tree to count all inputs
         match node {
             AstKind::Class(class) => {
-                // Visit the entire class, which contains all properties
                 visitor.visit_class(class);
             }
             _ => {}
