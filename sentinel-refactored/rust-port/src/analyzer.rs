@@ -113,7 +113,11 @@ pub fn analyze_file(
         rules_registry.run_rules_with_metrics(&semantic_result, file_path);
 
     if !diagnostics.is_empty() && debug_level >= DebugLevel::Info {
-        println!("Found {} issues in {}", diagnostics.len(), file_path);
+        log(
+            DebugLevel::Debug,
+            debug_level,
+            &format!("Found {} issues in {}", diagnostics.len(), file_path),
+        );
         for rule_diagnostic in &diagnostics {
             // Iterate over reference
             let named_source =
