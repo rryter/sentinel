@@ -76,7 +76,9 @@ impl ComponentClassVisitor {
     }
 
     fn has_valid_suffix(&self, class_name: &str) -> bool {
-        self.suffixes.iter().any(|suffix| class_name.ends_with(suffix))
+        self.suffixes
+            .iter()
+            .any(|suffix| class_name.ends_with(suffix))
     }
 
     fn is_component_decorator(&self, decorator: &Decorator) -> bool {
@@ -107,14 +109,14 @@ impl<'a> Visit<'a> for ComponentClassVisitor {
                     if let Some(id) = &class.id {
                         let class_name = id.name.as_str();
                         if !self.has_valid_suffix(class_name) {
-                            self.diagnostics.push(self.create_diagnostic(class_name, class.span));
+                            self.diagnostics
+                                .push(self.create_diagnostic(class_name, class.span));
                         }
                     }
                     break;
                 }
             }
         }
-        
     }
 }
 

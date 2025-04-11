@@ -5,6 +5,15 @@
     "angular-input-count": ["error", { "maxInputs": 2 }],
     "angular-component-class-suffix": ["error", {
       "suffixes": ["Component", "Page", "View"] 
-    }]
+    }],
+    "angular-component-max-inline-declarations": [
+      "error",
+      {
+        "template": 3,
+        "styles": 3,
+        "animations": 15
+      }
+    ],
+    "angular-obsolete-standalone-true": "error"
   }
 } 
