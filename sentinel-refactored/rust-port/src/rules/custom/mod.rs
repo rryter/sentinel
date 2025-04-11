@@ -1,3 +1,5 @@
+use oxc_ast::ast::PropertyKey;
+
 // Module declarations for custom rules
 pub mod angular_component_class_suffix;
 pub mod angular_component_max_inline_declarations;
@@ -6,7 +8,6 @@ pub mod angular_legacy_decorators;
 pub mod angular_obsolete_standalone_true;
 pub mod no_console_warn_visitor;
 
-use oxc_ast::ast::PropertyKey;
 // Re-export custom rules
 pub use angular_component_class_suffix::AngularComponentClassSuffixRule;
 pub use angular_component_max_inline_declarations::AngularComponentMaxInlineDeclarationsRule;
