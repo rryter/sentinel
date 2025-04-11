@@ -3,6 +3,7 @@ use crate::FileAnalysisResult;
 use oxc_diagnostics::Severity;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use tabled::{builder::Builder, settings::{Style, Alignment, object::Columns}};
 
 /// Structure for JSON export of findings
 #[derive(Serialize, Deserialize)]
@@ -108,11 +109,24 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
     println!("\nRule hit summary:");
     println!("----------------");
     let mut rules: Vec<(&String, &usize)> = rule_counts.iter().collect();
-    rules.sort_by(|a, b| b.1.cmp(a.1)); // Sort by count, descending
+    rules.sort_by(|a, b| a.0.cmp(b.0)); // Sort by rule name, alphabetically
 
+    // Build table
+    let mut builder = Builder::new();
+    builder.push_record(["Rule", "Hits"]);
+    
     for (rule, count) in rules {
-        println!("{}: {} hits", rule, count);
+        builder.push_record([rule.as_str(), &count.to_string()]);
     }
+
+    let mut table = builder.build();
+    table
+        .with(Style::ascii_rounded())
+        .modify(Columns::single(1), Alignment::right()); // Right align the second column (Hits) using 0-based index
+
+    // Print the table
+    println!("{}", table);
+
     println!("----------------");
     println!(
         "Total: {} issues found\n",
