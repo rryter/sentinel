@@ -1,8 +1,7 @@
-use oxc_ast::ast::{Decorator, Expression};
+use oxc_ast::ast::Expression;
 use oxc_ast::AstKind;
-use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_span::{GetSpan, Span};
+use oxc_span::Span;
 use std::collections::HashSet;
 
 use crate::rules::Rule;
@@ -29,18 +28,12 @@ use crate::rules::Rule;
 /// property = input<string>();
 /// event = output<void>();
 /// ```
-pub struct AngularLegacyDecoratorsRule;
-
-/// Visitor implementation that detects usage of legacy Angular decorators
-struct LegacyDecoratorsVisitor {
-    /// Collection of diagnostics found during AST traversal
-    diagnostics: Vec<OxcDiagnostic>,
-    /// Set of decorator names to check
+pub struct AngularLegacyDecoratorsRule {
     restricted_decorators: HashSet<&'static str>,
 }
 
-impl LegacyDecoratorsVisitor {
-    fn new() -> Self {
+impl AngularLegacyDecoratorsRule {
+    pub fn new() -> Self {
         let mut restricted_decorators = HashSet::new();
         restricted_decorators.insert("Input");
         restricted_decorators.insert("Output");
@@ -50,7 +43,6 @@ impl LegacyDecoratorsVisitor {
         restricted_decorators.insert("ContentChildren");
 
         Self {
-            diagnostics: Vec::new(),
             restricted_decorators,
         }
     }
@@ -67,33 +59,6 @@ impl LegacyDecoratorsVisitor {
     }
 }
 
-impl<'a> Visit<'a> for LegacyDecoratorsVisitor {
-    fn visit_decorator(&mut self, decorator: &Decorator<'a>) {
-        match &decorator.expression {
-            // Simple identifier decorator: @Input
-            Expression::Identifier(ident) => {
-                let name = ident.name.as_str();
-                if self.restricted_decorators.contains(name) {
-                    self.diagnostics
-                        .push(self.create_decorator_diagnostic(name, decorator.span()));
-                }
-            }
-            // Decorator with arguments: @Input() or @Input('propName')
-            Expression::CallExpression(call_expr) => {
-                // Check if the callee is an identifier (most common case)
-                if let Expression::Identifier(callee_ident) = &call_expr.callee {
-                    let name = callee_ident.name.as_str();
-                    if self.restricted_decorators.contains(name) {
-                        self.diagnostics
-                            .push(self.create_decorator_diagnostic(name, decorator.span()));
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
 impl Rule for AngularLegacyDecoratorsRule {
     fn name(&self) -> &'static str {
         "angular-legacy-decorators"
@@ -103,16 +68,32 @@ impl Rule for AngularLegacyDecoratorsRule {
         "Detects usage of legacy Angular decorators that should be replaced with signal-based alternatives"
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
-        let mut visitor = LegacyDecoratorsVisitor::new();
+    fn run_on_node(&self, node: &AstKind, span: Span) -> Vec<OxcDiagnostic> {
+        let mut diagnostics = Vec::new();
 
-        match node {
-            AstKind::Decorator(decorator) => {
-                visitor.visit_decorator(decorator);
+        if let AstKind::Decorator(decorator) = node {
+            match &decorator.expression {
+                // Simple identifier decorator: @Input
+                Expression::Identifier(ident) => {
+                    let name = ident.name.as_str();
+                    if self.restricted_decorators.contains(name) {
+                        diagnostics.push(self.create_decorator_diagnostic(name, span));
+                    }
+                }
+                // Decorator with arguments: @Input() or @Input('propName')
+                Expression::CallExpression(call_expr) => {
+                    // Check if the callee is an identifier (most common case)
+                    if let Expression::Identifier(callee_ident) = &call_expr.callee {
+                        let name = callee_ident.name.as_str();
+                        if self.restricted_decorators.contains(name) {
+                            diagnostics.push(self.create_decorator_diagnostic(name, span));
+                        }
+                    }
+                }
+                _ => {}
             }
-            _ => {}
         }
 
-        visitor.diagnostics
+        diagnostics
     }
 }

@@ -2,7 +2,7 @@ use oxc_ast::ast::{Class, Decorator, Expression};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_span::{GetSpan, Span};
+use oxc_span::Span;
 use serde_json::Value;
 
 use crate::rules::Rule;

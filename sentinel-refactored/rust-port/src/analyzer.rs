@@ -4,7 +4,6 @@ use crate::FileAnalysisResult;
 use crate::RuleDiagnostic;
 
 use oxc_allocator::Allocator;
-use oxc_diagnostics::NamedSource;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
@@ -16,146 +15,122 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-/// Analyze a file and return detailed results
-pub fn analyze_file(
-    file_path: &str,
+const BATCH_SIZE: usize = 4; // Tune this based on benchmarking
+
+/// Holds shared resources for batch processing
+struct BatchProcessor {
+    allocator: Allocator,
     rules_registry: Arc<RulesRegistry>,
     debug_level: DebugLevel,
-) -> FileAnalysisResult {
-    // Return the new struct
-    let file_start = Instant::now();
+}
 
-    // Read file
-    let source = match fs::read_to_string(file_path) {
-        Ok(content) => content,
-        Err(err) => {
+impl BatchProcessor {
+    fn new(rules_registry: Arc<RulesRegistry>, debug_level: DebugLevel) -> Self {
+        Self {
+            allocator: Allocator::default(),
+            rules_registry,
+            debug_level,
+        }
+    }
+
+    fn process_batch(&mut self, files: &[String]) -> Vec<FileAnalysisResult> {
+        files
+            .iter()
+            .map(|file_path| self.analyze_file(file_path))
+            .collect()
+    }
+
+    fn analyze_file(&mut self, file_path: &str) -> FileAnalysisResult {
+        let file_start = Instant::now();
+
+        // Read file
+        let source = match fs::read(file_path) {
+            Ok(bytes) => match String::from_utf8(bytes) {
+                Ok(content) => content,
+                Err(_) => return self.create_error_result(file_path, "UTF-8 conversion failed"),
+            },
+            Err(err) => return self.create_error_result(file_path, &err.to_string()),
+        };
+
+        // Parse file
+        let parse_start = Instant::now();
+        let source_type = match SourceType::from_path(Path::new(file_path)) {
+            Ok(st) => st,
+            Err(_) => return self.create_error_result(file_path, "Invalid source type"),
+        };
+
+        let parse_result = Parser::new(&self.allocator, &source, source_type).parse();
+        if !parse_result.errors.is_empty() {
             log(
                 DebugLevel::Error,
-                debug_level,
-                &format!("Error reading file {}: {}", file_path, err),
+                self.debug_level,
+                &format!(
+                    "Parse errors in {}: {}",
+                    file_path,
+                    parse_result.errors.len()
+                ),
             );
+
+            let parser_diagnostics = parse_result
+                .errors
+                .into_iter()
+                .map(|err| RuleDiagnostic {
+                    rule_id: "parser".to_string(),
+                    diagnostic: err,
+                })
+                .collect();
+
             return FileAnalysisResult {
                 file_path: file_path.to_string(),
-                parse_duration: Duration::from_secs(0),
+                parse_duration: parse_start.elapsed(),
                 semantic_duration: Duration::from_secs(0),
                 rule_durations: HashMap::new(),
-                total_duration: Duration::from_secs(0),
-                diagnostics: Vec::new(),
+                total_duration: file_start.elapsed(),
+                diagnostics: parser_diagnostics,
             };
         }
-    };
 
-    // Measure parsing time
-    let parse_start = Instant::now();
+        let parse_duration = parse_start.elapsed();
 
-    // Parse file
-    let allocator = Allocator::default();
-    let source_type = match SourceType::from_path(Path::new(file_path)) {
-        Ok(st) => st,
-        Err(_) => {
-            return FileAnalysisResult {
-                file_path: file_path.to_string(),
-                parse_duration: Duration::from_secs(0),
-                semantic_duration: Duration::from_secs(0),
-                rule_durations: HashMap::new(),
-                total_duration: Duration::from_secs(0),
-                diagnostics: Vec::new(),
-            }
+        // Semantic analysis
+        let semantic_start = Instant::now();
+        let semantic_result = SemanticBuilder::new().build(&parse_result.program);
+        let semantic_duration = semantic_start.elapsed();
+
+        // Run rules
+        let (diagnostics, rule_durations) = self
+            .rules_registry
+            .run_rules_with_metrics(&semantic_result, file_path);
+
+        FileAnalysisResult {
+            file_path: file_path.to_string(),
+            parse_duration,
+            semantic_duration,
+            rule_durations,
+            total_duration: file_start.elapsed(),
+            diagnostics,
         }
-    };
+    }
 
-    let parse_result = Parser::new(&allocator, &source, source_type).parse();
-    if !parse_result.errors.is_empty() {
+    fn create_error_result(&self, file_path: &str, error_msg: &str) -> FileAnalysisResult {
         log(
             DebugLevel::Error,
-            debug_level,
-            &format!(
-                "Parse errors in {}: {}",
-                file_path,
-                parse_result.errors.len()
-            ),
+            self.debug_level,
+            &format!("Error processing {}: {}", file_path, error_msg),
         );
 
-        // Convert parse errors to RuleDiagnostics with "parser" as the rule_id
-        let parser_diagnostics = parse_result
-            .errors
-            .into_iter()
-            .map(|err| RuleDiagnostic {
-                rule_id: "parser".to_string(),
-                diagnostic: err,
-            })
-            .collect();
-
-        return FileAnalysisResult {
+        FileAnalysisResult {
             file_path: file_path.to_string(),
             parse_duration: Duration::from_secs(0),
             semantic_duration: Duration::from_secs(0),
             rule_durations: HashMap::new(),
             total_duration: Duration::from_secs(0),
-            diagnostics: parser_diagnostics,
-        };
-    }
-
-    // Record parse time
-    let parse_duration = parse_start.elapsed();
-
-    // Measure semantic analysis time
-    let semantic_start = Instant::now();
-
-    // Perform semantic analysis
-    let semantic_result = SemanticBuilder::new().build(&parse_result.program);
-
-    // Record semantic analysis time
-    let semantic_duration = semantic_start.elapsed();
-
-    // Run configured lint rules with metrics tracking - Now returns diagnostics and rule durations
-    let (diagnostics, rule_durations) =
-        rules_registry.run_rules_with_metrics(&semantic_result, file_path);
-
-    // if !diagnostics.is_empty() && debug_level >= DebugLevel::Info {
-    //     log(
-    //         DebugLevel::Debug,
-    //         debug_level,
-    //         &format!("Found {} issues in {}", diagnostics.len(), file_path),
-    //     );
-    //     for rule_diagnostic in &diagnostics {
-    //         // Iterate over reference
-    //         let named_source =
-    //             NamedSource::new(file_path, source.clone()).with_language("typescript");
-    //         let error = rule_diagnostic
-    //             .diagnostic
-    //             .clone()
-    //             .with_source_code(named_source.clone());
-
-    //         // Get the labels (spans) associated with the diagnostic
-    //         if let Some(labels) = &rule_diagnostic.diagnostic.labels {
-    //             for label in labels {
-    //                 let span = label.inner(); // Get the miette::SourceSpan
-    //                 let offset = span.offset();
-    //                 let line = get_line_number(named_source.inner(), offset);
-    //             }
-    //         }
-    //     }
-    // }
-
-    // Record total file processing time
-    let total_duration = file_start.elapsed();
-
-    FileAnalysisResult {
-        file_path: file_path.to_string(),
-        parse_duration,
-        semantic_duration,
-        rule_durations,
-        total_duration,
-        diagnostics,
+            diagnostics: Vec::new(),
+        }
     }
 }
 
-fn get_line_number(source_text: &str, offset: usize) -> usize {
-    source_text[..offset].lines().count()
-}
-
-/// Process files in parallel using rayon
+/// Process files in parallel using rayon with batch optimization
 pub fn process_files(
     files: &[String],
     rules_registry_arc: &Arc<RulesRegistry>,
@@ -164,14 +139,14 @@ pub fn process_files(
     let analysis_start = Instant::now();
 
     let analysis_results: Vec<FileAnalysisResult> = files
-        .par_iter()
-        .map(|file_path| {
-            let rules_ref = Arc::clone(rules_registry_arc);
-            analyze_file(file_path, rules_ref, debug_level)
+        .par_chunks(BATCH_SIZE)
+        .map(|batch| {
+            let mut processor = BatchProcessor::new(Arc::clone(rules_registry_arc), debug_level);
+            processor.process_batch(batch)
         })
+        .flatten()
         .collect();
 
     let analysis_duration = analysis_start.elapsed();
-
     (analysis_results, analysis_duration)
 }

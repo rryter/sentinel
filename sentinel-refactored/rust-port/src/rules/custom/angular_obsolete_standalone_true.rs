@@ -1,13 +1,9 @@
 use crate::rules::custom::prop_key_name;
-use oxc_ast::ast::{
-    Argument, CallExpression, Class, Decorator, Expression, ObjectPropertyKind, PropertyKey,
-    TemplateLiteral,
-};
+use oxc_ast::ast::{Argument, Class, Decorator, Expression, ObjectPropertyKind};
 use oxc_ast::AstKind;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
-use oxc_span::{GetSpan, Span};
-use serde_json::Value;
+use oxc_span::Span;
 
 use crate::rules::Rule;
 
