@@ -112,31 +112,31 @@ pub fn analyze_file(
     let (diagnostics, rule_durations) =
         rules_registry.run_rules_with_metrics(&semantic_result, file_path);
 
-    if !diagnostics.is_empty() && debug_level >= DebugLevel::Info {
-        log(
-            DebugLevel::Debug,
-            debug_level,
-            &format!("Found {} issues in {}", diagnostics.len(), file_path),
-        );
-        for rule_diagnostic in &diagnostics {
-            // Iterate over reference
-            let named_source =
-                NamedSource::new(file_path, source.clone()).with_language("typescript");
-            let error = rule_diagnostic
-                .diagnostic
-                .clone()
-                .with_source_code(named_source.clone());
+    // if !diagnostics.is_empty() && debug_level >= DebugLevel::Info {
+    //     log(
+    //         DebugLevel::Debug,
+    //         debug_level,
+    //         &format!("Found {} issues in {}", diagnostics.len(), file_path),
+    //     );
+    //     for rule_diagnostic in &diagnostics {
+    //         // Iterate over reference
+    //         let named_source =
+    //             NamedSource::new(file_path, source.clone()).with_language("typescript");
+    //         let error = rule_diagnostic
+    //             .diagnostic
+    //             .clone()
+    //             .with_source_code(named_source.clone());
 
-            // Get the labels (spans) associated with the diagnostic
-            if let Some(labels) = &rule_diagnostic.diagnostic.labels {
-                for label in labels {
-                    let span = label.inner(); // Get the miette::SourceSpan
-                    let offset = span.offset();
-                    let _line = get_line_number(named_source.inner(), offset);
-                }
-            }
-        }
-    }
+    //         // Get the labels (spans) associated with the diagnostic
+    //         if let Some(labels) = &rule_diagnostic.diagnostic.labels {
+    //             for label in labels {
+    //                 let span = label.inner(); // Get the miette::SourceSpan
+    //                 let offset = span.offset();
+    //                 let line = get_line_number(named_source.inner(), offset);
+    //             }
+    //         }
+    //     }
+    // }
 
     // Record total file processing time
     let total_duration = file_start.elapsed();

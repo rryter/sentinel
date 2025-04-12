@@ -254,59 +254,14 @@ pub fn create_default_registry() -> RulesRegistry {
 
     // Register custom rules if the feature is enabled
     #[cfg(feature = "custom_rules")]
-    register_custom_rules(&mut registry);
-
-    // Enable the default rules with error severity
-    registry.enable_rules(&[
-        "no-debugger",
-        "no-console-warn-visitor",
-        "angular-legacy-decorators",
-        "angular-input-count",
-        "angular-component-class-suffix",
-        "angular-component-max-inline-declarations",
-        "angular-obsolete-standalone-true",
-    ]);
-
-    // Set default severities for rules
-    registry.set_rule_severity("no-debugger", "error");
-    registry.set_rule_severity("no-console-warn-visitor", "error");
-    registry.set_rule_severity("angular-legacy-decorators", "error");
-    registry.set_rule_severity("angular-input-count", "error");
-    registry.set_rule_severity("angular-component-class-suffix", "error");
-    registry.set_rule_severity("angular-component-max-inline-declarations", "error");
-    registry.set_rule_severity("angular-obsolete-standalone-true", "error");
+    {
+        mod generated {
+            include!(concat!(env!("OUT_DIR"), "/generated_rules.rs"));
+        }
+        generated::register_rules(&mut registry);
+    }
 
     registry
-}
-
-/// Register all custom rules with the registry
-#[cfg(feature = "custom_rules")]
-fn register_custom_rules(registry: &mut RulesRegistry) {
-    use crate::rules::custom::{
-        AngularComponentClassSuffixRule, AngularComponentMaxInlineDeclarationsRule,
-        AngularInputCountRule, AngularLegacyDecoratorsRule, AngularObsoleteStandaloneTrueRule,
-        NoConsoleWarnVisitorRule,
-    };
-
-    // Register the NoConsoleWarnVisitorRule
-    registry.register_rule(Box::new(NoConsoleWarnVisitorRule));
-
-    // Register the AngularLegacyDecoratorsRule
-    registry.register_rule(Box::new(AngularLegacyDecoratorsRule));
-
-    // Register the AngularInputCountRule with default settings
-    registry.register_rule(Box::new(AngularInputCountRule::new()));
-
-    // Register the AngularComponentClassSuffixRule with default settings
-    registry.register_rule(Box::new(AngularComponentClassSuffixRule::new()));
-
-    // Register the AngularComponentMaxInlineDeclarationsRule with default settings
-    registry.register_rule(Box::new(AngularComponentMaxInlineDeclarationsRule::new()));
-
-    // Register the AngularObsoleteStandaloneTrueRule with default settings
-    registry.register_rule(Box::new(AngularObsoleteStandaloneTrueRule::new()));
-
-    // Add more custom rules here as they are created
 }
 
 /// Load a rule configuration from a JSON file
