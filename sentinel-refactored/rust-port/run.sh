@@ -9,6 +9,7 @@ mise use rust@nightly
 # Build the project with custom rules feature
 echo "Building typescript-analyzer..."
 cargo build --features custom_rules || { echo "Build failed"; exit 1; }
+cargo fmt
 
 # Check if a path argument was provided
 if [ $# -ge 1 ]; then

@@ -3,7 +3,10 @@ use crate::FileAnalysisResult;
 use oxc_diagnostics::Severity;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use tabled::{builder::Builder, settings::{Style, Alignment, object::Columns}};
+use tabled::{
+    builder::Builder,
+    settings::{object::Columns, Alignment, Style},
+};
 
 /// Structure for JSON export of findings
 #[derive(Serialize, Deserialize)]
@@ -114,7 +117,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
     // Build table
     let mut builder = Builder::new();
     builder.push_record(["Rule", "Hits"]);
-    
+
     for (rule, count) in rules {
         builder.push_record([rule.as_str(), &count.to_string()]);
     }
