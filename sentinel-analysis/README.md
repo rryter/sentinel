@@ -1,87 +1,267 @@
-# Sentinel Rules
+# TypeScript Analyzer
 
-This directory contains the rules used by the Sentinel Analysis system to detect patterns in TypeScript/JavaScript code.
+A high-performance, rule-based analyzer for TypeScript/JavaScript codebases that helps identify patterns, potential issues, and enforce coding standards.
 
-## Directory Structure
+## Overview
 
-The rules are organized by category:
+TypeScript Analyzer scans your codebase for patterns defined in rule implementations. It uses the OXC parser to quickly analyze TypeScript/JavaScript files and provide insights through a rich rule evaluation system.
 
-- `angular/` - Rules for Angular best practices
-- `rxjs/` - Rules for RxJS best practices
-- `typescript/` - Rules for TypeScript best practices
-- `uncategorized/` - Rules that don't fit into a specific category
-- `template/` - Template files for creating new rules
+Key features:
 
-## Rule Naming Convention
+- Fast, parallel analysis of large codebases
+- Extensible rule system with customizable rules
+- JSON export for integration with CI/CD pipelines
+- Configurable rule activation through command-line options or YAML config
 
-Rule files should follow this naming convention:
+## Installation
 
-- Use kebab-case for filenames: `rule-name.go`
-- The rule ID in the Go code should match the filename (without the `.go` extension)
-- Use CamelCase for the rule's constructor function: `CreateRule` or `CreateRuleRuleName`
+### Prerequisites
 
-## Creating a New Rule
+- Rust (nightly recommended)
+- Cargo
 
-1. Choose the appropriate category directory for your rule (or create a new one)
-2. Copy the template from `template/rule-template.go` to your category directory
-3. Rename the file to match your rule's purpose (e.g., `no-async-pipe-subscription.go`)
-4. Update the rule ID, name, and description in the code
-5. Implement the `Match` method with your pattern detection logic
-6. Build the rule using `./build_rules.sh`
-
-## Rule Implementation Guidelines
-
-When implementing a rule, consider the following:
-
-1. **Clarity**: Make sure your rule's purpose is clear from its name and description
-2. **Specificity**: Target a specific pattern to avoid false positives
-3. **Performance**: Rules should be as efficient as possible, avoid expensive operations
-4. **Suggestions**: Provide helpful suggestions for fixing the issue in the match metadata
-5. **Debugging**: Use `patterns.Debug` for debugging information during development
-
-## Building Rules
-
-Use the provided build script to compile your rules:
+### Building from Source
 
 ```bash
-./build_rules.sh
+# Clone the repository
+git clone <repository-url>
+cd typescript-analyzer
+
+# Build the project
+cargo build --release
 ```
 
-This script will:
+## Usage
 
-1. Scan all category directories for rule files
-2. Compile each rule as a Go plugin
-3. Place the compiled plugins in the `bin/rules` directory
+### Basic Command
 
-## Troubleshooting
+```bash
+./typescript-analyzer [OPTIONS] [PATH]
+```
 
-If you encounter build issues:
+### Quick Start with Run Script
 
-1. Check that your rule follows the naming conventions
-2. Ensure your rule exports the correct constructor function:
-   - Standard method: `func CreateRule() patterns.Rule`
-   - Legacy method: `func CreateRuleYourRuleName() patterns.Rule`
-3. Verify that your imports are correct
-4. Run with verbose logging: `SENTINEL_LOG_LEVEL=debug ./build_rules.sh`
+```bash
+# Run analysis on a specific directory
+./run.sh /path/to/typescript/project
+```
 
-## Rule Interface
+### Command Line Options
 
-All rules must implement the `patterns.Rule` interface:
+```
+OPTIONS:
+  -v, --verbose               Enable verbose output
+  -e, --extensions <EXTS>     File extensions to include (default: "ts,tsx")
+  --no-rules                  Disable rules-based analysis
+  --rule-debug                Enable verbose rule debugging output
+  -s, --severity <LEVEL>      Minimum severity level to report (error, warning, info)
+  --enable-rule <RULE_ID>     Enable specific rule by ID (can be used multiple times)
+  --disable-rule <RULE_ID>    Disable specific rule by ID (can be used multiple times)
+  --enable-tag <TAG>          Enable rules with specific tag (can be used multiple times)
+  --disable-tag <TAG>         Disable rules with specific tag (can be used multiple times)
+  --export-json <FILE>        Export rule findings to a JSON file
+  -h, --help                  Print help
+  -V, --version               Print version
+```
 
-```go
-type Rule interface {
-    // ID returns the unique identifier of the rule
-    ID() string
+### Example Commands
 
-    // Name returns the human-readable name of the rule
-    Name() string
+```bash
+# Analyze a specific directory with verbose output
+./typescript-analyzer /path/to/project -v
 
-    // Description returns a description of what the rule checks for
-    Description() string
+# Only analyze JavaScript files
+./typescript-analyzer /path/to/project -e js
 
-    // Match checks if the given AST node matches the rule's pattern
-    Match(node map[string]interface{}, filePath string) []Match
+# Enable only specific rules
+./typescript-analyzer /path/to/project --enable-rule import-count --enable-rule typescript-assertion-detection
+
+# Disable specific rules
+./typescript-analyzer /path/to/project --disable-rule import-rxjs
+
+# Enable rules by tag
+./typescript-analyzer /path/to/project --enable-tag angular
+
+# Export findings to JSON
+./typescript-analyzer /path/to/project --export-json ./findings.json
+```
+
+## Configuration
+
+You can configure the analyzer using a `rules.json` file:
+
+```json
+{
+  "rules": {
+    "no-console-warn-visitor": "error",
+    "angular-observable-inputs": "warn",
+    "angular-input-count": ["error", { "maxInputs": 5 }]
+  }
 }
 ```
 
-For category support, use the `patterns.RuleWithCategory` struct as your rule's embedded type.
+The rules object maps rule names to their configuration. There are three ways to specify a rule's configuration:
+
+1. `"rule-name": "error"` or `"rule-name": "warn"` - Simple rule activation with specified severity
+2. `"rule-name": ["error", { options }]` - Rule with severity and configuration options
+3. `"rule-name": ["warn", { options }]` - Rule with severity and configuration options
+
+### Command Line Configuration
+
+For simple use cases, you can enable rules from the command line:
+
+```bash
+# Enable simple rules
+./typescript-analyzer --rules no-console-warn-visitor,angular-observable-inputs
+
+# Enable a single rule
+./typescript-analyzer --enable-rule angular-input-count
+```
+
+For more complex configuration including rule options and severity levels, use a rules.json file:
+
+```bash
+./typescript-analyzer --rules-config rules.json
+```
+
+### Rule Configuration Options
+
+Different rules accept different configuration options:
+
+#### angular-input-count
+
+Controls the maximum number of Angular inputs allowed in a component.
+
+```json
+{ "maxInputs": 5 }
+```
+
+## Understanding Rule Results
+
+When you run the analyzer, it will display rule results in the terminal:
+
+```
+Rule Results:
+  2 Error findings:
+    typescript-assertion-detection: 901 matches
+    import-count-error: 138 matches
+  1 Warning findings:
+    import-rxjs: 4 matches
+
+  Summary: 2 errors, 1 warnings
+```
+
+For each rule match, the analyzer counts individual occurrences. If a file has multiple matches for a rule, each match is counted separately.
+
+## JSON Export
+
+When using the `--export-json` option or the `export_json` configuration, the analyzer will create a JSON file with detailed findings:
+
+```json
+{
+  "timestamp": "2023-04-05T12:03:00Z",
+  "total_findings": 1043,
+  "findings_by_rule": {
+    "typescript-assertion-detection": 901,
+    "import-count-error": 138,
+    "import-rxjs": 4
+  },
+  "findings": [
+    {
+      "rule_id": "typescript-assertion-detection",
+      "file_path": "/path/to/file.ts",
+      "matched": true,
+      "severity": "error",
+      "message": "TypeScript type assertion detected",
+      "location": {
+        "line": 42,
+        "column": 15,
+        "start": 1234,
+        "end": 1245
+      },
+      "metadata": {}
+    }
+    // More findings...
+  ]
+}
+```
+
+## Built-in Rules
+
+The analyzer includes several built-in rules, including:
+
+- `typescript-assertion-detection`: Detects TypeScript type assertions
+- `import-rxjs`: Detects imports from the 'rxjs' module
+- `import-rxjs-operators`: Detects imports from 'rxjs/operators'
+- `import-count`: Counts the number of import statements in a file
+- `angular-decorators-detection`: Detects Angular property decorators
+
+## Creating Custom Rules
+
+You can create custom rules by implementing the `Rule` trait. Here's a simple example:
+
+```rust
+use std::sync::Arc;
+use std::collections::HashMap;
+use anyhow::Result;
+use oxc_ast::ast::{Program, ModuleDeclaration};
+use crate::rules::{Rule, RuleMatch, RuleSeverity, SourceLocation};
+
+pub struct CustomRule {
+    id: String,
+    description: String,
+    tags: Vec<String>,
+    severity: RuleSeverity,
+}
+
+impl CustomRule {
+    pub fn new() -> Self {
+        Self {
+            id: "custom-rule".to_string(),
+            description: "A custom rule example".to_string(),
+            tags: vec!["custom".to_string()],
+            severity: RuleSeverity::Warning,
+        }
+    }
+}
+
+impl Rule for CustomRule {
+    fn id(&self) -> &str { &self.id }
+    fn description(&self) -> &str { &self.description }
+    fn tags(&self) -> Vec<&str> { self.tags.iter().map(|s| s.as_str()).collect() }
+    fn severity(&self) -> RuleSeverity { self.severity }
+
+    fn evaluate(&self, program: &Program, file_path: &str) -> Result<RuleMatch> {
+        // Your rule logic here
+        let matched = false; // Set to true if your rule finds a match
+
+        Ok(RuleMatch {
+            rule_id: self.id.clone(),
+            file_path: file_path.to_string(),
+            matched,
+            severity: self.severity,
+            message: None,
+            location: None,
+            metadata: HashMap::new(),
+        })
+    }
+}
+
+pub fn create_custom_rule() -> Arc<dyn Rule> {
+    Arc::new(CustomRule::new())
+}
+```
+
+After implementing your custom rule, you can register it with the rule registry in `src/rules/custom/mod.rs`.
+
+## Performance
+
+The analyzer is designed for high performance:
+
+- Uses parallel processing with Rayon
+- Employs the MiMalloc memory allocator for faster memory operations
+- Processes thousands of files per second on modern hardware
+
+## License
+
+[Add your license information here]
