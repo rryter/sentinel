@@ -342,7 +342,7 @@ impl Metrics {
         let default_duration = Duration::default();
         let (slowest_file, slowest_duration) = file_times
             .iter()
-            .max_by_key(|(_, &duration)| duration)
+            .max_by_key(|&(_, &duration)| duration)
             .unwrap_or((&none_string, &default_duration));
 
         // Calculate parse and semantic analysis time totals
