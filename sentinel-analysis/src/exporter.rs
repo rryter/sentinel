@@ -39,8 +39,8 @@ pub struct FindingsSummary {
 }
 
 /// Extract position information from diagnostic when available
-fn extract_position_info(error: &Option<&Error>) -> (usize, usize) {
-    if let Some(err) = error {
+fn extract_position_info(errors: &[Error]) -> (usize, usize) {
+    if let Some(err) = errors.first() {
         let info = Info::new(err);
         return (info.start.line, info.start.column);
     }
@@ -53,8 +53,24 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
     let mut rule_counts: HashMap<String, usize> = HashMap::new();
     let mut severity_counts: HashMap<String, usize> = HashMap::new();
 
+    // Use static string references to avoid repeated allocations
+    let error_str = "error".to_string();
+    let warning_str = "warning".to_string();
+    let info_str = "info".to_string();
+
+    // Pre-allocate approximate capacity based on results size to avoid reallocations
+    let estimated_findings = results.iter().map(|r| r.diagnostics.len()).sum::<usize>();
+    if estimated_findings > 0 {
+        findings_by_rule.reserve(estimated_findings / 2); // Assume average of 2 findings per rule
+        rule_counts.reserve(estimated_findings / 5); // Assume average of 5 findings per rule
+        severity_counts.reserve(3); // Typically just 3 severities
+    }
+
     // Process each file result
     for result in results {
+        // Extract position information once per file rather than per diagnostic
+        let (line, column) = extract_position_info(&result.errors);
+
         for rule_diagnostic in &result.diagnostics {
             // Get the message text
             let message = rule_diagnostic.diagnostic.message.to_string();
@@ -72,14 +88,11 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
             // Count occurrences by rule
             *rule_counts.entry(rule_name.clone()).or_insert(0) += 1;
 
-            // Extract position information when available
-            let (line, column) = extract_position_info(&result.errors.first());
-
-            // Get severity
+            // Get severity - reuse existing strings instead of creating new ones each time
             let severity = match rule_diagnostic.diagnostic.severity {
-                Severity::Error => "error".to_string(),
-                Severity::Warning => "warning".to_string(),
-                _ => "info".to_string(),
+                Severity::Error => error_str.clone(),
+                Severity::Warning => warning_str.clone(),
+                _ => info_str.clone(),
             };
 
             // Count occurrences by severity
