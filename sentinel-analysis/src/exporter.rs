@@ -14,10 +14,8 @@ pub struct FindingEntry {
     pub rule: String,
     pub message: String,
     pub file: String,
-    pub start_line: u32,
-    pub start_column: u32,
-    pub end_line: u32,
-    pub end_column: u32,
+    pub line: u32,
+    pub column: u32,
     pub severity: String,
     pub help: Option<String>,
 }
@@ -39,12 +37,12 @@ pub struct FindingsSummary {
 }
 
 /// Extract position information from diagnostic when available
-fn extract_position_info(_diagnostic: &oxc_diagnostics::OxcDiagnostic) -> (u32, u32, u32, u32) {
+fn extract_position_info(_diagnostic: &oxc_diagnostics::OxcDiagnostic) -> (u32, u32) {
     // Default position info if we can't extract better data
     // For now, we're using static defaults since accessing the span information
     // from OxcDiagnostic would require more complex handling of the internal structure
     // or creating a custom implementation
-    (1, 0, 1, 0)
+    (1, 0)
 }
 
 /// Export diagnostics to findings.json
@@ -73,8 +71,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
             *rule_counts.entry(rule_name.clone()).or_insert(0) += 1;
 
             // Extract position information when available
-            let (start_line, start_column, end_line, end_column) =
-                extract_position_info(&rule_diagnostic.diagnostic);
+            let (line, column) = extract_position_info(&rule_diagnostic.diagnostic);
 
             // Get severity
             let severity = match rule_diagnostic.diagnostic.severity {
@@ -91,10 +88,8 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
                 rule: rule_name.clone(),
                 message,
                 file: result.file_path.clone(),
-                start_line,
-                start_column,
-                end_line,
-                end_column,
+                line,
+                column,
                 severity,
                 help: rule_diagnostic
                     .diagnostic
