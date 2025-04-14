@@ -5,7 +5,7 @@ use typescript_analyzer::{
     metrics::{aggregate_metrics, export_results},
     rules_registry::setup_rules_registry,
     utilities::{
-        config::{get_debug_level, get_target_path, Config},
+        config::{Config, get_debug_level, get_target_path},
         file_utils::find_files,
         threading::configure_thread_pool,
     },

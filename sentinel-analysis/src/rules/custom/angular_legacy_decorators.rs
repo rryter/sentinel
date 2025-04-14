@@ -1,5 +1,5 @@
-use oxc_ast::ast::Expression;
 use oxc_ast::AstKind;
+use oxc_ast::ast::Expression;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
 use std::collections::HashSet;

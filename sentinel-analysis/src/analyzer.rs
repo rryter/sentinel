@@ -1,7 +1,7 @@
-use crate::rules_registry::RulesRegistry;
-use crate::utilities::{log, DebugLevel};
 use crate::FileAnalysisResult;
 use crate::RuleDiagnostic;
+use crate::rules_registry::RulesRegistry;
+use crate::utilities::{DebugLevel, log};
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;

@@ -1,11 +1,11 @@
-use crate::utilities::{log, DebugLevel};
 use crate::FileAnalysisResult;
+use crate::utilities::{DebugLevel, log};
 use oxc_diagnostics::Severity;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tabled::{
     builder::Builder,
-    settings::{object::Columns, Alignment, Style},
+    settings::{Alignment, Style, object::Columns},
 };
 
 /// Structure for JSON export of findings

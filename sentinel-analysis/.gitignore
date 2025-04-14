@@ -1,5 +1,8 @@
 node_modules
 .sentinel-cache
+.idea
+.vscode
+
 # Rust-related
 /target/
 **/*.rs.bk
@@ -36,3 +39,6 @@ metrics
 docs
 findings
 venv
+
+
+sentinel-backend/.idea

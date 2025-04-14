@@ -3,7 +3,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use typescript_analyzer::rules::{
-    custom::angular::decorator_detection_rule::AngularDecoratorDetectionRule, Rule, RuleMatch,
+    Rule, RuleMatch, custom::angular::decorator_detection_rule::AngularDecoratorDetectionRule,
 };
 
 // Test utilities

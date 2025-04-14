@@ -1,4 +1,4 @@
-use crate::utilities::{log, DebugLevel};
+use crate::utilities::{DebugLevel, log};
 use std::time::{Duration, Instant};
 use walkdir::WalkDir;
 

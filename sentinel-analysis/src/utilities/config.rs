@@ -20,26 +20,76 @@ pub struct Config {
 impl Config {
     /// Load config from sentinel.json
     pub fn load() -> Self {
-        let mut file = match fs::File::open("sentinel.json") {
-            Ok(file) => file,
-            Err(err) => {
-                eprintln!("Could not open sentinel.json: {}", err);
-                return Config::default();
+        // Try loading from environment variable first
+        if let Ok(config_path) = std::env::var("SENTINEL_CONFIG") {
+            if let Some(config) = Self::try_load_from_path(&config_path) {
+                return config;
             }
-        };
-
-        let mut contents = String::new();
-        if let Err(err) = file.read_to_string(&mut contents) {
-            eprintln!("Could not read sentinel.json: {}", err);
-            return Config::default();
+            eprintln!(
+                "Warning: Could not load config from SENTINEL_CONFIG path: {}",
+                config_path
+            );
         }
 
-        match serde_json::from_str(&contents) {
-            Ok(config) => config,
-            Err(err) => {
-                eprintln!("Could not parse sentinel.json: {}", err);
-                Config::default()
+        // Try current directory
+        if let Some(config) = Self::try_load_from_path("sentinel.json") {
+            return config;
+        }
+
+        // Try executable directory
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                let exe_config_path = exe_dir.join("sentinel.json");
+                if let Some(config) = Self::try_load_from_path(&exe_config_path.to_string_lossy()) {
+                    return config;
+                }
             }
+        }
+
+        // Try user config directory
+        if let Some(home_dir) = dirs::home_dir() {
+            let home_config = home_dir
+                .join(".config")
+                .join("sentinel")
+                .join("sentinel.json");
+            if let Some(config) = Self::try_load_from_path(&home_config.to_string_lossy()) {
+                return config;
+            }
+        }
+
+        // Try system-wide config directory
+        #[cfg(not(windows))]
+        {
+            let system_config = std::path::Path::new("/etc/sentinel/sentinel.json");
+            if let Some(config) = Self::try_load_from_path(&system_config.to_string_lossy()) {
+                return config;
+            }
+        }
+
+        // No config found, return default
+        eprintln!("No configuration file found, using defaults");
+        Config::default()
+    }
+
+    /// Try to load config from a specific path
+    fn try_load_from_path(path: &str) -> Option<Self> {
+        match fs::File::open(path) {
+            Ok(mut file) => {
+                let mut contents = String::new();
+                if let Err(err) = file.read_to_string(&mut contents) {
+                    eprintln!("Could not read {}: {}", path, err);
+                    return None;
+                }
+
+                match serde_json::from_str(&contents) {
+                    Ok(config) => Some(config),
+                    Err(err) => {
+                        eprintln!("Could not parse {}: {}", path, err);
+                        None
+                    }
+                }
+            }
+            Err(_) => None, // Silently fail, as we try multiple locations
         }
     }
 }

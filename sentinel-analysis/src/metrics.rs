@@ -1,7 +1,7 @@
+use crate::FileAnalysisResult;
 use crate::exporter::export_findings_json;
 use crate::utilities::config::Config;
-use crate::utilities::{log, DebugLevel};
-use crate::FileAnalysisResult;
+use crate::utilities::{DebugLevel, log};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
@@ -495,8 +495,12 @@ impl Metrics {
                 // Rule execution metrics
                 if !metrics.rule_execution_metrics.is_empty() {
                     println!("\n--- Rule Execution Metrics ---");
-                    println!("Rule Name                          | Total Time  | Executions | Avg Time (μs) | % of Rule Time");
-                    println!("-----------------------------------|-------------|------------|---------------|---------------");
+                    println!(
+                        "Rule Name                          | Total Time  | Executions | Avg Time (μs) | % of Rule Time"
+                    );
+                    println!(
+                        "-----------------------------------|-------------|------------|---------------|---------------"
+                    );
 
                     for rule in &metrics.rule_execution_metrics {
                         println!(

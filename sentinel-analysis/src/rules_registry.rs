@@ -5,9 +5,9 @@ use std::time::Duration;
 use std::time::Instant;
 
 // Import the Rule trait and rule implementations
+use crate::RuleDiagnostic;
 pub use crate::rules::Rule;
 pub use crate::rules::{NoDebuggerRule, NoEmptyPatternRule};
-use crate::RuleDiagnostic;
 
 /// The result of running a rule on a file
 pub struct RuleResult {
@@ -133,8 +133,8 @@ impl RulesRegistry {
                     // TODO: A better long-term solution might involve adding metadata
                     // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
                     true // Keep simplified check for now - run loop if any rule enabled.
-                         // We accept the overhead if only visitor rules are present,
-                         // as the inner loop won't record metrics anyway.
+                    // We accept the overhead if only visitor rules are present,
+                    // as the inner loop won't record metrics anyway.
                 })
             });
 
@@ -343,7 +343,7 @@ pub fn configure_registry(
 
 use crate::utilities::config::Config;
 /// Add the rule registry setup functions from main.rs at the end of the file
-use crate::utilities::{log, DebugLevel};
+use crate::utilities::{DebugLevel, log};
 
 /// Set up and configure the rules registry based on configuration and command line arguments
 pub fn setup_rules_registry(

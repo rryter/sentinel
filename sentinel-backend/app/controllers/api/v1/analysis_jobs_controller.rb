@@ -43,16 +43,27 @@ module Api
         @job = @project.analysis_jobs.new(status: 'pending')
         
         if @job.save
-          # Only perform these operations in non-test environments
-          unless Rails.env.test?
-            AnalysisWorker.perform_async(@job.id, @project.id)
-            AnalysisStatusPollerWorker.perform_in(1.seconds, @job.id)
-            Rails.logger.info("Queued AnalysisWorker and AnalysisStatusPollerWorker for job_id: #{@job.id}")
+          begin
+            # Update status to 'running' or another valid status before processing
+            @job.update(status: 'running') 
+            
+            # Run the analysis directly
+            results = perform_analysis(@project, @job)
+            
+            # Process results immediately
+            process_results(@job, results)
+            
+            # Update to completed when done
+            @job.update(status: 'completed')
+            
+            render json: {
+              data: ActiveModelSerializers::SerializableResource.new(@job.reload, adapter: :attributes).as_json
+            }, status: :created
+          rescue StandardError => e
+            @job.update(status: 'failed', error_message: e.message)
+            Rails.logger.error("Analysis failed for job #{@job.id}: #{e.message}\n#{e.backtrace.join("\n")}")
+            render json: { errors: { base: [e.message] } }, status: :unprocessable_entity
           end
-          
-          render json: {
-            data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
-          }, status: :created
         else
           render json: { errors: @job.errors }, status: :unprocessable_entity
         end
@@ -92,6 +103,74 @@ module Api
         @job = AnalysisJob.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Analysis job not found' }, status: :not_found
+      end
+      
+      def perform_analysis(project, job)
+        # Path to the Rust binary
+        binary_path = Rails.root.join('../sentinel-analysis/target/release/typescript-analyzer')
+        
+        # Create a temporary directory for output
+        output_dir = Rails.root.join('tmp', "analysis_job_#{job.id}")
+        FileUtils.mkdir_p(output_dir)
+        output_file = Rails.root.join('../sentinel-analysis/findings/findings.json')
+        
+        # Build command with appropriate arguments
+        # Adjust these arguments based on your Rust binary's requirements
+        command = [
+          binary_path.to_s,
+        ]
+        
+        # Log the command being executed
+        Rails.logger.info("Executing: #{command.join(' ')}")
+        
+        # Execute command and capture output
+        stdout, stderr, status = Open3.capture3(*command)
+        
+        unless status.success?
+          Rails.logger.error("Error executing sentinel-analysis: #{stderr}")
+          raise "Analysis failed: #{stderr}"
+        end
+        
+        # Read and parse the results file
+        if File.exist?(output_file)
+          results = JSON.parse(File.read(output_file))
+          Rails.logger.info("Analysis completed successfully with #{results.size} results")
+          results
+        else
+          raise "Analysis output file not found: #{"./sentinel-analysis/findings/findings.json"}"
+        end
+      ensure
+        # Clean up temporary files unless we want to keep them for debugging
+        FileUtils.rm_rf(output_dir) if output_dir && !Rails.env.development?
+      end
+      
+      def process_results(job, results)
+        return if results.nil? || results.empty?
+        
+        # Group results by file path
+        results_by_file = results.group_by { |r| r['file_path'] }
+        
+        ActiveRecord::Base.transaction do
+          results_by_file.each do |file_path, violations|
+            # Create file record
+            file = job.files_with_violations.create!(file_path: file_path)
+            
+            # Create violation records for each finding
+            violations.each do |violation|
+              file.pattern_matches.create!(
+                rule_id: violation['rule_id'],
+                rule_name: violation['rule_name'],
+                message: violation['message'],
+                line: violation['line'],
+                column: violation['column'],
+                severity: violation['severity'] || 'error',
+                source_snippet: violation['source_snippet']
+              )
+            end
+          end
+        end
+        
+        Rails.logger.info("Processed #{results.size} violations across #{results_by_file.size} files for job #{job.id}")
       end
     end
   end

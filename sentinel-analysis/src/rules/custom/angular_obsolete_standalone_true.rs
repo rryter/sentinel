@@ -1,6 +1,6 @@
 use crate::rules::custom::prop_key_name;
-use oxc_ast::ast::{Argument, Class, Decorator, Expression, ObjectPropertyKind};
 use oxc_ast::AstKind;
+use oxc_ast::ast::{Argument, Class, Decorator, Expression, ObjectPropertyKind};
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;

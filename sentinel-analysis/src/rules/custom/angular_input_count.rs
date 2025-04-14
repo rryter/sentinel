@@ -1,5 +1,5 @@
-use oxc_ast::ast::{CallExpression, Expression};
 use oxc_ast::AstKind;
+use oxc_ast::ast::{CallExpression, Expression};
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
