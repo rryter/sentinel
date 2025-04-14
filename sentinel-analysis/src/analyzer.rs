@@ -4,10 +4,10 @@ use crate::rules_registry::RulesRegistry;
 use crate::utilities::{DebugLevel, log};
 
 use oxc_allocator::Allocator;
+use oxc_diagnostics::Error;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use oxc_diagnostics::{Error};
 
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -151,14 +151,17 @@ impl BatchProcessor {
             &content.content,
         );
 
-        let errors: Vec<Error> = diagnostics.iter().map(|diagnostic| {
-            diagnostic.clone().diagnostic.with_source_code(content.content.clone())
-        }).collect();
+        let source_code = content.content.clone();
 
-        if !errors.is_empty() {
-            let error = errors.first();
-            println!("{error:?}");
-        }
+        let errors: Vec<Error> = diagnostics
+            .iter()
+            .map(|diagnostic| {
+                diagnostic
+                    .clone()
+                    .diagnostic
+                    .with_source_code(source_code.clone())
+            })
+            .collect();
 
         FileAnalysisResult {
             file_path: file_path.to_string(),
@@ -167,7 +170,7 @@ impl BatchProcessor {
             rule_durations,
             total_duration: file_start.elapsed(),
             diagnostics,
-            errors
+            errors,
         }
     }
 

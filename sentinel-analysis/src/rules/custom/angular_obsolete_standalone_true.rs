@@ -33,7 +33,8 @@ impl DecoratorPropertyVisitor {
         return OxcDiagnostic::error(format!("Obsolete 'standalone: true' property detected"))
             .with_help(format!(
                 "you can safely remove this line when using angular 19+"
-            )).with_label(span.label(format!("@{} WHAT? usage", name)))
+            ))
+            .with_label(span.label(format!("@{} WHAT? usage", name)));
     }
 
     fn is_component_decorator(&self, decorator: &Decorator) -> bool {

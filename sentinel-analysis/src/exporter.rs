@@ -1,6 +1,8 @@
 use crate::FileAnalysisResult;
 use crate::utilities::{DebugLevel, log};
+use oxc_diagnostics::Error;
 use oxc_diagnostics::Severity;
+use oxc_diagnostics::reporter::Info;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tabled::{
@@ -14,8 +16,8 @@ pub struct FindingEntry {
     pub rule: String,
     pub message: String,
     pub file: String,
-    pub line: u32,
-    pub column: u32,
+    pub line: usize,
+    pub column: usize,
     pub severity: String,
     pub help: Option<String>,
 }
@@ -37,12 +39,12 @@ pub struct FindingsSummary {
 }
 
 /// Extract position information from diagnostic when available
-fn extract_position_info(_diagnostic: &oxc_diagnostics::OxcDiagnostic) -> (u32, u32) {
-    // Default position info if we can't extract better data
-    // For now, we're using static defaults since accessing the span information
-    // from OxcDiagnostic would require more complex handling of the internal structure
-    // or creating a custom implementation
-    (1, 0)
+fn extract_position_info(error: &Option<&Error>) -> (usize, usize) {
+    if let Some(err) = error {
+        let info = Info::new(err);
+        return (info.start.line, info.start.column);
+    }
+    (0, 1)
 }
 
 /// Export diagnostics to findings.json
@@ -71,7 +73,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
             *rule_counts.entry(rule_name.clone()).or_insert(0) += 1;
 
             // Extract position information when available
-            let (line, column) = extract_position_info(&rule_diagnostic.diagnostic);
+            let (line, column) = extract_position_info(&result.errors.first());
 
             // Get severity
             let severity = match rule_diagnostic.diagnostic.severity {
