@@ -29,11 +29,11 @@ impl DecoratorPropertyVisitor {
         }
     }
 
-    fn create_diagnostic() -> OxcDiagnostic {
+    fn create_diagnostic(&self, name: &str, span: Span) -> OxcDiagnostic {
         return OxcDiagnostic::error(format!("Obsolete 'standalone: true' property detected"))
             .with_help(format!(
                 "you can safely remove this line when using angular 19+"
-            ));
+            )).with_label(span.label(format!("@{} WHAT? usage", name)))
     }
 
     fn is_component_decorator(&self, decorator: &Decorator) -> bool {
@@ -62,7 +62,7 @@ impl DecoratorPropertyVisitor {
         for property in &expr.properties {
             if let ObjectPropertyKind::ObjectProperty(loc_prop) = property {
                 if prop_key_name(&loc_prop.key) == "standalone" {
-                    let diagnostic = Self::create_diagnostic();
+                    let diagnostic = self.create_diagnostic("name", loc_prop.span);
                     self.diagnostics.push(diagnostic);
                 }
             }

@@ -6,7 +6,7 @@ pub mod rules;
 pub mod rules_registry;
 pub mod utilities;
 
-use oxc_diagnostics::OxcDiagnostic;
+use oxc_diagnostics::{Error, OxcDiagnostic};
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -17,6 +17,8 @@ pub struct RuleDiagnostic {
     pub rule_id: String,
     /// The actual diagnostic
     pub diagnostic: OxcDiagnostic,
+    /// The source code of the file where the diagnostic was found
+    pub source_code: String,
 }
 
 /// Structure to hold analysis results for a single file
@@ -28,6 +30,7 @@ pub struct FileAnalysisResult {
     pub rule_durations: HashMap<String, Duration>,
     pub total_duration: Duration,
     pub diagnostics: Vec<RuleDiagnostic>,
+    pub errors: Vec<Error>,
 }
 
 // Add any other public exports needed from the library modules here

@@ -7,6 +7,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
+use oxc_diagnostics::{Error};
 
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -121,6 +122,7 @@ impl BatchProcessor {
                 .map(|err| RuleDiagnostic {
                     rule_id: "parser".to_string(),
                     diagnostic: err,
+                    source_code: content.content.clone(),
                 })
                 .collect();
 
@@ -131,6 +133,7 @@ impl BatchProcessor {
                 rule_durations: HashMap::new(),
                 total_duration: file_start.elapsed(),
                 diagnostics: parser_diagnostics,
+                errors: Vec::new(),
             };
         }
 
@@ -142,9 +145,20 @@ impl BatchProcessor {
         let semantic_duration = semantic_start.elapsed();
 
         // Run rules
-        let (diagnostics, rule_durations) = self
-            .rules_registry
-            .run_rules_with_metrics(&semantic_result, file_path);
+        let (diagnostics, rule_durations) = self.rules_registry.run_rules_with_metrics(
+            &semantic_result,
+            file_path,
+            &content.content,
+        );
+
+        let errors: Vec<Error> = diagnostics.iter().map(|diagnostic| {
+            diagnostic.clone().diagnostic.with_source_code(content.content.clone())
+        }).collect();
+
+        if !errors.is_empty() {
+            let error = errors.first();
+            println!("{error:?}");
+        }
 
         FileAnalysisResult {
             file_path: file_path.to_string(),
@@ -153,6 +167,7 @@ impl BatchProcessor {
             rule_durations,
             total_duration: file_start.elapsed(),
             diagnostics,
+            errors
         }
     }
 
@@ -170,6 +185,7 @@ impl BatchProcessor {
             rule_durations: HashMap::new(),
             total_duration: Duration::from_secs(0),
             diagnostics: Vec::new(),
+            errors: Vec::new(),
         }
     }
 }

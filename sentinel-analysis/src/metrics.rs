@@ -541,6 +541,7 @@ pub fn aggregate_metrics(
             rule_durations: result.rule_durations.clone(),
             total_duration: result.total_duration,
             diagnostics: Vec::new(), // Empty vec as diagnostics aren't needed for metrics
+            errors: Vec::new()
         };
         metrics.aggregate_file_result(result_to_aggregate);
     }

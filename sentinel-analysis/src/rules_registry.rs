@@ -84,12 +84,12 @@ impl RulesRegistry {
         self.enabled_rules.iter().cloned().collect()
     }
 
-    /// Run all enabled rules on a file's semantic analysis with metrics tracking.
-    /// Returns diagnostics and a map of rule execution times for this specific run.
+    /// Run all enabled rules on a file's semantic analysis and get metrics by rule
     pub fn run_rules_with_metrics(
         &self,
         semantic_result: &SemanticBuilderReturn,
         file_path: &str,
+        source_code: &str,
     ) -> (Vec<RuleDiagnostic>, HashMap<String, Duration>) {
         let mut diagnostics = Vec::new();
         let mut rule_durations = HashMap::new();
@@ -110,6 +110,7 @@ impl RulesRegistry {
                         diagnostics.push(RuleDiagnostic {
                             rule_id: rule_name.clone(),
                             diagnostic,
+                            source_code: source_code.to_string(),
                         });
                     }
 
@@ -120,21 +121,17 @@ impl RulesRegistry {
             }
 
             // Check if any enabled rule actually uses node-based processing
+            // For simplicity, we'll currently just scan all nodes for all rules
+            // A future optimization would be to:
+            // 1. Check if the rule implements run_on_node (requires modifying trait definition)
+            // 2. Only traverse nodes if at least one rule implements run_on_node
+            // 3. Only call run_on_node for rules that actually implement it (avoiding empty Vec allocations)
             let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
                 self.rules.get(rule_name.as_str()).map_or(false, |_rule| {
-                    // Heuristic: Check if the rule implements run_on_node.
-                    // Since run_on_node now has a default `None` implementation,
-                    // we need a way to know if a specific rule *overrides* it.
-                    // Comparing function pointers for default methods is complex.
-                    // A practical approach is to assume if a rule *might* return
-                    // Some(...) from run_on_node, it's considered node-based.
-                    // For now, we simplify: if a rule *could* be node-based, we run the loop.
-                    // This avoids needing complex reflection or trait checks.
-                    // TODO: A better long-term solution might involve adding metadata
-                    // to the Rule trait (e.g., `uses_run_on_node() -> bool`).
-                    true // Keep simplified check for now - run loop if any rule enabled.
-                    // We accept the overhead if only visitor rules are present,
-                    // as the inner loop won't record metrics anyway.
+                    // For now, we assume all rules *might* use node-based processing
+                    // In the future, we could have a trait method that returns whether
+                    // the rule uses node-based processing
+                    true
                 })
             });
 
@@ -164,7 +161,8 @@ impl RulesRegistry {
                                 for diagnostic in diagnostics_vec {
                                     diagnostics.push(RuleDiagnostic {
                                         rule_id: rule_name.clone(),
-                                        diagnostic,
+                                        diagnostic: diagnostic,
+                                        source_code: source_code.to_string(),
                                     });
                                 }
                             }
@@ -182,6 +180,7 @@ impl RulesRegistry {
         &self,
         semantic_result: &SemanticBuilderReturn,
         file_path: &str,
+        _source_code: &str,
     ) -> RuleResult {
         let mut diagnostics = Vec::new();
 
@@ -198,6 +197,7 @@ impl RulesRegistry {
                         diagnostics.push(RuleDiagnostic {
                             rule_id: rule_name.clone(),
                             diagnostic,
+                            source_code: _source_code.to_string(),
                         });
                     }
                 }
@@ -228,6 +228,7 @@ impl RulesRegistry {
                                     diagnostics.push(RuleDiagnostic {
                                         rule_id: rule_name.clone(),
                                         diagnostic,
+                                        source_code: _source_code.to_string(),
                                     });
                                 }
                             }
