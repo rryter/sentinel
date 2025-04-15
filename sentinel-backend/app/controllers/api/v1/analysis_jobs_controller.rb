@@ -104,12 +104,12 @@ module Api
         # Create a temporary directory for output
         output_dir = Rails.root.join("tmp", "analysis_job_#{job.id}")
         FileUtils.mkdir_p(output_dir)
-        output_file = Rails.root.join("../sentinel-analysis/findings/findings.json")
 
         # Build command with appropriate arguments
         # Adjust these arguments based on your Rust binary's requirements
         command = [
           binary_path.to_s,
+          "--export-json"
         ]
 
         # Log the command being executed
@@ -117,6 +117,8 @@ module Api
 
         # Execute command and capture output
         stdout, stderr, status = Open3.capture3(*command)
+
+        output_file = Rails.root.join("../sentinel-analysis/findings/findings/findings.json")
 
         unless status.success?
           Rails.logger.error("Error executing sentinel-analysis: #{stderr}")

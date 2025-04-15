@@ -25,7 +25,7 @@ pub struct FindingEntry {
 /// Structure for findings export with summary
 #[derive(Serialize, Deserialize)]
 pub struct FindingsExport {
-    pub findings_by_rule: HashMap<String, Vec<FindingEntry>>,
+    pub findings: Vec<FindingEntry>,
     pub summary: FindingsSummary,
 }
 
@@ -49,7 +49,7 @@ fn extract_position_info(errors: &[Error]) -> (usize, usize) {
 
 /// Export diagnostics to findings.json
 pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLevel) {
-    let mut findings_by_rule: HashMap<String, Vec<FindingEntry>> = HashMap::new();
+    let mut findings: Vec<FindingEntry> = Vec::new();
     let mut rule_counts: HashMap<String, usize> = HashMap::new();
     let mut severity_counts: HashMap<String, usize> = HashMap::new();
 
@@ -61,7 +61,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
     // Pre-allocate approximate capacity based on results size to avoid reallocations
     let estimated_findings = results.iter().map(|r| r.diagnostics.len()).sum::<usize>();
     if estimated_findings > 0 {
-        findings_by_rule.reserve(estimated_findings / 2); // Assume average of 2 findings per rule
+        findings.reserve(estimated_findings);
         rule_counts.reserve(estimated_findings / 5); // Assume average of 5 findings per rule
         severity_counts.reserve(3); // Typically just 3 severities
     }
@@ -113,8 +113,8 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
                     .map(|h| h.to_string()),
             };
 
-            // Add finding to findings_by_rule
-            findings_by_rule.entry(rule_name).or_default().push(finding);
+            // Add finding to the flat list
+            findings.push(finding);
         }
     }
 
@@ -148,7 +148,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
 
     // Create findings export structure
     let findings_export = FindingsExport {
-        findings_by_rule,
+        findings,
         summary: FindingsSummary {
             total_findings: rule_counts.values().sum::<usize>(),
             findings_by_rule: rule_counts,
@@ -158,7 +158,7 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
     };
 
     // Save to findings.json
-    if !findings_export.findings_by_rule.is_empty() {
+    if !findings_export.findings.is_empty() {
         // Create findings directory if needed
         if let Err(e) = std::fs::create_dir_all("findings") {
             log(
