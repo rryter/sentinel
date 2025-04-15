@@ -44,7 +44,7 @@
         <span class="text-sm font-medium text-gray-900">
           Total Duration:
           <span class="text-blue-700"
-            >{{ formatMilliseconds(results?.duration || 0) }}
+            >{{ results?.duration || 0 }} ms
           </span>
         </span>
       </div>
@@ -56,15 +56,15 @@
     >
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div class="bg-white rounded-lg p-3 shadow-sm">
-          <p class="text-sm text-gray-500">Files Analyzed</p>
+          <p class="text-sm text-gray-500">Total Files Analyzed</p>
           <p class="text-2xl font-semibold text-blue-700">
-            {{ results?.files_processed || 0 }}
+            {{ formatNumber(results?.files_processed || 0) }}
           </p>
         </div>
         <div class="bg-white rounded-lg p-3 shadow-sm">
           <p class="text-sm text-gray-500">Total Matches Found</p>
           <p class="text-2xl font-semibold text-indigo-700">
-            {{ results?. || 0 }}
+            {{ formatNumber(results?.total_matches || 0) }}
           </p>
         </div>
         <div
@@ -72,7 +72,7 @@
         >
           <p class="text-sm text-gray-500">Rules Matched</p>
           <p class="text-2xl font-semibold text-purple-700">
-            {{ results?.rules_matched || 0 }}
+            {{ formatNumber(results?.rules_matched || 0) }}
           </p>
         </div>
       </div>
@@ -85,26 +85,27 @@
       </h4>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500">Files/Second</p>
+          <p class="text-xs text-gray-500">Files Processed</p>
           <p class="text-lg font-semibold text-gray-900">
-            {{ results?.files_per_second_wall_time?.toFixed(2) || 0 }}
+            {{ formatNumber(results?.files_processed || 0) }}
           </p>
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500">Avg Time/File</p>
+          <p class="text-xs text-gray-500">Files per Second</p>
           <p class="text-lg font-semibold text-gray-900">
-            {{ results?.avg_time_per_file_ms?.toFixed(2) || 0 }} ms
+            {{ formatNumber(results?.files_per_second_wall_time || 0) }}
           </p>
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
           <p class="text-xs text-gray-500">CPU Cores Used</p>
           <p class="text-lg font-semibold text-gray-900">
-            {{ results?.parallel_cores_used || 0 }}
+            {{ formatNumber(results?.parallel_cores_used || 0) }}
           </p>
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
           <p class="text-xs text-gray-500">Parallel Efficiency</p>
           <p class="text-lg font-semibold text-gray-900">
+            {{ (results?.parallel_efficiency_percent ||  0) | number:'1.1-1' }}%
           </p>
         </div>
       </div>
@@ -116,7 +117,33 @@
         Matches by Rule
       </h4>
       <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
-       
+        @for (rule of getObjectEntries(results || {}); track $index) {
+        <div
+          class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+        >
+          <div>
+            <p class="font-medium text-gray-800">{{ rule[0] }}</p>
+            <p class="text-xs text-gray-500">Pattern match</p>
+          </div>
+          <div class="flex items-center">
+            <span
+              class="px-2.5 py-1 text-xs font-medium rounded-full"
+              [ngClass]="{
+                'bg-red-100 text-red-800': rule[1] > 100,
+                'bg-yellow-100 text-yellow-800':
+                  rule[1] > 20 && rule[1] <= 100,
+                'bg-green-100 text-green-800': rule[1] <= 20
+              }"
+            >
+              {{ formatNumber(rule[1]) }} matches
+            </span>
+          </div>
+        </div>
+        } @empty {
+        <div class="text-center py-4 text-gray-500">
+          No rule matches found
+        </div>
+        }
       </div>
     </div>
   </div>

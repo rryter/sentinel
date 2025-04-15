@@ -44,6 +44,16 @@ export class AnalysisResultsComponent implements OnInit {
     return `${value.toFixed(2)}%`;
   }
 
+  formatNumber(value: number): string {
+    if (!value && value !== 0) return '0';
+    
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}k`;
+    }
+    
+    return value.toString();
+  }
+
   getObjectKeys(obj: any): string[] {
     return Object.keys(obj || {});
   }
