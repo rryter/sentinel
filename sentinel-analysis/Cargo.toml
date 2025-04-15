@@ -10,6 +10,9 @@ custom_rules = []
 [dependencies]
 walkdir = "2.4"
 
+# Command line argument parsing
+clap = { version = "4.4", features = ["derive"] }
+
 # For the future integration with oxc parser
 oxc_allocator = "0.63.0"
 oxc_parser = "0.63.0"

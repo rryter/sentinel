@@ -11,6 +11,13 @@ echo "Building typescript-analyzer..."
 cargo build --features custom_rules || { echo "Build failed"; exit 1; }
 cargo fmt
 
+# Check if this is a help request
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+  echo "Running with --help flag"
+  ./target/debug/typescript-analyzer --help
+  exit 0
+fi
+
 # Check if a path argument was provided
 if [ $# -ge 1 ]; then
   # Use the provided path argument

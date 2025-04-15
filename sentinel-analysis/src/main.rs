@@ -5,24 +5,42 @@ use typescript_analyzer::{
     metrics::{aggregate_metrics, export_results},
     rules_registry::setup_rules_registry,
     utilities::{
-        config::{Config, get_debug_level, get_target_path},
+        cli::{get_debug_level_from_args, parse_args},
+        config::{Config, get_target_path},
         file_utils::find_files,
         threading::configure_thread_pool,
     },
 };
 
 fn main() {
+    // Parse command-line arguments
+    let command = parse_args();
+    let matches = command.get_matches();
+
     // Initialize configuration and setup
     let config = Config::load();
-    let args: Vec<String> = env::args().collect();
-    let debug_level = get_debug_level(&config, &args);
+    let debug_level = get_debug_level_from_args(&matches);
+
+    // Check if --help was provided
+    if matches.contains_id("help") {
+        // clap has already displayed the help message
+        return;
+    }
 
     // Configure thread pool and rules registry
     configure_thread_pool(&config, debug_level);
-    let rules_registry_arc = Arc::new(setup_rules_registry(&config, &args, debug_level));
+    let rules_registry_arc = Arc::new(setup_rules_registry(
+        &config,
+        &env::args().collect::<Vec<_>>(),
+        debug_level,
+    ));
 
     // Find and process files
-    let dir_path = get_target_path(&config, &args);
+    let dir_path = match matches.get_one::<String>("PATH") {
+        Some(path) => path.clone(),
+        None => get_target_path(&config, &env::args().collect::<Vec<_>>()),
+    };
+
     let (files, scan_duration) = find_files(&dir_path, debug_level);
     let (analysis_results, analysis_duration) =
         process_files(&files, &rules_registry_arc, debug_level);
