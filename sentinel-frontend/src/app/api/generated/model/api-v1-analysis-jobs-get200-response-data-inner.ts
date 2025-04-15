@@ -21,7 +21,15 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInner {
     completed_at?: string | null;
     created_at?: string;
     updated_at?: string;
-    processing_duration?: number | null;
+    duration?: number | null;
+    files_processed?: number | null;
+    files_per_second_wall_time?: number | null;
+    cumulative_processing_time_ms?: number | null;
+    avg_time_per_file_ms?: number | null;
+    files_per_second_cpu_time?: number | null;
+    parallel_cores_used?: number | null;
+    parallel_speedup_factor?: number | null;
+    parallel_efficiency_percent?: number | null;
 }
 export enum ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum {
     PENDING = 'pending',

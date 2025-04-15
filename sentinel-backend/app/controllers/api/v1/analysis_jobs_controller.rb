@@ -120,6 +120,7 @@ module Api
           metrics[:parallel_efficiency_percent] = summary['parallel_efficiency_percent'] if summary.has_key?('parallel_efficiency_percent')
         end
         
+        # Try to get metrics from stats or performance sections if not found in summary
         # Update the job with the extracted metrics
         job.update(metrics) if metrics.any?
         
