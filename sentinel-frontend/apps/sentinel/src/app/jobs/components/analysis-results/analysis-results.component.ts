@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
+import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
 
 @Component({
   selector: 'app-analysis-results',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HlmSkeletonComponent],
   templateUrl: './analysis-results.component.html',
 })
 export class AnalysisResultsComponent implements OnInit {
@@ -46,11 +47,11 @@ export class AnalysisResultsComponent implements OnInit {
 
   formatNumber(value: number): string {
     if (!value && value !== 0) return '0';
-    
+
     if (value >= 1000) {
       return `${(value / 1000).toFixed(1)}k`;
     }
-    
+
     return value.toString();
   }
 
@@ -61,18 +62,32 @@ export class AnalysisResultsComponent implements OnInit {
   getObjectEntries(obj: any): [string, any][] {
     // Filter out the performance metrics and other non-rule fields
     const keysToFilter = [
-      'id', 'project_id', 'status', 'total_files', 'total_matches', 
-      'rules_matched', 'completed_at', 'created_at', 'updated_at', 
-      'duration', 'files_processed', 'files_per_second_wall_time',
-      'cumulative_processing_time_ms', 'avg_time_per_file_ms',
-      'files_per_second_cpu_time', 'parallel_cores_used',
-      'parallel_speedup_factor', 'parallel_efficiency_percent',
-      'files_with_violations', 'pattern_matches'
+      'id',
+      'project_id',
+      'status',
+      'total_files',
+      'total_matches',
+      'rules_matched',
+      'completed_at',
+      'created_at',
+      'updated_at',
+      'duration',
+      'files_processed',
+      'files_per_second_wall_time',
+      'cumulative_processing_time_ms',
+      'avg_time_per_file_ms',
+      'files_per_second_cpu_time',
+      'parallel_cores_used',
+      'parallel_speedup_factor',
+      'parallel_efficiency_percent',
+      'files_with_violations',
+      'pattern_matches',
     ];
-    
-    const filteredEntries = Object.entries(obj || {})
-      .filter(([key]) => !keysToFilter.includes(key));
-    
+
+    const filteredEntries = Object.entries(obj || {}).filter(
+      ([key]) => !keysToFilter.includes(key),
+    );
+
     return filteredEntries;
   }
 }

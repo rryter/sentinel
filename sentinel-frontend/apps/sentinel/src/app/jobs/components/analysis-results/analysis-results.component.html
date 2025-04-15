@@ -1,13 +1,20 @@
+@if (!results) {
+  <hlm-skeleton class="w-12 h-12 rounded-full" />
+  <div class="space-y-2">
+    <hlm-skeleton class="h-4 w-[250px]" />
+    <hlm-skeleton class="h-4 w-[200px]" />
+  </div>
+}
+
 <div class="mt-6">
   <!-- Status Header -->
   <div
     class="mb-4 p-4 rounded-lg"
     [ngClass]="{
-      'bg-green-100 border border-green-200':
-        results?.status === 'completed',
+      'bg-green-100 border border-green-200': results?.status === 'completed',
       'bg-yellow-100 border border-yellow-200':
         results?.status === 'running' || results?.status === 'pending',
-      'bg-red-100 border border-red-200': results?.status === 'failed'
+      'bg-red-100 border border-red-200': results?.status === 'failed',
     }"
   >
     <div class="flex items-center">
@@ -17,7 +24,7 @@
           'bg-green-500': results?.status === 'completed',
           'bg-yellow-500':
             results?.status === 'running' || results?.status === 'pending',
-          'bg-red-500': results?.status === 'failed'
+          'bg-red-500': results?.status === 'failed',
         }"
       ></div>
       <h2
@@ -26,7 +33,7 @@
           'text-green-800': results?.status === 'completed',
           'text-yellow-800':
             results?.status === 'running' || results?.status === 'pending',
-          'text-red-800': results?.status === 'failed'
+          'text-red-800': results?.status === 'failed',
         }"
       >
         Analysis Status: {{ results?.status || 'Unknown' | titlecase }}
@@ -43,9 +50,7 @@
       <div class="flex items-center justify-between">
         <span class="text-sm font-medium text-gray-900">
           Total Duration:
-          <span class="text-blue-700"
-            >{{ results?.duration || 0 }} ms
-          </span>
+          <span class="text-blue-700">{{ results?.duration || 0 }} ms </span>
         </span>
       </div>
     </div>
@@ -67,9 +72,7 @@
             {{ formatNumber(results?.total_matches || 0) }}
           </p>
         </div>
-        <div
-          class="bg-white rounded-lg p-3 shadow-sm md:col-span-1 col-span-2"
-        >
+        <div class="bg-white rounded-lg p-3 shadow-sm md:col-span-1 col-span-2">
           <p class="text-sm text-gray-500">Rules Matched</p>
           <p class="text-2xl font-semibold text-purple-700">
             {{ formatNumber(results?.rules_matched || 0) }}
@@ -105,7 +108,7 @@
         <div class="bg-gray-50 rounded-lg p-3">
           <p class="text-xs text-gray-500">Parallel Efficiency</p>
           <p class="text-lg font-semibold text-gray-900">
-            {{ (results?.parallel_efficiency_percent ||  0) | number:'1.1-1' }}%
+            {{ results?.parallel_efficiency_percent || 0 | number: '1.1-1' }}%
           </p>
         </div>
       </div>
@@ -113,38 +116,36 @@
 
     <!-- Rules Breakdown -->
     <div class="p-4">
-      <h4 class="text-md font-medium text-gray-800 mb-3">
-        Matches by Rule
-      </h4>
+      <h4 class="text-md font-medium text-gray-800 mb-3">Matches by Rule</h4>
       <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
         @for (rule of getObjectEntries(results || {}); track $index) {
-        <div
-          class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-        >
-          <div>
-            <p class="font-medium text-gray-800">{{ rule[0] }}</p>
-            <p class="text-xs text-gray-500">Pattern match</p>
+          <div
+            class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <div>
+              <p class="font-medium text-gray-800">{{ rule[0] }}</p>
+              <p class="text-xs text-gray-500">Pattern match</p>
+            </div>
+            <div class="flex items-center">
+              <span
+                class="px-2.5 py-1 text-xs font-medium rounded-full"
+                [ngClass]="{
+                  'bg-red-100 text-red-800': rule[1] > 100,
+                  'bg-yellow-100 text-yellow-800':
+                    rule[1] > 20 && rule[1] <= 100,
+                  'bg-green-100 text-green-800': rule[1] <= 20,
+                }"
+              >
+                {{ formatNumber(rule[1]) }} matches
+              </span>
+            </div>
           </div>
-          <div class="flex items-center">
-            <span
-              class="px-2.5 py-1 text-xs font-medium rounded-full"
-              [ngClass]="{
-                'bg-red-100 text-red-800': rule[1] > 100,
-                'bg-yellow-100 text-yellow-800':
-                  rule[1] > 20 && rule[1] <= 100,
-                'bg-green-100 text-green-800': rule[1] <= 20
-              }"
-            >
-              {{ formatNumber(rule[1]) }} matches
-            </span>
-          </div>
-        </div>
         } @empty {
-        <div class="text-center py-4 text-gray-500">
-          No rule matches found
-        </div>
+          <div class="text-center py-4 text-gray-500">
+            No rule matches found
+          </div>
         }
       </div>
     </div>
   </div>
-</div> 
+</div>
