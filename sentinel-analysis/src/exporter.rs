@@ -32,10 +32,20 @@ pub struct FindingsExport {
 /// Structure for findings summary
 #[derive(Serialize, Deserialize)]
 pub struct FindingsSummary {
+    // Basic findings info
     pub total_findings: usize,
     pub findings_by_rule: HashMap<String, usize>,
     pub findings_by_severity: HashMap<String, usize>,
     pub timestamp: String,
+
+    // Performance metrics
+    pub total_duration_ms: u64,
+    pub files_processed: usize,
+    pub files_per_second_wall_time: f64,
+    pub parallel_cores_used: usize,
+    pub parallel_efficiency_percent: f64,
+    pub scan_duration_ms: u64,
+    pub analysis_duration_ms: u64,
 }
 
 /// Extract position information from diagnostic when available
@@ -47,8 +57,29 @@ fn extract_position_info(errors: &[Error]) -> (usize, usize) {
     (0, 1)
 }
 
+/// Get total duration in ms
+fn get_total_duration_ms(metrics: &crate::Metrics) -> u64 {
+    // Calculate total duration as sum of scan and analysis duration
+    let scan_ms = metrics
+        .scan_duration
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+
+    let analysis_ms = metrics
+        .analysis_duration
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+
+    // Return the sum of scan and analysis duration
+    scan_ms + analysis_ms
+}
+
 /// Export diagnostics to findings.json
-pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLevel) {
+pub fn export_findings_json(
+    results: &[FileAnalysisResult],
+    metrics: &crate::Metrics,
+    debug_level: DebugLevel,
+) {
     let mut findings: Vec<FindingEntry> = Vec::new();
     let mut rule_counts: HashMap<String, usize> = HashMap::new();
     let mut severity_counts: HashMap<String, usize> = HashMap::new();
@@ -146,6 +177,55 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
         rule_counts.values().sum::<usize>()
     );
 
+    // Get total duration in ms
+    let total_duration_ms = get_total_duration_ms(metrics);
+
+    // Get files processed and processing rate
+    let files_processed = metrics.file_times.len();
+
+    // Calculate files per second (wall time)
+    let files_per_second_wall_time = if let Some(analysis_duration) = metrics.analysis_duration {
+        if !analysis_duration.is_zero() {
+            files_processed as f64 / analysis_duration.as_secs_f64()
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+
+    // Get parallel cores used
+    let parallel_cores_used = rayon::current_num_threads();
+
+    // Calculate parallel efficiency
+    let parallel_efficiency_percent = if parallel_cores_used > 0 {
+        let cumulative_processing_time: std::time::Duration = metrics.file_times.values().sum();
+        if let Some(analysis_duration) = metrics.analysis_duration {
+            if !analysis_duration.is_zero() {
+                let speedup_factor =
+                    cumulative_processing_time.as_secs_f64() / analysis_duration.as_secs_f64();
+                (speedup_factor / parallel_cores_used as f64) * 100.0
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+
+    // Get scan and analysis durations
+    let scan_duration_ms = metrics
+        .scan_duration
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+
+    let analysis_duration_ms = metrics
+        .analysis_duration
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0);
+
     // Create findings export structure
     let findings_export = FindingsExport {
         findings,
@@ -154,6 +234,13 @@ pub fn export_findings_json(results: &[FileAnalysisResult], debug_level: DebugLe
             findings_by_rule: rule_counts,
             findings_by_severity: severity_counts,
             timestamp: chrono::Utc::now().to_rfc3339(),
+            total_duration_ms,
+            files_processed,
+            files_per_second_wall_time,
+            parallel_cores_used,
+            parallel_efficiency_percent,
+            scan_duration_ms,
+            analysis_duration_ms,
         },
     };
 

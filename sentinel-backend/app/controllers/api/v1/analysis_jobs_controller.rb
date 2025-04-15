@@ -53,6 +53,9 @@ module Api
             # Process results immediately
             # process_results(@job, results)
 
+            # Extract metrics from the results and update the job
+            update_job_with_performance_metrics(@job, results)
+
             # Update to completed when done
             @job.update(status: "completed")
 
@@ -97,6 +100,32 @@ module Api
         render json: { error: "Analysis job not found" }, status: :not_found
       end
 
+      def update_job_with_performance_metrics(job, results)
+        return unless results.is_a?(Hash)
+        
+        # Extract metrics from different possible locations in the JSON
+        metrics = {}
+        
+        # Try to get metrics from summary
+        if results.has_key?('summary')
+          summary = results['summary']
+          metrics[:duration] = summary['total_duration_ms'] if summary.has_key?('total_duration_ms')
+          metrics[:files_processed] = summary['files_processed'] if summary.has_key?('files_processed')
+          metrics[:files_per_second_wall_time] = summary['files_per_second_wall_time'] if summary.has_key?('files_per_second_wall_time')
+          metrics[:cumulative_processing_time_ms] = summary['cumulative_processing_time_ms'] if summary.has_key?('cumulative_processing_time_ms')
+          metrics[:avg_time_per_file_ms] = summary['avg_time_per_file_ms'] if summary.has_key?('avg_time_per_file_ms')
+          metrics[:files_per_second_cpu_time] = summary['files_per_second_cpu_time'] if summary.has_key?('files_per_second_cpu_time')
+          metrics[:parallel_cores_used] = summary['parallel_cores_used'] if summary.has_key?('parallel_cores_used')
+          metrics[:parallel_speedup_factor] = summary['parallel_speedup_factor'] if summary.has_key?('parallel_speedup_factor')
+          metrics[:parallel_efficiency_percent] = summary['parallel_efficiency_percent'] if summary.has_key?('parallel_efficiency_percent')
+        end
+        
+        # Update the job with the extracted metrics
+        job.update(metrics) if metrics.any?
+        
+        Rails.logger.info("Updated job #{job.id} with performance metrics: #{metrics.inspect}")
+      end
+
       def perform_analysis(project, job)
         # Path to the Rust binary
         binary_path = Rails.root.join("../sentinel-analysis/target/release/typescript-analyzer")
@@ -118,7 +147,7 @@ module Api
         # Execute command and capture output
         stdout, stderr, status = Open3.capture3(*command)
 
-        output_file = Rails.root.join("../sentinel-analysis/findings/findings/findings.json")
+        output_file = Rails.root.join("../sentinel-analysis/findings/findings.json")
 
         unless status.success?
           Rails.logger.error("Error executing sentinel-analysis: #{stderr}")
@@ -129,6 +158,27 @@ module Api
         if File.exist?(output_file)
           results = JSON.parse(File.read(output_file))
           Rails.logger.info("Analysis completed successfully with #{results.size} results")
+          
+          # Todo: Clean up
+          # Extract duration from results and save it to the job
+          if results.is_a?(Hash) && results.has_key?('metadata') && results['metadata'].has_key?('duration_ms')
+            duration_ms = results['metadata']['duration_ms'].to_i
+            job.update(duration: duration_ms)
+            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
+          elsif results.is_a?(Hash) && results.has_key?('metadata') && results['metadata'].has_key?('duration')
+            duration_ms = results['metadata']['duration'].to_i
+            job.update(duration: duration_ms)
+            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
+          elsif results.is_a?(Hash) && results.has_key?('duration_ms')
+            duration_ms = results['duration_ms'].to_i
+            job.update(duration: duration_ms)
+            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
+          elsif results.is_a?(Hash) && results.has_key?('duration')
+            duration_ms = results['duration'].to_i
+            job.update(duration: duration_ms)
+            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
+          end
+          
           results
         else
           raise "Analysis output file not found: #{"./sentinel-analysis/findings/findings.json"}"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_01_153209) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,6 +26,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_01_153209) do
     t.text "error_message"
     t.integer "total_matches"
     t.integer "rules_matched"
+    t.integer "duration", comment: "Duration of the analysis in milliseconds"
+    t.integer "files_processed", comment: "Number of files processed during analysis"
+    t.float "files_per_second_wall_time", comment: "Files processed per second (wall time)"
+    t.integer "cumulative_processing_time_ms", comment: "Cumulative processing time in milliseconds"
+    t.float "avg_time_per_file_ms", comment: "Average time per file in milliseconds"
+    t.float "files_per_second_cpu_time", comment: "Files processed per second (CPU time)"
+    t.integer "parallel_cores_used", comment: "Number of CPU cores used in parallel processing"
+    t.float "parallel_speedup_factor", comment: "Speedup factor from parallel processing"
+    t.float "parallel_efficiency_percent", comment: "Efficiency of parallel processing in percent"
     t.index ["project_id"], name: "index_analysis_jobs_on_project_id"
     t.index ["status"], name: "index_analysis_jobs_on_status"
   end

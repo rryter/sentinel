@@ -575,5 +575,5 @@ pub fn export_results(
     debug_level: DebugLevel,
 ) {
     export_metrics(config, metrics, debug_level);
-    export_findings_json(analysis_results, debug_level);
+    export_findings_json(analysis_results, metrics, debug_level);
 }
