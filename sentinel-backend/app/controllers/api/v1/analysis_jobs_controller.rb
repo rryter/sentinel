@@ -92,6 +92,37 @@ module Api
       end
 
       # Add the process_results action
+      def process_results(job, results)
+        return if results.nil? || results.empty?
+
+        # Group results by file path
+        results_by_file = results.group_by { |r| r["file_path"] }
+
+=begin
+        ActiveRecord::Base.transaction do
+          results_by_file.each do |file_path, violations|
+            # Create file record
+            file = job.files_with_violations.create!(file_path: file_path)
+
+            # Create violation records for each finding
+            violations.each do |violation|
+              file.pattern_matches.create!(
+                rule_id: violation['rule_id'],
+                rule_name: violation['rule_name'],
+                message: violation['message'],
+                line: violation['line'],
+                column: violation['column'],
+                severity: violation['severity'] || 'error',
+                source_snippet: violation['source_snippet']
+              )
+            end
+          end
+        end
+=end
+
+        Rails.logger.info("Processed #{results.size} violations across #{results_by_file.size} files for job #{job.id}")
+      end
+
       private
 
       def set_job
@@ -160,6 +191,14 @@ module Api
           results = JSON.parse(File.read(output_file))
           Rails.logger.info("Analysis completed successfully with #{results.size} results")
           
+          # Process the findings directly
+          service = AnalysisService.new(job.id)
+          if service.process_findings(job, results)
+            Rails.logger.info("Successfully processed #{results['findings']&.size || 0} findings for job #{job.id}")
+          else
+            Rails.logger.warn("Failed to process findings for job #{job.id}")
+          end
+          
           # Todo: Clean up
           # Extract duration from results and save it to the job
           if results.is_a?(Hash) && results.has_key?('metadata') && results['metadata'].has_key?('duration_ms')
@@ -187,37 +226,6 @@ module Api
       ensure
         # Clean up temporary files unless we want to keep them for debugging
         FileUtils.rm_rf(output_dir) if output_dir && !Rails.env.development?
-      end
-
-      def process_results(job, results)
-        return if results.nil? || results.empty?
-
-        # Group results by file path
-        results_by_file = results.group_by { |r| r["file_path"] }
-
-=begin
-        ActiveRecord::Base.transaction do
-          results_by_file.each do |file_path, violations|
-            # Create file record
-            file = job.files_with_violations.create!(file_path: file_path)
-
-            # Create violation records for each finding
-            violations.each do |violation|
-              file.pattern_matches.create!(
-                rule_id: violation['rule_id'],
-                rule_name: violation['rule_name'],
-                message: violation['message'],
-                line: violation['line'],
-                column: violation['column'],
-                severity: violation['severity'] || 'error',
-                source_snippet: violation['source_snippet']
-              )
-            end
-          end
-        end
-=end
-
-        Rails.logger.info("Processed #{results.size} violations across #{results_by_file.size} files for job #{job.id}")
       end
     end
   end

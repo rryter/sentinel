@@ -177,4 +177,58 @@ class AnalysisService
       
       true
     end
+    
+    def process_findings(analysis_job, findings_data)
+      # Validate input
+      unless findings_data.is_a?(Hash) && findings_data['findings'].is_a?(Array)
+        Rails.logger.error("Invalid findings data format for job #{analysis_job.id}")
+        return false
+      end
+      
+      ActiveRecord::Base.transaction do
+        # Process each finding
+        file_cache = {} # Cache to avoid repeated DB lookups
+        
+        findings_data['findings'].each do |finding|
+          # Get or create file_with_violations record
+          file_path = finding['file']
+          file_with_violations = file_cache[file_path]
+          
+          unless file_with_violations
+            file_with_violations = analysis_job.files_with_violations.find_or_create_by!(file_path: file_path)
+            file_cache[file_path] = file_with_violations
+          end
+          
+          # Create pattern match record
+          file_with_violations.pattern_matches.create!(
+            rule_id: nil, # Can be added if available in the data
+            rule_name: finding['rule'],
+            description: finding['message'],
+            start_line: finding['line'],
+            end_line: finding['line'], # Same as start line if not specified
+            start_col: finding['column'],
+            end_col: finding['column'] + 1, # Estimate end column if not provided
+            metadata: {
+              severity: finding['severity'],
+              help: finding['help']
+            }
+          )
+        end
+        
+        # Update summary statistics in analysis job if provided
+        if findings_data['summary'].present?
+          analysis_job.update!(
+            total_matches: findings_data['findings'].size,
+            rules_matched: findings_data['summary']['findings_by_rule']&.keys&.size || 0,
+            files_processed: findings_data['summary']['files_processed'],
+            files_per_second_wall_time: findings_data['summary']['files_per_second_wall_time'],
+            parallel_cores_used: findings_data['summary']['parallel_cores_used'],
+            parallel_efficiency_percent: findings_data['summary']['parallel_efficiency_percent'],
+            duration: findings_data['summary']['total_duration_ms']
+          )
+        end
+      end
+      
+      true
+    end
   end
