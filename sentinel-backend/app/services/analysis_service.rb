@@ -1,3 +1,6 @@
+require 'fileutils'
+require 'open3'
+
 # app/services/analysis_service.rb
 class AnalysisService
     def analyzer_service_url
@@ -96,6 +99,19 @@ class AnalysisService
     end
     
     def process_results(analysis_job)
+      # If we don't have a Go job ID, check if we have already processed results
+      if analysis_job.go_job_id.blank?
+        # Check if we have processed findings already
+        if analysis_job.pattern_matches.exists?
+          Rails.logger.info("Job #{@job_id} has existing pattern matches but no Go job ID, skipping external fetch")
+          return true
+        else
+          Rails.logger.error("Cannot process results for job #{@job_id} - missing Go job ID and no existing results")
+          return false
+        end
+      end
+      
+      # Fetch data from Go service
       data = fetch_patterns
       return false unless data
       
@@ -176,6 +192,62 @@ class AnalysisService
       end
       
       true
+    end
+    
+    def perform_analysis(project)
+      # Path to the Rust binary
+      binary_path = Rails.root.join("../sentinel-analysis/target/release/typescript-analyzer")
+
+      # Create a temporary directory for output
+      output_dir = Rails.root.join("tmp", "analysis_job_#{@job_id}")
+      FileUtils.mkdir_p(output_dir)
+      
+      job = AnalysisJob.find(@job_id)
+
+      # Build command with appropriate arguments
+      command = [
+        binary_path.to_s,
+        "--export-json"
+      ]
+
+      # Log the command being executed
+      Rails.logger.info("Executing: #{command.join(' ')}")
+
+      # Execute command and capture output
+      stdout, stderr, status = Open3.capture3(*command)
+
+      output_file = Rails.root.join("../sentinel-analysis/findings/findings.json")
+
+      unless status.success?
+        Rails.logger.error("Error executing sentinel-analysis: #{stderr}")
+        job.update(status: "failed", error_message: stderr)
+        raise "Analysis failed: #{stderr}"
+      end
+
+      # Read and parse the results file
+      if File.exist?(output_file)
+        results = JSON.parse(File.read(output_file))
+        Rails.logger.info("Analysis completed successfully with #{results.size} results")
+        
+        # Process the findings directly
+        if process_findings(job, results)
+          Rails.logger.info("Successfully processed #{results['findings']&.size || 0} findings for job #{job.id}")
+          # Mark job as completed
+          job.update(status: "completed")
+        else
+          Rails.logger.warn("Failed to process findings for job #{job.id}")
+          job.update(status: "failed", error_message: "Failed to process findings")
+        end
+        
+        results
+      else
+        error_message = "Analysis output file not found: #{"./sentinel-analysis/findings/findings.json"}"
+        job.update(status: "failed", error_message: error_message)
+        raise error_message
+      end
+    ensure
+      # Clean up temporary files unless we want to keep them for debugging
+      FileUtils.rm_rf(output_dir) if output_dir && !Rails.env.development?
     end
     
     def process_findings(analysis_job, findings_data)

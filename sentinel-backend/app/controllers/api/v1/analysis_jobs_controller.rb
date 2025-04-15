@@ -1,7 +1,7 @@
 module Api
   module V1
     class AnalysisJobsController < ApplicationController
-      before_action :set_job, only: [:show]
+      before_action :set_job, only: [:show, :fetch_results]
 
       def index
         @jobs = AnalysisJob.includes(:files_with_violations, :pattern_matches)
@@ -44,23 +44,20 @@ module Api
 
         if @job.save
           begin
-            # Update status to 'running' or another valid status before processing
-            @job.update(status: "running")
-
-            # Run the analysis directly
-            results = perform_analysis(@project, @job)
-
-            # Process results immediately
-            # process_results(@job, results)
-
-            # Extract metrics from the results and update the job
-            update_job_with_performance_metrics(@job, results)
-
-            # Update to completed when done
-            @job.update(status: "completed")
+            # Initialize the analysis service
+            service = AnalysisService.new(@job.id)
+            
+            # Start analysis (sets status to running)
+            service.start_analysis(@project.id)
+            
+            # Perform the actual analysis
+            results = service.perform_analysis(@project)
+            
+            # Update performance metrics separately
+            PerformanceMetricsService.update_job_with_metrics(@job, results)
 
             render json: {
-              data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
+              data: ActiveModelSerializers::SerializableResource.new(@job.reload, adapter: :attributes).as_json
             }, status: :created
           rescue StandardError => e
             @job.update(status: "failed", error_message: e.message)
@@ -72,55 +69,17 @@ module Api
         end
       end
 
-      # Add the fetch_results action
+      # Fetch results from the analysis service
       def fetch_results
         @job = AnalysisJob.find(params[:id])
 
         begin
-          if @job.fetch_results
             render json: {
-              data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
+              data: ActiveModelSerializers::SerializableResource.new(@job.reload, adapter: :attributes).as_json
             }
-          else
-            render json: { error: "Failed to fetch analysis results" }, status: :service_unavailable
-          end
         rescue StandardError => e
-          render json: { error: "Failed to fetch analysis results" }, status: :service_unavailable
+          render json: { error: e.message }, status: :service_unavailable
         end
-      rescue ActiveRecord::RecordNotFound
-        render json: { error: "Analysis job not found" }, status: :not_found
-      end
-
-      # Add the process_results action
-      def process_results(job, results)
-        return if results.nil? || results.empty?
-
-        # Group results by file path
-        results_by_file = results.group_by { |r| r["file_path"] }
-
-=begin
-        ActiveRecord::Base.transaction do
-          results_by_file.each do |file_path, violations|
-            # Create file record
-            file = job.files_with_violations.create!(file_path: file_path)
-
-            # Create violation records for each finding
-            violations.each do |violation|
-              file.pattern_matches.create!(
-                rule_id: violation['rule_id'],
-                rule_name: violation['rule_name'],
-                message: violation['message'],
-                line: violation['line'],
-                column: violation['column'],
-                severity: violation['severity'] || 'error',
-                source_snippet: violation['source_snippet']
-              )
-            end
-          end
-        end
-=end
-
-        Rails.logger.info("Processed #{results.size} violations across #{results_by_file.size} files for job #{job.id}")
       end
 
       private
@@ -129,103 +88,6 @@ module Api
         @job = AnalysisJob.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render json: { error: "Analysis job not found" }, status: :not_found
-      end
-
-      def update_job_with_performance_metrics(job, results)
-        return unless results.is_a?(Hash)
-        
-        # Extract metrics from different possible locations in the JSON
-        metrics = {}
-        
-        # Try to get metrics from summary
-        if results.has_key?('summary')
-          summary = results['summary']
-          metrics[:duration] = summary['total_duration_ms'] if summary.has_key?('total_duration_ms')
-          metrics[:files_processed] = summary['files_processed'] if summary.has_key?('files_processed')
-          metrics[:files_per_second_wall_time] = summary['files_per_second_wall_time'] if summary.has_key?('files_per_second_wall_time')
-          metrics[:cumulative_processing_time_ms] = summary['cumulative_processing_time_ms'] if summary.has_key?('cumulative_processing_time_ms')
-          metrics[:avg_time_per_file_ms] = summary['avg_time_per_file_ms'] if summary.has_key?('avg_time_per_file_ms')
-          metrics[:files_per_second_cpu_time] = summary['files_per_second_cpu_time'] if summary.has_key?('files_per_second_cpu_time')
-          metrics[:parallel_cores_used] = summary['parallel_cores_used'] if summary.has_key?('parallel_cores_used')
-          metrics[:parallel_speedup_factor] = summary['parallel_speedup_factor'] if summary.has_key?('parallel_speedup_factor')
-          metrics[:parallel_efficiency_percent] = summary['parallel_efficiency_percent'] if summary.has_key?('parallel_efficiency_percent')
-        end
-        
-        # Try to get metrics from stats or performance sections if not found in summary
-        # Update the job with the extracted metrics
-        job.update(metrics) if metrics.any?
-        
-        Rails.logger.info("Updated job #{job.id} with performance metrics: #{metrics.inspect}")
-      end
-
-      def perform_analysis(project, job)
-        # Path to the Rust binary
-        binary_path = Rails.root.join("../sentinel-analysis/target/release/typescript-analyzer")
-
-        # Create a temporary directory for output
-        output_dir = Rails.root.join("tmp", "analysis_job_#{job.id}")
-        FileUtils.mkdir_p(output_dir)
-
-        # Build command with appropriate arguments
-        # Adjust these arguments based on your Rust binary's requirements
-        command = [
-          binary_path.to_s,
-          "--export-json"
-        ]
-
-        # Log the command being executed
-        Rails.logger.info("Executing: #{command.join(' ')}")
-
-        # Execute command and capture output
-        stdout, stderr, status = Open3.capture3(*command)
-
-        output_file = Rails.root.join("../sentinel-analysis/findings/findings.json")
-
-        unless status.success?
-          Rails.logger.error("Error executing sentinel-analysis: #{stderr}")
-          raise "Analysis failed: #{stderr}"
-        end
-
-        # Read and parse the results file
-        if File.exist?(output_file)
-          results = JSON.parse(File.read(output_file))
-          Rails.logger.info("Analysis completed successfully with #{results.size} results")
-          
-          # Process the findings directly
-          service = AnalysisService.new(job.id)
-          if service.process_findings(job, results)
-            Rails.logger.info("Successfully processed #{results['findings']&.size || 0} findings for job #{job.id}")
-          else
-            Rails.logger.warn("Failed to process findings for job #{job.id}")
-          end
-          
-          # Todo: Clean up
-          # Extract duration from results and save it to the job
-          if results.is_a?(Hash) && results.has_key?('metadata') && results['metadata'].has_key?('duration_ms')
-            duration_ms = results['metadata']['duration_ms'].to_i
-            job.update(duration: duration_ms)
-            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
-          elsif results.is_a?(Hash) && results.has_key?('metadata') && results['metadata'].has_key?('duration')
-            duration_ms = results['metadata']['duration'].to_i
-            job.update(duration: duration_ms)
-            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
-          elsif results.is_a?(Hash) && results.has_key?('duration_ms')
-            duration_ms = results['duration_ms'].to_i
-            job.update(duration: duration_ms)
-            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
-          elsif results.is_a?(Hash) && results.has_key?('duration')
-            duration_ms = results['duration'].to_i
-            job.update(duration: duration_ms)
-            Rails.logger.info("Analysis job #{job.id} took #{duration_ms} ms to complete")
-          end
-          
-          results
-        else
-          raise "Analysis output file not found: #{"./sentinel-analysis/findings/findings.json"}"
-        end
-      ensure
-        # Clean up temporary files unless we want to keep them for debugging
-        FileUtils.rm_rf(output_dir) if output_dir && !Rails.env.development?
       end
     end
   end

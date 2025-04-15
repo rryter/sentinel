@@ -16,8 +16,14 @@ class AnalysisJob < ActiveRecord::Base
   paginates_per 10
 
   def fetch_results
-    # This is a placeholder method that will be implemented by the service
-    # For now, it just returns true to allow the tests to pass
-    true
+    # Call the analysis service to fetch and process results
+    begin
+      service = AnalysisService.new(id)
+      service.process_results(self)
+    rescue StandardError => e
+      Rails.logger.error("Error fetching results for job #{id}: #{e.message}")
+      update(error_message: "Failed to fetch results: #{e.message}")
+      false
+    end
   end
 end
