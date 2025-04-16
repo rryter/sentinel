@@ -240,7 +240,8 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
         let(:id) { analysis_job.id }
         
         before do
-          allow_any_instance_of(AnalysisJob).to receive(:fetch_results).and_raise(StandardError)
+          # Force the controller to raise an error when fetching results
+          allow_any_instance_of(AnalysisJob).to receive(:reload).and_raise(StandardError.new("Service unavailable"))
         end
         
         run_test! do |response|
@@ -267,6 +268,11 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
         let(:project) { create(:project) }
         let(:analysis_job) { create(:analysis_job, :completed, project: project) }
         let(:id) { analysis_job.id }
+        
+        before do
+          # Mock the AnalysisService to avoid actual service calls
+          allow_any_instance_of(AnalysisService).to receive(:process_results).and_return(true)
+        end
         
         run_test! do |response|
           data = JSON.parse(response.body)

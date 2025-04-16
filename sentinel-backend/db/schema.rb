@@ -60,9 +60,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.jsonb "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "severity_id"
     t.index ["file_with_violations_id"], name: "index_pattern_matches_on_file_with_violations_id"
     t.index ["rule_id"], name: "index_pattern_matches_on_rule_id"
     t.index ["rule_name"], name: "index_pattern_matches_on_rule_name"
+    t.index ["severity_id"], name: "index_pattern_matches_on_severity_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -73,7 +75,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.index ["name"], name: "index_projects_on_name", unique: true
   end
 
+  create_table "severities", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "level", null: false
+    t.string "color_code"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["level"], name: "index_severities_on_level", unique: true
+    t.index ["name"], name: "index_severities_on_name", unique: true
+  end
+
   add_foreign_key "analysis_jobs", "projects"
   add_foreign_key "files_with_violations", "analysis_jobs"
   add_foreign_key "pattern_matches", "files_with_violations", column: "file_with_violations_id"
+  add_foreign_key "pattern_matches", "severities"
 end

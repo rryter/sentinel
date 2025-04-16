@@ -65,45 +65,8 @@
                             "type": "string",
                             "format": "date-time"
                           },
-                          "duration": {
+                          "processing_duration": {
                             "type": "integer",
-                            "nullable": true
-                          },
-                          "files_processed": {
-                            "type": "integer",
-                            "nullable": true
-                          },
-                          "files_per_second_wall_time": {
-                            "type": "number",
-                            "format": "float",
-                            "nullable": true
-                          },
-                          "cumulative_processing_time_ms": {
-                            "type": "integer",
-                            "nullable": true
-                          },
-                          "avg_time_per_file_ms": {
-                            "type": "number",
-                            "format": "float",
-                            "nullable": true
-                          },
-                          "files_per_second_cpu_time": {
-                            "type": "number",
-                            "format": "float",
-                            "nullable": true
-                          },
-                          "parallel_cores_used": {
-                            "type": "integer",
-                            "nullable": true
-                          },
-                          "parallel_speedup_factor": {
-                            "type": "number",
-                            "format": "float",
-                            "nullable": true
-                          },
-                          "parallel_efficiency_percent": {
-                            "type": "number",
-                            "format": "float",
                             "nullable": true
                           }
                         },
@@ -196,45 +159,8 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "duration": {
+                        "processing_duration": {
                           "type": "integer",
-                          "nullable": true
-                        },
-                        "files_processed": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "files_per_second_wall_time": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "cumulative_processing_time_ms": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "avg_time_per_file_ms": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "files_per_second_cpu_time": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "parallel_cores_used": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "parallel_speedup_factor": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "parallel_efficiency_percent": {
-                          "type": "number",
-                          "format": "float",
                           "nullable": true
                         }
                       },
@@ -342,45 +268,8 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "duration": {
+                        "processing_duration": {
                           "type": "integer",
-                          "nullable": true
-                        },
-                        "files_processed": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "files_per_second_wall_time": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "cumulative_processing_time_ms": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "avg_time_per_file_ms": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "files_per_second_cpu_time": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "parallel_cores_used": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "parallel_speedup_factor": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "parallel_efficiency_percent": {
-                          "type": "number",
-                          "format": "float",
                           "nullable": true
                         }
                       },
@@ -471,45 +360,8 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "duration": {
+                        "processing_duration": {
                           "type": "integer",
-                          "nullable": true
-                        },
-                        "files_processed": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "files_per_second_wall_time": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "cumulative_processing_time_ms": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "avg_time_per_file_ms": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "files_per_second_cpu_time": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "parallel_cores_used": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "parallel_speedup_factor": {
-                          "type": "number",
-                          "format": "float",
-                          "nullable": true
-                        },
-                        "parallel_efficiency_percent": {
-                          "type": "number",
-                          "format": "float",
                           "nullable": true
                         }
                       },

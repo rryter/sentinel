@@ -5,7 +5,7 @@ class AnalysisJobSerializer < ActiveModel::Serializer
              :files_per_second_wall_time, :cumulative_processing_time_ms,
              :avg_time_per_file_ms, :files_per_second_cpu_time,
              :parallel_cores_used, :parallel_speedup_factor,
-             :parallel_efficiency_percent
+             :parallel_efficiency_percent, :processing_duration
 
   has_one :project
 
@@ -20,5 +20,11 @@ class AnalysisJobSerializer < ActiveModel::Serializer
   # Configure pagination
   def self.paginate(collection, page, per_page)
     collection.page(page).per(per_page)
+  end
+
+  # Calculate processing duration in seconds
+  def processing_duration
+    return nil unless object.completed_at
+    (object.completed_at - object.created_at).to_i
   end
 end

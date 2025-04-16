@@ -302,6 +302,17 @@ class AnalysisService
           next unless file_id
           
           findings.each do |finding|
+            # Find or use default severity
+            severity_id = nil
+            if finding['severity'].present?
+              # Map the severity name to our standard levels
+              mapped_severity = Severity.map_legacy_severity(finding['severity'])
+              severity = Severity.find_by_name_ignore_case(mapped_severity) || Severity.default
+              severity_id = severity.id
+            else
+              severity_id = Severity.default.id
+            end
+            
             pattern_matches_to_create << {
               file_with_violations_id: file_id,
               rule_id: nil, # Can be added if available in the data
@@ -311,8 +322,8 @@ class AnalysisService
               end_line: finding['line'], # Same as start line if not specified
               start_col: finding['column'],
               end_col: finding['column'] + 1, # Estimate end column if not provided
+              severity_id: severity_id,
               metadata: {
-                severity: finding['severity'],
                 help: finding['help']
               }.to_json,
               created_at: Time.current,
