@@ -36,7 +36,7 @@ A container for organizing detail items.
 ## Usage Example
 
 ```html
-<app-content-tile title="Project" iconName="project">
+<app-content-tile title="Project" iconName="lucideFile">
   {{ projectName }}
   <app-details-container details>
     <app-tile-detail icon="lucideFile"> {{ totalFiles }} files </app-tile-detail>

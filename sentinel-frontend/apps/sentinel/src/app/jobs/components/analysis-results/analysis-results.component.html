@@ -20,7 +20,7 @@
 } @else {
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Project Card using Content Projection -->
-    <app-content-tile title="Project" iconName="project">
+    <app-content-tile title="Project" iconName="lucideFile">
       {{ results.project.name || 'N/A' }}
       <app-details-container details>
         <app-tile-detail icon="lucideFile">
@@ -36,12 +36,18 @@
     <!-- Status Card -->
     <app-content-tile
       title="Status"
-      iconName="status"
+      iconName="lucideCheck"
       [iconClass]="
         results.status === 'completed' ? 'text-green-500' : 'text-yellow-500'
       "
     >
-      {{ results.status }}
+      <span
+        hlmBadge
+        [variant]="getBadgeVariant(results.status)"
+        [class]="getBadgeClass(results.status)"
+      >
+        {{ capitalizeFirstLetter(results.status) }}
+      </span>
       <app-details-container details>
         <app-tile-detail icon="lucideFile">
           Scan #{{ results.id }}
@@ -54,7 +60,7 @@
     </app-content-tile>
 
     <!-- Duration Card -->
-    <app-content-tile title="Duration" iconName="duration">
+    <app-content-tile title="Duration" iconName="lucideClock">
       {{ results.duration ? results.duration + ' ms' : 'N/A' }}
       <app-details-container details>
         <app-tile-detail icon="lucideClock">
@@ -68,7 +74,7 @@
     </app-content-tile>
 
     <!-- Matches Card using Content Projection -->
-    <app-content-tile title="Matches" iconName="matches">
+    <app-content-tile title="Matches" iconName="lucideLayoutGrid">
       {{ results.total_matches }}
       <app-details-container details>
         <app-tile-detail icon="lucideFile">

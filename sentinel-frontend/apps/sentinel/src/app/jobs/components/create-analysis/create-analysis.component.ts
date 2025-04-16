@@ -12,16 +12,12 @@ import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
-import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
 import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-projects-get200-response-data-inner';
 import { JobStatusComponent } from '../job-status/job-status.component';
 import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
 import { AnalysisResultsComponent } from '../analysis-results/analysis-results.component';
-import { AnalysisResults } from '../model/analysis/analysis.model';
-import { AnalysisJobResponse } from '../model/analysis/analysisJob.model';
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 
 enum AnalysisJobStatus {
@@ -66,27 +62,29 @@ interface AnalysisJob {
           [disabled]="!canStartAnalysis()"
         >
           @if (!isLoading()) {
-          <span>Start New Analysis</span>
+            <span>Start New Analysis</span>
           } @else {
-          <span>Running...</span>
+            <span>Running...</span>
           }
         </button>
       </div>
 
       @if (errorMessage()) {
-      <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
-        <p>{{ errorMessage() }}</p>
-      </div>
-      } @if (job()) {
-      <app-job-status
-        [job]="job()"
-        [runningTimeSeconds]="runningTimeSeconds()"
-      />
-      } @if (analysisResults()) {
-      <app-analysis-results
-        [results]="analysisResults()"
-        [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"
-      />
+        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+          <p>{{ errorMessage() }}</p>
+        </div>
+      }
+      @if (job()) {
+        <app-job-status
+          [job]="job()"
+          [runningTimeSeconds]="runningTimeSeconds()"
+        />
+      }
+      @if (analysisResults()) {
+        <app-analysis-results
+          [results]="analysisResults()"
+          [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"
+        />
       }
     </div>
   `,
@@ -101,7 +99,7 @@ export class CreateAnalysisComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   job = signal<AnalysisJob | null>(null);
   analysisResults = signal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
-    null
+    null,
   );
   projects = signal<ApiV1ProjectsGet200ResponseDataInner[]>([]);
   selectedProjectId = signal<number | null>(null);
@@ -202,20 +200,20 @@ export class CreateAnalysisComponent implements OnInit {
                   this.errorMessage.set(
                     `Failed to check job status: ${
                       err.message || 'Unknown error'
-                    }`
+                    }`,
                   );
                   this.isPolling.set(false);
                   return EMPTY;
-                })
+                }),
               );
           }),
-          takeUntilDestroyed(this.destroyRef)
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe({
           next: (job) => this.job.set(this.mapToAnalysisJob(job)),
           error: (err) => {
             this.errorMessage.set(
-              `Failed to check job status: ${err.message || 'Unknown error'}`
+              `Failed to check job status: ${err.message || 'Unknown error'}`,
             );
             this.isPolling.set(false);
           },
@@ -256,11 +254,11 @@ export class CreateAnalysisComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
         catchError((err) => {
           this.errorMessage.set(
-            `Failed to load projects: ${err.message || 'Unknown error'}`
+            `Failed to load projects: ${err.message || 'Unknown error'}`,
           );
           this.isLoadingProjects.set(false);
           return of({ data: { projects: [] } });
-        })
+        }),
       )
       .subscribe({
         next: (response) => {
@@ -314,11 +312,11 @@ export class CreateAnalysisComponent implements OnInit {
         catchError((err) => {
           this.isLoading.set(false);
           this.errorMessage.set(
-            `Failed to start analysis: ${err.message || 'Unknown error'}`
+            `Failed to start analysis: ${err.message || 'Unknown error'}`,
           );
           console.error('Error starting analysis:', err);
           return EMPTY;
-        })
+        }),
       )
       .subscribe({
         next: (response) => {
@@ -334,7 +332,7 @@ export class CreateAnalysisComponent implements OnInit {
         error: (err: Error) => {
           this.isLoading.set(false);
           this.errorMessage.set(
-            `Failed to start analysis: ${err.message || 'Unknown error'}`
+            `Failed to start analysis: ${err.message || 'Unknown error'}`,
           );
           console.error('Error starting analysis:', err);
         },
@@ -349,7 +347,7 @@ export class CreateAnalysisComponent implements OnInit {
         catchError((err) => {
           console.error('Error fetching initial job status:', err);
           return EMPTY;
-        })
+        }),
       )
       .subscribe((job: any) => {
         this.job.set(this.mapToAnalysisJob(job));
@@ -381,11 +379,11 @@ export class CreateAnalysisComponent implements OnInit {
           this.errorMessage.set(
             `Failed to fetch analysis results: ${
               err.message || 'Unknown error'
-            }`
+            }`,
           );
           this.isLoading.set(false);
           return EMPTY;
-        })
+        }),
       )
       .subscribe({
         next: (results: any) => {

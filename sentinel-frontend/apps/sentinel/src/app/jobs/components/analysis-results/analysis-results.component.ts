@@ -8,6 +8,7 @@ import { ContentTileComponent } from '../../../shared/components/content-tile/co
 import { TileDetailComponent } from '../../../shared/components/content-tile/tile-detail/tile-detail.component';
 import { DetailsContainerComponent } from '../../../shared/components/content-tile/details-container/details-container.component';
 import { TileDividerComponent } from '../../../shared/components/content-tile/tile-divider/tile-divider.component';
+import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
 
 @Component({
   selector: 'app-analysis-results',
@@ -19,6 +20,7 @@ import { TileDividerComponent } from '../../../shared/components/content-tile/ti
     TileDetailComponent,
     DetailsContainerComponent,
     TileDividerComponent,
+    HlmBadgeDirective,
   ],
   templateUrl: './analysis-results.component.html',
 })
@@ -40,6 +42,23 @@ export class AnalysisResultsComponent implements OnInit {
       .subscribe((response) => {
         this.results = response.data;
       });
+  }
+
+  getBadgeVariant(status: string): BadgeVariants['variant'] {
+    return status === 'completed' ? 'default' : 'secondary';
+  }
+
+  getBadgeClass(status: string): string {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'failed':
+        return 'bg-red-100 text-red-800 hover:bg-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+    }
   }
 
   formatTime(seconds: number): string {
@@ -103,5 +122,10 @@ export class AnalysisResultsComponent implements OnInit {
     );
 
     return filteredEntries;
+  }
+
+  capitalizeFirstLetter(text: string): string {
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 }
