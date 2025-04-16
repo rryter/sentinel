@@ -7,6 +7,7 @@ class AnalysisJobSerializer < ActiveModel::Serializer
              :parallel_cores_used, :parallel_speedup_factor,
              :parallel_efficiency_percent
 
+  has_one :project
 
   # Cache the serializer
   cache key: 'analysis_job', expires_in: 1.hour

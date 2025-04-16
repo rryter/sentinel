@@ -78,7 +78,7 @@ module Api
 
       # Fetch results from the analysis service
       def fetch_results
-        @job = AnalysisJob.find(params[:id])
+        @job = AnalysisJob.includes(:project).find(params[:id])
 
         begin
           render json: {
