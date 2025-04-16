@@ -19,16 +19,19 @@
   </div>
 } @else {
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <!-- Project Card -->
-    <app-info-tile
-      title="Project"
-      [value]="results.project?.name || 'N/A'"
-      iconName="project"
-      detail1Icon="files"
-      [detail1Label]="results.total_files + ' files'"
-      detail2Icon="id"
-      [detail2Label]="'ID: ' + (results.project?.id || 'N/A')"
-    ></app-info-tile>
+    <!-- Project Card using Content Projection -->
+    <app-content-tile title="Project" iconName="project">
+      {{ results.project?.name || 'N/A' }}
+      <app-details-container details>
+        <app-tile-detail icon="files">
+          {{ results.total_files }} files
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="id">
+          ID: {{ results.project?.id || 'N/A' }}
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
 
     <!-- Status Card -->
     <app-info-tile
@@ -59,16 +62,19 @@
       [detail2Label]="(results.parallel_cores_used || 1) + ' cores'"
     ></app-info-tile>
 
-    <!-- Matches Card -->
-    <app-info-tile
-      title="Matches"
-      [value]="results.total_matches"
-      iconName="matches"
-      detail1Icon="files"
-      [detail1Label]="'in ' + results.total_files + ' files'"
-      detail2Icon="rules"
-      [detail2Label]="'from ' + results.rules_matched + ' rules'"
-    ></app-info-tile>
+    <!-- Matches Card using Content Projection -->
+    <app-content-tile title="Matches" iconName="matches">
+      {{ results.total_matches }}
+      <app-details-container details>
+        <app-tile-detail icon="files">
+          in {{ results.total_files }} files
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="rules">
+          from {{ results.rules_matched }} rules
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
   </div>
 
   <!-- Rules Breakdown Section -->

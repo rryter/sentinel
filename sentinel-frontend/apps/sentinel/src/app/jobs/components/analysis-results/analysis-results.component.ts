@@ -5,11 +5,23 @@ import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.ser
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
 import { InfoTileComponent } from '../../../shared/components/info-tile/info-tile.component';
+import { ContentTileComponent } from '../../../shared/components/content-tile/content-tile.component';
+import { TileDetailComponent } from '../../../shared/components/content-tile/tile-detail/tile-detail.component';
+import { DetailsContainerComponent } from '../../../shared/components/content-tile/details-container/details-container.component';
+import { TileDividerComponent } from '../../../shared/components/content-tile/tile-divider/tile-divider.component';
 
 @Component({
   selector: 'app-analysis-results',
   standalone: true,
-  imports: [CommonModule, HlmSkeletonComponent, InfoTileComponent],
+  imports: [
+    CommonModule,
+    HlmSkeletonComponent,
+    InfoTileComponent,
+    ContentTileComponent,
+    TileDetailComponent,
+    DetailsContainerComponent,
+    TileDividerComponent,
+  ],
   templateUrl: './analysis-results.component.html',
 })
 export class AnalysisResultsComponent implements OnInit {
