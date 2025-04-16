@@ -1,0 +1,45 @@
+import { Provider } from '@angular/core';
+import { provideIcons as ngProvideIcons } from '@ng-icons/core';
+import {
+  lucideArrowDown,
+  lucideArrowLeft,
+  lucideArrowRight,
+  lucideBookmark,
+  lucideCalendar,
+  lucideCheck,
+  lucideChevronDown,
+  lucideChevronLeft,
+  lucideChevronRight,
+  lucideChevronUp,
+  lucideCircle,
+  lucideClock,
+  lucideEllipsis,
+  lucideFile,
+  lucideInfo,
+  lucideLayoutGrid,
+  lucideX,
+} from '@ng-icons/lucide';
+
+export function provideIcons(): Provider[] {
+  return [
+    ngProvideIcons({
+      lucideArrowDown,
+      lucideArrowLeft,
+      lucideArrowRight,
+      lucideBookmark,
+      lucideCalendar,
+      lucideCheck,
+      lucideChevronDown,
+      lucideChevronLeft,
+      lucideChevronRight,
+      lucideChevronUp,
+      lucideCircle,
+      lucideClock,
+      lucideEllipsis,
+      lucideFile,
+      lucideInfo,
+      lucideLayoutGrid,
+      lucideX,
+    }),
+  ];
+}

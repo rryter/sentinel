@@ -39,9 +39,9 @@ A container for organizing detail items.
 <app-content-tile title="Project" iconName="project">
   {{ projectName }}
   <app-details-container details>
-    <app-tile-detail icon="files"> {{ totalFiles }} files </app-tile-detail>
+    <app-tile-detail icon="lucideFile"> {{ totalFiles }} files </app-tile-detail>
     <app-tile-divider></app-tile-divider>
-    <app-tile-detail icon="id"> ID: {{ projectId }} </app-tile-detail>
+    <app-tile-detail icon="lucideArrowDown"> ID: {{ projectId }} </app-tile-detail>
   </app-details-container>
 </app-content-tile>
 ```

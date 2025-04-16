@@ -3,6 +3,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { appRoutes } from './app.routes';
 import { provideMarkdown } from 'ngx-markdown';
+import { provideIcons } from './shared/providers/icons.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -10,5 +11,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes, withComponentInputBinding()),
     provideHttpClient(),
     provideMarkdown(),
+    provideIcons(),
   ],
 };

@@ -21,56 +21,61 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     <!-- Project Card using Content Projection -->
     <app-content-tile title="Project" iconName="project">
-      {{ results.project?.name || 'N/A' }}
+      {{ results.project.name || 'N/A' }}
       <app-details-container details>
-        <app-tile-detail icon="files">
+        <app-tile-detail icon="lucideFile">
           {{ results.total_files }} files
         </app-tile-detail>
         <app-tile-divider></app-tile-divider>
-        <app-tile-detail icon="id">
-          ID: {{ results.project?.id || 'N/A' }}
+        <app-tile-detail icon="lucideArrowDown">
+          ID: {{ results.project.id || 'N/A' }}
         </app-tile-detail>
       </app-details-container>
     </app-content-tile>
 
     <!-- Status Card -->
-    <app-info-tile
+    <app-content-tile
       title="Status"
-      [value]="results.status"
       iconName="status"
       [iconClass]="
         results.status === 'completed' ? 'text-green-500' : 'text-yellow-500'
       "
-      detail1Icon="files"
-      [detail1Label]="'Scan #' + results.id"
-      detail2Icon="timestamp"
-      [detail2Label]="
-        (results.created_at | date: 'MMM d, yyyy, h:mm a') || 'N/A'
-      "
-    ></app-info-tile>
+    >
+      {{ results.status }}
+      <app-details-container details>
+        <app-tile-detail icon="lucideFile">
+          Scan #{{ results.id }}
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="lucideClock">
+          {{ (results.created_at | date: 'MMM d, yyyy, h:mm a') || 'N/A' }}
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
 
     <!-- Duration Card -->
-    <app-info-tile
-      title="Duration"
-      [value]="results.duration ? results.duration + ' ms' : 'N/A'"
-      iconName="duration"
-      detail1Icon="clock"
-      [detail1Label]="
-        (formatNumber(results.files_per_second_wall_time) || 0) + ' files/s'
-      "
-      detail2Icon="cores"
-      [detail2Label]="(results.parallel_cores_used || 1) + ' cores'"
-    ></app-info-tile>
+    <app-content-tile title="Duration" iconName="duration">
+      {{ results.duration ? results.duration + ' ms' : 'N/A' }}
+      <app-details-container details>
+        <app-tile-detail icon="lucideClock">
+          {{ formatNumber(results.files_per_second_wall_time) || 0 }} files/s
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="lucideBookmark">
+          {{ results.parallel_cores_used || 1 }} cores
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
 
     <!-- Matches Card using Content Projection -->
     <app-content-tile title="Matches" iconName="matches">
       {{ results.total_matches }}
       <app-details-container details>
-        <app-tile-detail icon="files">
+        <app-tile-detail icon="lucideFile">
           in {{ results.total_files }} files
         </app-tile-detail>
         <app-tile-divider></app-tile-divider>
-        <app-tile-detail icon="rules">
+        <app-tile-detail icon="lucideLayoutGrid">
           from {{ results.rules_matched }} rules
         </app-tile-detail>
       </app-details-container>

@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-details-container',
-  standalone: true,
   imports: [CommonModule],
-  templateUrl: './details-container.component.html',
-  styleUrls: ['./details-container.component.scss'],
+  template: `
+    <div class="flex items-center text-sm">
+      <ng-content></ng-content>
+    </div>
+  `,
 })
 export class DetailsContainerComponent {}

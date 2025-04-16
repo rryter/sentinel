@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-tile-divider',
-  standalone: true,
   imports: [CommonModule],
-  template: '<div class="mx-2 text-gray-300">|</div>',
-  styles: [''],
+  template: '<span class="mx-2 text-gray-300">|</span>',
 })
 export class TileDividerComponent {}
