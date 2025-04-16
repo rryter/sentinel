@@ -9,11 +9,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1AnalysisJobsGet200ResponseDataInnerProject } from './api-v1-analysis-jobs-get200-response-data-inner-project';
 
 
-export interface ApiV1ProjectsGet200ResponseData { 
-    projects: Array<ApiV1AnalysisJobsGet200ResponseDataInnerProject>;
+export interface ApiV1AnalysisJobsGet200ResponseDataInnerProject { 
+    id: number;
+    name: string;
+    repository_url: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 

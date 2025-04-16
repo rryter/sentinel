@@ -68,6 +68,69 @@
                           "processing_duration": {
                             "type": "integer",
                             "nullable": true
+                          },
+                          "duration": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "files_processed": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "files_per_second_wall_time": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "cumulative_processing_time_ms": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "avg_time_per_file_ms": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "files_per_second_cpu_time": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "parallel_cores_used": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "parallel_speedup_factor": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "parallel_efficiency_percent": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "project": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "repository_url": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "repository_url"
+                            ]
                           }
                         },
                         "required": [
@@ -162,6 +225,69 @@
                         "processing_duration": {
                           "type": "integer",
                           "nullable": true
+                        },
+                        "duration": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "files_processed": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "files_per_second_wall_time": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "cumulative_processing_time_ms": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "avg_time_per_file_ms": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "files_per_second_cpu_time": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "parallel_cores_used": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "parallel_speedup_factor": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "parallel_efficiency_percent": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "project": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "repository_url": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "repository_url"
+                          ]
                         }
                       },
                       "required": [
@@ -271,6 +397,69 @@
                         "processing_duration": {
                           "type": "integer",
                           "nullable": true
+                        },
+                        "duration": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "files_processed": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "files_per_second_wall_time": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "cumulative_processing_time_ms": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "avg_time_per_file_ms": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "files_per_second_cpu_time": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "parallel_cores_used": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "parallel_speedup_factor": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "parallel_efficiency_percent": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "project": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "repository_url": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "repository_url"
+                          ]
                         }
                       },
                       "required": [
@@ -363,6 +552,69 @@
                         "processing_duration": {
                           "type": "integer",
                           "nullable": true
+                        },
+                        "duration": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "files_processed": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "files_per_second_wall_time": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "cumulative_processing_time_ms": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "avg_time_per_file_ms": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "files_per_second_cpu_time": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "parallel_cores_used": {
+                          "type": "integer",
+                          "nullable": true
+                        },
+                        "parallel_speedup_factor": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "parallel_efficiency_percent": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "project": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "repository_url": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "repository_url"
+                          ]
                         }
                       },
                       "required": [

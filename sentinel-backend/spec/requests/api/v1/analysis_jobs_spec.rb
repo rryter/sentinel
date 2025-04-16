@@ -23,7 +23,27 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                   completed_at: { type: 'string', format: 'date-time', nullable: true },
                   created_at: { type: 'string', format: 'date-time' },
                   updated_at: { type: 'string', format: 'date-time' },
-                  processing_duration: { type: 'integer', nullable: true }
+                  processing_duration: { type: 'integer', nullable: true },
+                  duration: { type: 'integer', nullable: true },
+                  files_processed: { type: 'integer', nullable: true },
+                  files_per_second_wall_time: { type: 'number', nullable: true },
+                  cumulative_processing_time_ms: { type: 'integer', nullable: true },
+                  avg_time_per_file_ms: { type: 'number', nullable: true },
+                  files_per_second_cpu_time: { type: 'number', nullable: true },
+                  parallel_cores_used: { type: 'integer', nullable: true },
+                  parallel_speedup_factor: { type: 'number', nullable: true },
+                  parallel_efficiency_percent: { type: 'number', nullable: true },
+                  project: { 
+                    type: 'object',
+                    properties: {
+                      id: { type: 'integer' },
+                      name: { type: 'string' },
+                      repository_url: { type: 'string' },
+                      created_at: { type: 'string', format: 'date-time' },
+                      updated_at: { type: 'string', format: 'date-time' }
+                    },
+                    required: ['id', 'name', 'repository_url']
+                  }
                 },
                 required: ['id', 'project_id', 'status']
               }
@@ -53,8 +73,23 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             'total_matches',
             'rules_matched',
             'completed_at',
-            'processing_duration'
+            'processing_duration',
+            'duration',
+            'files_processed',
+            'files_per_second_wall_time',
+            'cumulative_processing_time_ms',
+            'avg_time_per_file_ms',
+            'files_per_second_cpu_time',
+            'parallel_cores_used',
+            'parallel_speedup_factor',
+            'parallel_efficiency_percent',
+            'project'
           )
+          
+          # Verify project association is included and correct
+          expect(completed_job['project']).to be_a(Hash)
+          expect(completed_job['project']['id']).to eq(project.id)
+          expect(completed_job['project']['name']).to eq(project.name)
           
           # Verify processing_duration is calculated correctly
           if completed_job['completed_at'].present?
@@ -94,7 +129,27 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 completed_at: { type: :string, format: 'date-time', nullable: true },
                 created_at: { type: :string, format: 'date-time' },
                 updated_at: { type: :string, format: 'date-time' },
-                processing_duration: { type: :integer, nullable: true }
+                processing_duration: { type: :integer, nullable: true },
+                duration: { type: :integer, nullable: true },
+                files_processed: { type: :integer, nullable: true },
+                files_per_second_wall_time: { type: :number, nullable: true },
+                cumulative_processing_time_ms: { type: :integer, nullable: true },
+                avg_time_per_file_ms: { type: :number, nullable: true },
+                files_per_second_cpu_time: { type: :number, nullable: true },
+                parallel_cores_used: { type: :integer, nullable: true },
+                parallel_speedup_factor: { type: :number, nullable: true },
+                parallel_efficiency_percent: { type: :number, nullable: true },
+                project: { 
+                  type: :object,
+                  properties: {
+                    id: { type: :integer },
+                    name: { type: :string },
+                    repository_url: { type: :string },
+                    created_at: { type: :string, format: 'date-time' },
+                    updated_at: { type: :string, format: 'date-time' }
+                  },
+                  required: ['id', 'name', 'repository_url']
+                }
               },
               required: ['id', 'project_id', 'status']
             }
@@ -106,7 +161,11 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['data']).to include('id', 'project_id', 'status')
+          expect(data['data']).to include('id', 'project_id', 'status', 'project')
+          # Verify project association is included and correct
+          expect(data['data']['project']).to be_a(Hash)
+          expect(data['data']['project']['id']).to eq(project.id)
+          expect(data['data']['project']['name']).to eq(project.name)
         end
       end
 
@@ -142,7 +201,27 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 completed_at: { type: :string, format: 'date-time', nullable: true },
                 created_at: { type: :string, format: 'date-time' },
                 updated_at: { type: :string, format: 'date-time' },
-                processing_duration: { type: :integer, nullable: true }
+                processing_duration: { type: :integer, nullable: true },
+                duration: { type: :integer, nullable: true },
+                files_processed: { type: :integer, nullable: true },
+                files_per_second_wall_time: { type: :number, nullable: true },
+                cumulative_processing_time_ms: { type: :integer, nullable: true },
+                avg_time_per_file_ms: { type: :number, nullable: true },
+                files_per_second_cpu_time: { type: :number, nullable: true },
+                parallel_cores_used: { type: :integer, nullable: true },
+                parallel_speedup_factor: { type: :number, nullable: true },
+                parallel_efficiency_percent: { type: :number, nullable: true },
+                project: { 
+                  type: :object,
+                  properties: {
+                    id: { type: :integer },
+                    name: { type: :string },
+                    repository_url: { type: :string },
+                    created_at: { type: :string, format: 'date-time' },
+                    updated_at: { type: :string, format: 'date-time' }
+                  },
+                  required: ['id', 'name', 'repository_url']
+                }
               },
               required: ['id', 'project_id', 'status']
             }
@@ -162,8 +241,23 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             'total_matches',
             'rules_matched',
             'completed_at',
-            'processing_duration'
+            'processing_duration',
+            'duration',
+            'files_processed',
+            'files_per_second_wall_time',
+            'cumulative_processing_time_ms',
+            'avg_time_per_file_ms',
+            'files_per_second_cpu_time',
+            'parallel_cores_used',
+            'parallel_speedup_factor',
+            'parallel_efficiency_percent',
+            'project'
           )
+          
+          # Verify project association is included and correct
+          expect(data['data']['project']).to be_a(Hash)
+          expect(data['data']['project']['id']).to eq(project.id)
+          expect(data['data']['project']['name']).to eq(project.name)
         end
       end
       
@@ -200,7 +294,27 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 completed_at: { type: :string, format: 'date-time', nullable: true },
                 created_at: { type: :string, format: 'date-time' },
                 updated_at: { type: :string, format: 'date-time' },
-                processing_duration: { type: :integer, nullable: true }
+                processing_duration: { type: :integer, nullable: true },
+                duration: { type: :integer, nullable: true },
+                files_processed: { type: :integer, nullable: true },
+                files_per_second_wall_time: { type: :number, nullable: true },
+                cumulative_processing_time_ms: { type: :integer, nullable: true },
+                avg_time_per_file_ms: { type: :number, nullable: true },
+                files_per_second_cpu_time: { type: :number, nullable: true },
+                parallel_cores_used: { type: :integer, nullable: true },
+                parallel_speedup_factor: { type: :number, nullable: true },
+                parallel_efficiency_percent: { type: :number, nullable: true },
+                project: { 
+                  type: :object,
+                  properties: {
+                    id: { type: :integer },
+                    name: { type: :string },
+                    repository_url: { type: :string },
+                    created_at: { type: :string, format: 'date-time' },
+                    updated_at: { type: :string, format: 'date-time' }
+                  },
+                  required: ['id', 'name', 'repository_url']
+                }
               },
               required: ['id', 'project_id', 'status']
             }
@@ -220,8 +334,23 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             'total_matches',
             'rules_matched',
             'completed_at',
-            'processing_duration'
+            'processing_duration',
+            'duration',
+            'files_processed',
+            'files_per_second_wall_time',
+            'cumulative_processing_time_ms',
+            'avg_time_per_file_ms',
+            'files_per_second_cpu_time',
+            'parallel_cores_used',
+            'parallel_speedup_factor',
+            'parallel_efficiency_percent',
+            'project'
           )
+          
+          # Verify project association is included and correct
+          expect(data['data']['project']).to be_a(Hash)
+          expect(data['data']['project']['id']).to eq(project.id)
+          expect(data['data']['project']['name']).to eq(project.name)
         end
       end
       

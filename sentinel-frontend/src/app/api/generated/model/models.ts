@@ -7,6 +7,7 @@ export * from './api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-res
 export * from './api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response-meta';
 export * from './api-v1-analysis-jobs-get200-response';
 export * from './api-v1-analysis-jobs-get200-response-data-inner';
+export * from './api-v1-analysis-jobs-get200-response-data-inner-project';
 export * from './api-v1-analysis-jobs-get200-response-meta';
 export * from './api-v1-analysis-jobs-id-process-results-post200-response';
 export * from './api-v1-analysis-jobs-post201-response';
@@ -21,7 +22,6 @@ export * from './api-v1-pattern-matches-time-series-get200-response';
 export * from './api-v1-pattern-matches-time-series-get200-response-data-inner';
 export * from './api-v1-projects-get200-response';
 export * from './api-v1-projects-get200-response-data';
-export * from './api-v1-projects-get200-response-data-projects-inner';
 export * from './api-v1-projects-post201-response';
 export * from './api-v1-projects-post201-response-data';
 export * from './api-v1-projects-post-request';

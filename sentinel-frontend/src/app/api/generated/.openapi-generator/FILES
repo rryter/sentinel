@@ -21,6 +21,7 @@ model/analysis-job-response.ts
 model/analysis-job.ts
 model/api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response-meta.ts
 model/api-v1-analysis-jobs-analysis-job-id-pattern-matches-get200-response.ts
+model/api-v1-analysis-jobs-get200-response-data-inner-project.ts
 model/api-v1-analysis-jobs-get200-response-data-inner.ts
 model/api-v1-analysis-jobs-get200-response-meta.ts
 model/api-v1-analysis-jobs-get200-response.ts
@@ -35,7 +36,6 @@ model/api-v1-pattern-matches-get200-response-meta.ts
 model/api-v1-pattern-matches-get200-response.ts
 model/api-v1-pattern-matches-time-series-get200-response-data-inner.ts
 model/api-v1-pattern-matches-time-series-get200-response.ts
-model/api-v1-projects-get200-response-data-projects-inner.ts
 model/api-v1-projects-get200-response-data.ts
 model/api-v1-projects-get200-response.ts
 model/api-v1-projects-post-request-project.ts
