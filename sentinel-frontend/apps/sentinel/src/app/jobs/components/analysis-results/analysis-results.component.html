@@ -87,33 +87,45 @@
   <div class="mt-8">
     <h3 class="text-lg font-medium text-gray-900 mb-4">Matches by Rule</h3>
     <div class="bg-white shadow rounded-lg overflow-hidden">
-      <div class="max-h-80 overflow-y-auto">
-        @for (rule of getObjectEntries(data || {}); track $index) {
-          <div
-            class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
-          >
-            <div>
-              <p class="font-medium text-gray-800">{{ rule[0] }}</p>
-              <p class="text-xs text-gray-500">Pattern match</p>
+      @if (false) {
+        <div class="max-h-80 overflow-y-auto">
+          @for (rule of getObjectEntries(data || {}); track $index) {
+            <div
+              class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
+            >
+              <div>
+                <p class="font-medium text-gray-800">{{ rule[0] }}</p>
+                <p class="text-xs text-gray-500">Pattern match</p>
+              </div>
+              <div>
+                <span
+                  class="px-3 py-1 text-sm font-medium rounded-full"
+                  [ngClass]="{
+                    'bg-red-100 text-red-800': rule[1] > 100,
+                    'bg-yellow-100 text-yellow-800':
+                      rule[1] > 20 && rule[1] <= 100,
+                    'bg-green-100 text-green-800': rule[1] <= 20,
+                  }"
+                >
+                  {{ rule[1] }} matches
+                </span>
+              </div>
             </div>
-            <div>
-              <span
-                class="px-3 py-1 text-sm font-medium rounded-full"
-                [ngClass]="{
-                  'bg-red-100 text-red-800': rule[1] > 100,
-                  'bg-yellow-100 text-yellow-800':
-                    rule[1] > 20 && rule[1] <= 100,
-                  'bg-green-100 text-green-800': rule[1] <= 20,
-                }"
-              >
-                {{ rule[1] }} matches
-              </span>
-            </div>
+          }
+        </div>
+      } @else {
+        <div class="p-8 text-center">
+          <div class="mx-auto w-24 h-24 mb-4 text-gray-300">
+            <ng-icon name="lucideCircleSlash" class="w-full h-full"></ng-icon>
           </div>
-        } @empty {
-          <div class="p-6 text-center text-gray-500">No rule matches found</div>
-        }
-      </div>
+          <h3 class="text-lg font-medium text-gray-800 mb-1">
+            No matches found
+          </h3>
+          <p class="text-gray-500">
+            No rule matches were detected in this scan.
+          </p>
+        </div>
+      }
     </div>
   </div>
 }

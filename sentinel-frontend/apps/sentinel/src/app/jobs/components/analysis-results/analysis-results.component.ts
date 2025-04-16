@@ -1,4 +1,11 @@
-import { Component, input, Input } from '@angular/core';
+import {
+  Component,
+  input,
+  Input,
+  effect,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
@@ -9,9 +16,9 @@ import { TileDetailComponent } from '../../../shared/components/content-tile/til
 import { DetailsContainerComponent } from '../../../shared/components/content-tile/details-container/details-container.component';
 import { TileDividerComponent } from '../../../shared/components/content-tile/tile-divider/tile-divider.component';
 import { BadgeVariants } from '@spartan-ng/ui-badge-helm';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs/operators';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleSlash } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-analysis-results',
@@ -23,7 +30,9 @@ import { toObservable } from '@angular/core/rxjs-interop';
     TileDetailComponent,
     DetailsContainerComponent,
     TileDividerComponent,
+    NgIcon,
   ],
+  providers: [provideIcons({ lucideCircleSlash })],
   templateUrl: './analysis-results.component.html',
 })
 export class AnalysisResultsComponent {
@@ -33,19 +42,33 @@ export class AnalysisResultsComponent {
   // Make Math accessible in the template
   Math = Math;
 
-  constructor(private analysisJobService: AnalysisJobsService) {}
-
-  results = toSignal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
-    toObservable(this.jobId).pipe(
-      switchMap((id) =>
-        this.analysisJobService.apiV1AnalysisJobsIdFetchResultsGet({
-          id,
-        }),
-      ),
-      switchMap((response) => [response.data]),
-    ),
-    { initialValue: null },
+  private resultsData = signal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
+    null,
   );
+
+  // Computed signal that derives from resultsData
+  results = computed(() => this.resultsData());
+
+  constructor(private analysisJobService: AnalysisJobsService) {
+    // Side effect to fetch data when jobId changes
+    effect(() => {
+      const id = this.jobId();
+      if (id) {
+        this.fetchResults(id);
+      }
+    });
+  }
+
+  private async fetchResults(id: number): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.analysisJobService.apiV1AnalysisJobsIdFetchResultsGet({ id }),
+      );
+      this.resultsData.set(response.data);
+    } catch (error) {
+      console.error('Error fetching results:', error);
+    }
+  }
 
   getBadgeVariant(status: string): BadgeVariants['variant'] {
     return status === 'completed' ? 'default' : 'secondary';

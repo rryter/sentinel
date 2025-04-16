@@ -82,7 +82,6 @@ interface AnalysisJob {
       }
       @if (analysisResults()) {
         <app-analysis-results
-          [results]="analysisResults()"
           [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"
         />
       }
