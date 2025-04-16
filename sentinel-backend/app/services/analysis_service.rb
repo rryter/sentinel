@@ -340,18 +340,14 @@ class AnalysisService
           end
         end
         
-        # Update summary statistics in analysis job if provided
-        if findings_data['summary'].present?
-          analysis_job.update!(
-            total_matches: findings_data['findings'].size,
-            rules_matched: findings_data['summary']['findings_by_rule']&.keys&.size || 0,
-            files_processed: findings_data['summary']['files_processed'],
-            files_per_second_wall_time: findings_data['summary']['files_per_second_wall_time'],
-            parallel_cores_used: findings_data['summary']['parallel_cores_used'],
-            parallel_efficiency_percent: findings_data['summary']['parallel_efficiency_percent'],
-            duration: findings_data['summary']['total_duration_ms']
-          )
-        end
+        # Update summary statistics in analysis job
+        analysis_job.update!(
+          total_matches: findings_data['findings'].size,
+          rules_matched: findings_data['summary']&.dig('findings_by_rule')&.keys&.size || 0
+        )
+        
+        # Update performance metrics using the dedicated service
+        PerformanceMetricsService.update_job_with_metrics(analysis_job, findings_data)
       end
       
       true

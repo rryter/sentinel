@@ -26,6 +26,14 @@ class AnalysisJob < ActiveRecord::Base
     .select('analysis_jobs.*, COALESCE(counts.match_count, 0) as match_count')
   }
 
+  # Performance metrics validations
+  validates :files_per_second_wall_time, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :files_per_second_cpu_time, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :avg_time_per_file_ms, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :parallel_cores_used, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validates :parallel_speedup_factor, numericality: { greater_than: 0 }, allow_nil: true
+  validates :parallel_efficiency_percent, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }, allow_nil: true
+
   def fetch_results
     # Call the analysis service to fetch and process results
     begin

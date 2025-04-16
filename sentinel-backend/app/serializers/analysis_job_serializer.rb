@@ -1,12 +1,21 @@
 class AnalysisJobSerializer < ActiveModel::Serializer
-  attributes :id, :status, :created_at, :updated_at, :project_id,
-             :total_files, :total_matches, :rules_matched, :completed_at,
-             :duration, :files_processed,
-             :files_per_second_wall_time, :cumulative_processing_time_ms,
-             :avg_time_per_file_ms, :files_per_second_cpu_time,
-             :parallel_cores_used, :parallel_speedup_factor,
-             :parallel_efficiency_percent
+  # Basic information
+  attributes :id, :project_id, :status
+  
+  # Timing information
+  attributes :created_at, :updated_at, :completed_at, :duration
+  
+  # Result counts
+  attributes :total_files, :total_matches, :rules_matched, :files_processed
+  
+  # Performance metrics
+  attributes :files_per_second_wall_time, :files_per_second_cpu_time,
+             :avg_time_per_file_ms, :cumulative_processing_time_ms
+             
+  # Parallelization metrics
+  attributes :parallel_cores_used, :parallel_speedup_factor, :parallel_efficiency_percent
 
+  # Related entities
   has_one :project
 
   # Cache the serializer
@@ -21,8 +30,6 @@ class AnalysisJobSerializer < ActiveModel::Serializer
   def self.paginate(collection, page, per_page)
     collection.page(page).per(per_page)
   end
-
-
 
   # Default values for required fields
   def total_files
