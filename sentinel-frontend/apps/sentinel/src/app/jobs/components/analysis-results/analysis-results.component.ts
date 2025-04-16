@@ -4,11 +4,12 @@ import { AnalysisResults } from '../model/analysis/analysis.model';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
+import { InfoTileComponent } from '../../../shared/components/info-tile/info-tile.component';
 
 @Component({
   selector: 'app-analysis-results',
   standalone: true,
-  imports: [CommonModule, HlmSkeletonComponent],
+  imports: [CommonModule, HlmSkeletonComponent, InfoTileComponent],
   templateUrl: './analysis-results.component.html',
 })
 export class AnalysisResultsComponent implements OnInit {
