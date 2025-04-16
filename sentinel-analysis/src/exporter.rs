@@ -79,6 +79,7 @@ pub fn export_findings_json(
     results: &[FileAnalysisResult],
     metrics: &crate::Metrics,
     debug_level: DebugLevel,
+    output_dir: &String,
 ) {
     let mut findings: Vec<FindingEntry> = Vec::new();
     let mut rule_counts: HashMap<String, usize> = HashMap::new();
@@ -246,15 +247,18 @@ pub fn export_findings_json(
 
     // Save to findings.json
     if !findings_export.findings.is_empty() {
-        // Create findings directory if needed
-        if let Err(e) = std::fs::create_dir_all("findings") {
+        // Create the output directory if needed
+        if let Err(e) = std::fs::create_dir_all(output_dir) {
             log(
                 DebugLevel::Error,
                 debug_level,
-                &format!("Failed to create findings directory: {}", e),
+                &format!("Failed to create output directory {}: {}", output_dir, e),
             );
             return;
         }
+
+        // Construct the full file path
+        let file_path = format!("{}/findings.json", output_dir);
 
         // Write findings to JSON
         let json = match serde_json::to_string_pretty(&findings_export) {
@@ -270,19 +274,19 @@ pub fn export_findings_json(
         };
 
         // Write to file
-        match std::fs::write("findings/findings.json", json) {
+        match std::fs::write(&file_path, json) {
             Ok(_) => log(
                 DebugLevel::Info,
                 debug_level,
                 &format!(
-                    "Exported {} findings to findings/findings.json",
-                    findings_export.summary.total_findings
+                    "Exported {} findings to {}",
+                    findings_export.summary.total_findings, file_path
                 ),
             ),
             Err(e) => log(
                 DebugLevel::Error,
                 debug_level,
-                &format!("Failed to write findings.json: {}", e),
+                &format!("Failed to write {}: {}", file_path, e),
             ),
         }
     } else {

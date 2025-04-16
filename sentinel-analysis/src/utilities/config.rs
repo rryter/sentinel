@@ -15,6 +15,8 @@ pub struct Config {
     pub rules_config: Option<String>,
     /// Debug level for controlling output verbosity
     pub debug_level: Option<DebugLevel>,
+    /// Directory to store findings.json and other output files
+    pub output_dir: Option<String>,
 }
 
 impl Config {
@@ -157,5 +159,46 @@ pub fn get_target_path(config: &Config, args: &[String]) -> String {
             .path
             .as_ref()
             .map_or_else(|| ".".to_string(), |p| p.clone())
+    }
+}
+
+/// Helper function to get the output directory from command line
+pub fn get_output_dir(config: &Config, args: &[String]) -> String {
+    // Check for command line argument first
+    for i in 0..args.len().saturating_sub(1) {
+        if args[i] == "--output-dir" || args[i] == "-o" {
+            return args[i + 1].clone();
+        }
+    }
+
+    // Fall back to config file
+    config.output_dir.clone().unwrap_or_else(|| "findings".to_string())
+}
+
+/// Helper function to get metrics JSON path based on output directory
+pub fn get_metrics_json_path(config: &Config, output_dir: Option<&String>) -> Option<String> {
+    if let Some(path) = &config.export_metrics_json {
+        // If explicitly configured in config, use that
+        Some(path.clone())
+    } else if let Some(dir) = output_dir {
+        // Otherwise use output_dir if specified
+        Some(format!("{}/metrics.json", dir))
+    } else {
+        // Default path if no output directory specified
+        Some("findings/metrics.json".to_string())
+    }
+}
+
+/// Helper function to get metrics CSV path based on output directory
+pub fn get_metrics_csv_path(config: &Config, output_dir: Option<&String>) -> Option<String> {
+    if let Some(path) = &config.export_metrics_csv {
+        // If explicitly configured in config, use that
+        Some(path.clone())
+    } else if let Some(dir) = output_dir {
+        // Otherwise use output_dir if specified
+        Some(format!("{}/metrics.csv", dir))
+    } else {
+        // Default path if no output directory specified
+        Some("findings/metrics.csv".to_string())
     }
 }

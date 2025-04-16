@@ -34,6 +34,13 @@ pub fn parse_args() -> Command {
                 .value_name("LEVEL"),
         )
         .arg(
+            Arg::new("output-dir")
+                .short('o')
+                .long("output-dir")
+                .help("Directory to store findings.json and other output files")
+                .value_name("DIR"),
+        )
+        .arg(
             Arg::new("no-rules")
                 .long("no-rules")
                 .help("Disable rules-based analysis")

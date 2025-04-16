@@ -18,8 +18,14 @@ fn main() {
     let matches = command.get_matches();
 
     // Initialize configuration and setup
-    let config = Config::load();
+    let mut config = Config::load();
     let debug_level = get_debug_level_from_args(&matches);
+
+    // Get output directory from command-line arguments
+    if let Some(output_dir) = matches.get_one::<String>("output-dir") {
+        config.output_dir = Some(output_dir.clone());
+        println!("DEBUG: Output directory set to: {}", output_dir);
+    }
 
     // Check if --help was provided
     if matches.contains_id("help") {
