@@ -16,6 +16,9 @@ export class AnalysisResultsComponent implements OnInit {
   @Input() totalExecutionTimeSeconds = 0;
   jobId = input<number>(0);
 
+  // Make Math accessible in the template
+  Math = Math;
+
   constructor(private analysisJobService: AnalysisJobsService) {}
 
   ngOnInit(): void {

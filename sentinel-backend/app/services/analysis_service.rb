@@ -342,6 +342,7 @@ class AnalysisService
         
         # Update summary statistics in analysis job
         analysis_job.update!(
+          total_files: findings_data['summary']&.dig('files_processed') || findings_by_file.keys.count,
           total_matches: findings_data['findings'].size,
           rules_matched: findings_data['summary']&.dig('findings_by_rule')&.keys&.size || 0
         )

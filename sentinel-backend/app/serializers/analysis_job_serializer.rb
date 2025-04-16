@@ -3,10 +3,10 @@ class AnalysisJobSerializer < ActiveModel::Serializer
   attributes :id, :project_id, :status
   
   # Timing information
-  attributes :created_at, :updated_at, :completed_at, :duration
+  attributes :created_at, :updated_at, :duration
   
   # Result counts
-  attributes :total_files, :total_matches, :rules_matched, :files_processed
+  attributes :total_files, :total_matches, :rules_matched
   
   # Performance metrics
   attributes :files_per_second_wall_time, :files_per_second_cpu_time,
@@ -44,16 +44,8 @@ class AnalysisJobSerializer < ActiveModel::Serializer
     object.rules_matched || 0
   end
   
-  def completed_at
-    object.completed_at || object.created_at
-  end
-  
   def duration
     object.duration || 0
-  end
-  
-  def files_processed
-    object.files_processed || 0
   end
   
   def files_per_second_wall_time

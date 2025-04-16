@@ -1,132 +1,331 @@
 @if (!results) {
-  <hlm-skeleton class="w-12 h-12 rounded-full" />
-  <div class="space-y-2">
-    <hlm-skeleton class="h-4 w-[250px]" />
-    <hlm-skeleton class="h-4 w-[200px]" />
-  </div>
-}
-
-<div class="mt-6">
-  <!-- Status Header -->
-  <div
-    class="mb-4 p-4 rounded-lg"
-    [ngClass]="{
-      'bg-green-100 border border-green-200': results?.status === 'completed',
-      'bg-yellow-100 border border-yellow-200':
-        results?.status === 'running' || results?.status === 'pending',
-      'bg-red-100 border border-red-200': results?.status === 'failed',
-    }"
-  >
-    <div class="flex items-center">
-      <div
-        class="w-3 h-3 rounded-full mr-2"
-        [ngClass]="{
-          'bg-green-500': results?.status === 'completed',
-          'bg-yellow-500':
-            results?.status === 'running' || results?.status === 'pending',
-          'bg-red-500': results?.status === 'failed',
-        }"
-      ></div>
-      <h2
-        class="text-lg font-medium"
-        [ngClass]="{
-          'text-green-800': results?.status === 'completed',
-          'text-yellow-800':
-            results?.status === 'running' || results?.status === 'pending',
-          'text-red-800': results?.status === 'failed',
-        }"
-      >
-        Analysis Status: {{ results?.status || 'Unknown' | titlecase }}
-      </h2>
+  <div class="flex flex-col gap-4 md:flex-row">
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
     </div>
   </div>
-
-  <h3 class="text-lg font-medium text-gray-900 mb-2">Analysis Results</h3>
-  <div
-    class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden"
-  >
-    <!-- Duration and Summary -->
-    <div class="bg-gray-50 p-3 border-b border-gray-200">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-medium text-gray-900">
-          Total Duration:
-          <span class="text-blue-700">{{ results?.duration || 0 }} ms </span>
+} @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Project Card -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-start">
+        <span class="text-gray-500 text-sm">Project</span>
+        <span class="text-gray-400">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+            />
+          </svg>
         </span>
       </div>
-    </div>
-
-    <!-- Summary Card -->
-    <div
-      class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200"
-    >
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg p-3 shadow-sm">
-          <p class="text-sm text-gray-500">Total Files Analyzed</p>
-          <p class="text-2xl font-semibold text-blue-700">
-            {{ results?.files_processed || 0 }}
-          </p>
+      <h2 class="text-3xl font-bold text-gray-800 mt-2">{{ results.id }}</h2>
+      <div class="mt-2 flex items-center text-sm">
+        <div class="flex items-center text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>{{ formatNumber(results.total_files) }} files</span>
         </div>
-        <div class="bg-white rounded-lg p-3 shadow-sm">
-          <p class="text-sm text-gray-500">Total Matches Found</p>
-          <p class="text-2xl font-semibold text-indigo-700">
-            {{ formatNumber(results?.total_matches || 0) }}
-          </p>
-        </div>
-        <div class="bg-white rounded-lg p-3 shadow-sm md:col-span-1 col-span-2">
-          <p class="text-sm text-gray-500">Rules Matched</p>
-          <p class="text-2xl font-semibold text-purple-700">
-            {{ formatNumber(results?.rules_matched || 0) }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Performance Metrics -->
-    <div class="p-4 border-b border-gray-200">
-      <h4 class="text-md font-medium text-gray-800 mb-3">
-        Performance Metrics
-      </h4>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500">Files per Second</p>
-          <p class="text-lg font-semibold text-gray-900">
-            {{ formatNumber(results?.files_per_second_wall_time || 0) }}
-          </p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500">CPU Cores Used</p>
-          <p class="text-lg font-semibold text-gray-900">
-            {{ formatNumber(results?.parallel_cores_used || 0) }}
-          </p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500">Parallel Efficiency</p>
-          <p class="text-lg font-semibold text-gray-900">
-            {{ results?.parallel_efficiency_percent || 0 | number: '1.1-1' }}%
-          </p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-xs text-gray-500">??</p>
-          <p class="text-lg font-semibold text-gray-900">??</p>
+        <div class="mx-2 text-gray-300">|</div>
+        <div class="flex items-center text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
         </div>
       </div>
     </div>
 
-    <!-- Rules Breakdown -->
-    <div class="p-4">
-      <h4 class="text-md font-medium text-gray-800 mb-3">Matches by Rule</h4>
-      <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
+    <!-- Status Card -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-start">
+        <span class="text-gray-500 text-sm">Status</span>
+        <span
+          [class]="
+            results.status === 'completed'
+              ? 'text-green-500'
+              : 'text-yellow-500'
+          "
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </span>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800 mt-2 capitalize">
+        {{ results.status }}
+      </h2>
+      <p class="text-gray-500 text-sm mt-1">
+        Scan #{{ results.id }} •
+        {{ results.created_at | date: 'MMM d, yyyy, h:mm a' }}
+      </p>
+    </div>
+
+    <!-- Duration Card -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-start">
+        <span class="text-gray-500 text-sm">Duration</span>
+        <span class="text-gray-400">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </span>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800 mt-2">
+        {{
+          results.duration
+            ? results.duration / 1000 > 60
+              ? formatTime(Math.floor(results.duration / 1000))
+              : (results.duration / 1000).toFixed(0) + ' seconds'
+            : 'N/A'
+        }}
+      </h2>
+      <div class="mt-2 flex items-center text-sm">
+        <div class="flex items-center text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span
+            >{{
+              formatNumber(results.files_per_second_wall_time || 0)
+            }}
+            files/s</span
+          >
+        </div>
+        <div class="mx-2 text-gray-300">|</div>
+        <div class="flex items-center text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>{{ results.parallel_cores_used || 1 }} cores</span>
+        </div>
+      </div>
+      <p class="text-gray-500 text-sm mt-1">
+        Started: {{ results.created_at | date: 'MMM d, yyyy, h:mm a' }}
+      </p>
+    </div>
+
+    <!-- Matches Card -->
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-start">
+        <span class="text-gray-500 text-sm">Matches</span>
+        <span class="text-gray-400">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </span>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800 mt-2">
+        {{ formatNumber(results.total_matches) }}
+      </h2>
+      <div class="mt-2 flex items-center text-sm">
+        <div class="flex items-center text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span
+            >{{ results.parallel_speedup_factor?.toFixed(1) || 1 }}x
+            speedup</span
+          >
+        </div>
+        <div class="mx-2 text-gray-300">|</div>
+        <div class="flex items-center text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span
+            >{{ results.parallel_efficiency_percent?.toFixed(0) || 0 }}%
+            efficient</span
+          >
+        </div>
+      </div>
+      <p class="text-gray-500 text-sm mt-1">
+        Across {{ results.rules_matched }} rules
+      </p>
+    </div>
+  </div>
+
+  <!-- Additional metrics and details can be added below -->
+  <div class="mt-8">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Performance Details</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Files / Second (Wall Time)</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ formatNumber(results.files_per_second_wall_time || 0) }}
+        </p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Files / Second (CPU Time)</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ formatNumber(results.files_per_second_cpu_time || 0) }}
+        </p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Avg Time per File</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ results.avg_time_per_file_ms || 0 }} ms
+        </p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Total Files</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ formatNumber(results.total_files || 0) }}
+        </p>
+      </div>
+    </div>
+
+    <h3 class="text-lg font-medium text-gray-900 mt-6 mb-4">
+      Parallelization Metrics
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Cores Used</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ results.parallel_cores_used || 1 }}
+        </p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Speedup Factor</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ results.parallel_speedup_factor || 1 }}x
+        </p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-sm text-gray-500">Efficiency</p>
+        <p class="text-lg font-semibold text-gray-900">
+          {{ results.parallel_efficiency_percent || 0 }}%
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Breakdown Section -->
+  <div class="mt-8">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Matches by Rule</h3>
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <div class="max-h-80 overflow-y-auto">
         @for (rule of getObjectEntries(results || {}); track $index) {
           <div
-            class="flex items-center justify-between p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+            class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
           >
             <div>
               <p class="font-medium text-gray-800">{{ rule[0] }}</p>
               <p class="text-xs text-gray-500">Pattern match</p>
             </div>
-            <div class="flex items-center">
+            <div>
               <span
-                class="px-2.5 py-1 text-xs font-medium rounded-full"
+                class="px-3 py-1 text-sm font-medium rounded-full"
                 [ngClass]="{
                   'bg-red-100 text-red-800': rule[1] > 100,
                   'bg-yellow-100 text-yellow-800':
@@ -139,11 +338,9 @@
             </div>
           </div>
         } @empty {
-          <div class="text-center py-4 text-gray-500">
-            No rule matches found
-          </div>
+          <div class="p-6 text-center text-gray-500">No rule matches found</div>
         }
       </div>
     </div>
   </div>
-</div>
+}

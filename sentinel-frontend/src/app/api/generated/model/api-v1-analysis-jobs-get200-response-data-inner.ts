@@ -19,11 +19,9 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInner {
     total_files: number;
     total_matches: number;
     rules_matched: number;
-    completed_at: string;
     created_at: string;
     updated_at: string;
     duration: number;
-    files_processed: number;
     files_per_second_wall_time: number;
     cumulative_processing_time_ms: number;
     avg_time_per_file_ms: number;

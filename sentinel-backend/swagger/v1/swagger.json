@@ -49,10 +49,6 @@
                           "rules_matched": {
                             "type": "integer"
                           },
-                          "completed_at": {
-                            "type": "string",
-                            "format": "date-time"
-                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time"
@@ -62,9 +58,6 @@
                             "format": "date-time"
                           },
                           "duration": {
-                            "type": "integer"
-                          },
-                          "files_processed": {
                             "type": "integer"
                           },
                           "files_per_second_wall_time": {
@@ -125,11 +118,9 @@
                           "total_files",
                           "total_matches",
                           "rules_matched",
-                          "completed_at",
                           "created_at",
                           "updated_at",
                           "duration",
-                          "files_processed",
                           "files_per_second_wall_time",
                           "cumulative_processing_time_ms",
                           "avg_time_per_file_ms",
@@ -207,10 +198,6 @@
                         "rules_matched": {
                           "type": "integer"
                         },
-                        "completed_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time"
@@ -220,9 +207,6 @@
                           "format": "date-time"
                         },
                         "duration": {
-                          "type": "integer"
-                        },
-                        "files_processed": {
                           "type": "integer"
                         },
                         "files_per_second_wall_time": {
@@ -283,11 +267,9 @@
                         "total_files",
                         "total_matches",
                         "rules_matched",
-                        "completed_at",
                         "created_at",
                         "updated_at",
                         "duration",
-                        "files_processed",
                         "files_per_second_wall_time",
                         "cumulative_processing_time_ms",
                         "avg_time_per_file_ms",
@@ -380,10 +362,6 @@
                         "rules_matched": {
                           "type": "integer"
                         },
-                        "completed_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time"
@@ -393,9 +371,6 @@
                           "format": "date-time"
                         },
                         "duration": {
-                          "type": "integer"
-                        },
-                        "files_processed": {
                           "type": "integer"
                         },
                         "files_per_second_wall_time": {
@@ -456,11 +431,9 @@
                         "total_files",
                         "total_matches",
                         "rules_matched",
-                        "completed_at",
                         "created_at",
                         "updated_at",
                         "duration",
-                        "files_processed",
                         "files_per_second_wall_time",
                         "cumulative_processing_time_ms",
                         "avg_time_per_file_ms",
@@ -536,10 +509,6 @@
                         "rules_matched": {
                           "type": "integer"
                         },
-                        "completed_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
                         "created_at": {
                           "type": "string",
                           "format": "date-time"
@@ -549,9 +518,6 @@
                           "format": "date-time"
                         },
                         "duration": {
-                          "type": "integer"
-                        },
-                        "files_processed": {
                           "type": "integer"
                         },
                         "files_per_second_wall_time": {
@@ -612,11 +578,9 @@
                         "total_files",
                         "total_matches",
                         "rules_matched",
-                        "completed_at",
                         "created_at",
                         "updated_at",
                         "duration",
-                        "files_processed",
                         "files_per_second_wall_time",
                         "cumulative_processing_time_ms",
                         "avg_time_per_file_ms",

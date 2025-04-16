@@ -10,7 +10,6 @@ class PerformanceMetricsService
     if results.has_key?('summary')
       summary = results['summary']
       metrics[:duration] = summary['total_duration_ms'] if summary.has_key?('total_duration_ms')
-      metrics[:files_processed] = summary['files_processed'] if summary.has_key?('files_processed')
       metrics[:files_per_second_wall_time] = summary['files_per_second_wall_time'] if summary.has_key?('files_per_second_wall_time')
       metrics[:cumulative_processing_time_ms] = summary['cumulative_processing_time_ms'] if summary.has_key?('cumulative_processing_time_ms')
       metrics[:avg_time_per_file_ms] = summary['avg_time_per_file_ms'] if summary.has_key?('avg_time_per_file_ms')

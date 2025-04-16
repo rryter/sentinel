@@ -9,7 +9,6 @@ FactoryBot.define do
     completed_at { nil }
     go_job_id { nil }
     duration { nil }
-    files_processed { nil }
     files_per_second_wall_time { nil }
     cumulative_processing_time_ms { nil }
     avg_time_per_file_ms { nil }
@@ -27,7 +26,6 @@ FactoryBot.define do
       completed_at { Time.current }
       go_job_id { SecureRandom.uuid }
       duration { 2500 }
-      files_processed { 10 }
       files_per_second_wall_time { 4.0 }
       cumulative_processing_time_ms { 2500 }
       avg_time_per_file_ms { 250.0 }
@@ -44,7 +42,6 @@ FactoryBot.define do
       total_matches { 12 }
       rules_matched { 3 }
       go_job_id { SecureRandom.uuid }
-      files_processed { 5 }
       files_per_second_wall_time { 3.5 }
       cumulative_processing_time_ms { 1200 }
       avg_time_per_file_ms { 240.0 }
@@ -61,7 +58,6 @@ FactoryBot.define do
       total_matches { 8 }
       rules_matched { 2 }
       go_job_id { SecureRandom.uuid }
-      files_processed { 3 }
       files_per_second_wall_time { 2.0 }
       cumulative_processing_time_ms { 800 }
       avg_time_per_file_ms { 266.7 }
