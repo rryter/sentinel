@@ -1,4 +1,5 @@
-@if (!results) {
+@let data = results();
+@if (!data) {
   <div class="flex flex-col gap-4 md:flex-row">
     <div class="bg-white shadow rounded-lg p-6 flex-1">
       <hlm-skeleton class="w-12 h-4 mb-2" />
@@ -19,16 +20,16 @@
   </div>
 } @else {
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <!-- Project Card using Content Projection -->
+    <!-- Project Card -->
     <app-content-tile title="Project" iconName="lucideFile">
-      {{ results.project.name || 'N/A' }}
+      {{ data.project.name || 'N/A' }}
       <app-details-container details>
         <app-tile-detail icon="lucideFile">
-          {{ results.total_files }} files
+          {{ data.total_files }} files
         </app-tile-detail>
         <app-tile-divider></app-tile-divider>
         <app-tile-detail icon="lucideArrowDown">
-          ID: {{ results.project.id || 'N/A' }}
+          ID: {{ data.project.id || 'N/A' }}
         </app-tile-detail>
       </app-details-container>
     </app-content-tile>
@@ -38,51 +39,45 @@
       title="Status"
       iconName="lucideCheck"
       [iconClass]="
-        results.status === 'completed' ? 'text-green-500' : 'text-yellow-500'
+        data.status === 'completed' ? 'text-green-500' : 'text-yellow-500'
       "
     >
-      <span
-        hlmBadge
-        [variant]="getBadgeVariant(results.status)"
-        [class]="getBadgeClass(results.status)"
-      >
-        {{ capitalizeFirstLetter(results.status) }}
-      </span>
+      {{ capitalizeFirstLetter(data.status) }}
       <app-details-container details>
         <app-tile-detail icon="lucideFile">
-          Scan #{{ results.id }}
+          Scan #{{ data.id }}
         </app-tile-detail>
         <app-tile-divider></app-tile-divider>
         <app-tile-detail icon="lucideClock">
-          {{ (results.created_at | date: 'MMM d, yyyy, h:mm a') || 'N/A' }}
+          {{ (data.created_at | date: 'MMM d, yyyy, h:mm a') || 'N/A' }}
         </app-tile-detail>
       </app-details-container>
     </app-content-tile>
 
     <!-- Duration Card -->
     <app-content-tile title="Duration" iconName="lucideClock">
-      {{ results.duration ? results.duration + ' ms' : 'N/A' }}
+      {{ data.duration ? data.duration + ' ms' : 'N/A' }}
       <app-details-container details>
         <app-tile-detail icon="lucideClock">
-          {{ formatNumber(results.files_per_second_wall_time) || 0 }} files/s
+          {{ formatNumber(data.files_per_second_wall_time) || 0 }} files/s
         </app-tile-detail>
         <app-tile-divider></app-tile-divider>
         <app-tile-detail icon="lucideBookmark">
-          {{ results.parallel_cores_used || 1 }} cores
+          {{ data.parallel_cores_used || 1 }} cores
         </app-tile-detail>
       </app-details-container>
     </app-content-tile>
 
-    <!-- Matches Card using Content Projection -->
+    <!-- Matches Card -->
     <app-content-tile title="Matches" iconName="lucideLayoutGrid">
-      {{ results.total_matches }}
+      {{ data.total_matches }}
       <app-details-container details>
         <app-tile-detail icon="lucideFile">
-          in {{ results.total_files }} files
+          in {{ data.total_files }} files
         </app-tile-detail>
         <app-tile-divider></app-tile-divider>
         <app-tile-detail icon="lucideLayoutGrid">
-          from {{ results.rules_matched }} rules
+          from {{ data.rules_matched }} rules
         </app-tile-detail>
       </app-details-container>
     </app-content-tile>
@@ -93,7 +88,7 @@
     <h3 class="text-lg font-medium text-gray-900 mb-4">Matches by Rule</h3>
     <div class="bg-white shadow rounded-lg overflow-hidden">
       <div class="max-h-80 overflow-y-auto">
-        @for (rule of getObjectEntries(results || {}); track $index) {
+        @for (rule of getObjectEntries(data || {}); track $index) {
           <div
             class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
           >

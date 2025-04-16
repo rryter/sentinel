@@ -1,4 +1,4 @@
-import { Component, input, Input, OnInit } from '@angular/core';
+import { Component, input, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AnalysisResults } from '../model/analysis/analysis.model';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
@@ -8,7 +8,10 @@ import { ContentTileComponent } from '../../../shared/components/content-tile/co
 import { TileDetailComponent } from '../../../shared/components/content-tile/tile-detail/tile-detail.component';
 import { DetailsContainerComponent } from '../../../shared/components/content-tile/details-container/details-container.component';
 import { TileDividerComponent } from '../../../shared/components/content-tile/tile-divider/tile-divider.component';
-import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
+import { BadgeVariants } from '@spartan-ng/ui-badge-helm';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs/operators';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-analysis-results',
@@ -20,12 +23,10 @@ import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
     TileDetailComponent,
     DetailsContainerComponent,
     TileDividerComponent,
-    HlmBadgeDirective,
   ],
   templateUrl: './analysis-results.component.html',
 })
-export class AnalysisResultsComponent implements OnInit {
-  @Input() results: ApiV1AnalysisJobsGet200ResponseDataInner | null = null;
+export class AnalysisResultsComponent {
   @Input() totalExecutionTimeSeconds = 0;
   jobId = input<number>(0);
 
@@ -34,15 +35,17 @@ export class AnalysisResultsComponent implements OnInit {
 
   constructor(private analysisJobService: AnalysisJobsService) {}
 
-  ngOnInit(): void {
-    this.analysisJobService
-      .apiV1AnalysisJobsIdFetchResultsGet({
-        id: this.jobId(),
-      })
-      .subscribe((response) => {
-        this.results = response.data;
-      });
-  }
+  results = toSignal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
+    toObservable(this.jobId).pipe(
+      switchMap((id) =>
+        this.analysisJobService.apiV1AnalysisJobsIdFetchResultsGet({
+          id,
+        }),
+      ),
+      switchMap((response) => [response.data]),
+    ),
+    { initialValue: null },
+  );
 
   getBadgeVariant(status: string): BadgeVariants['variant'] {
     return status === 'completed' ? 'default' : 'secondary';
