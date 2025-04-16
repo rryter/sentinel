@@ -36,6 +36,7 @@ model/api-v1-pattern-matches-get200-response-meta.ts
 model/api-v1-pattern-matches-get200-response.ts
 model/api-v1-pattern-matches-time-series-get200-response-data-inner.ts
 model/api-v1-pattern-matches-time-series-get200-response.ts
+model/api-v1-projects-get200-response-data-projects-inner.ts
 model/api-v1-projects-get200-response-data.ts
 model/api-v1-projects-get200-response.ts
 model/api-v1-projects-post-request-project.ts

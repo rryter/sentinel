@@ -15,8 +15,8 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInnerProject {
     id: number;
     name: string;
     repository_url: string;
-    created_at?: string;
-    updated_at?: string;
+    created_at: string;
+    updated_at: string;
 }
 
 

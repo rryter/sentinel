@@ -5,6 +5,7 @@ module Api
 
       def index
         @jobs = AnalysisJob
+          .includes(:project)
           .order(created_at: :desc)
           .page(params[:page])
           .per(params[:per_page])
@@ -16,7 +17,8 @@ module Api
             adapter: :attributes,
             # Don't include files in the list view for performance
             include_files: false,
-            include_statistics: false
+            include_statistics: false,
+            include: ['project']
           ).as_json,
           meta: {
             current_page: @jobs.current_page,
@@ -27,13 +29,14 @@ module Api
       end
 
       def show
-        @job = AnalysisJob.find(params[:id])
+        @job = AnalysisJob.includes(:project).find(params[:id])
 
         render json: {
           data: ActiveModelSerializers::SerializableResource.new(
             @job,
             adapter: :attributes,
-            serializer: AnalysisJobSerializer
+            serializer: AnalysisJobSerializer,
+            include: ['project']
           ).as_json
         }
       end
@@ -56,9 +59,30 @@ module Api
 
             # In test environment, don't actually run the analysis
             if Rails.env.test?
-              @job.update(status: "completed")
+              # Set default values for all required fields
+              @job.update(
+                status: "completed",
+                total_files: 0,
+                total_matches: 0,
+                rules_matched: 0,
+                completed_at: Time.current,
+                duration: 0,
+                files_processed: 0,
+                files_per_second_wall_time: 0.0,
+                cumulative_processing_time_ms: 0,
+                avg_time_per_file_ms: 0.0,
+                files_per_second_cpu_time: 0.0,
+                parallel_cores_used: 1,
+                parallel_speedup_factor: 1.0,
+                parallel_efficiency_percent: 100.0
+              )
+              
               render json: {
-                data: ActiveModelSerializers::SerializableResource.new(@job.reload, adapter: :attributes).as_json
+                data: ActiveModelSerializers::SerializableResource.new(
+                  @job.reload, 
+                  adapter: :attributes,
+                  include: ['project']
+                ).as_json
               }, status: :created
               return
             end
@@ -90,11 +114,15 @@ module Api
         @job = AnalysisJob.includes(:project).find(params[:id])
 
         begin
+          # Ensure all required fields have values
+          ensure_required_fields(@job)
+          
           render json: {
             data: ActiveModelSerializers::SerializableResource.new(
               @job.reload, 
               adapter: :attributes,
-              serializer: AnalysisJobSerializer
+              serializer: AnalysisJobSerializer,
+              include: ['project']
             ).as_json
           }
         rescue StandardError => e
@@ -147,9 +175,33 @@ module Api
       private
 
       def set_job
-        @job = AnalysisJob.find(params[:id])
+        @job = AnalysisJob.includes(:project).find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render json: { error: "Analysis job not found" }, status: :not_found
+      end
+      
+      # Ensure all required fields have values
+      def ensure_required_fields(job)
+        # Only set defaults if the job is completed
+        return unless job.completed?
+        
+        # Set default values for any nil fields
+        job.total_files ||= 0
+        job.total_matches ||= 0
+        job.rules_matched ||= 0
+        job.completed_at ||= Time.current
+        job.duration ||= 0
+        job.files_processed ||= 0
+        job.files_per_second_wall_time ||= 0.0
+        job.cumulative_processing_time_ms ||= 0
+        job.avg_time_per_file_ms ||= 0.0
+        job.files_per_second_cpu_time ||= 0.0
+        job.parallel_cores_used ||= 1
+        job.parallel_speedup_factor ||= 1.0
+        job.parallel_efficiency_percent ||= 100.0
+        
+        # Save changes if any were made
+        job.save if job.changed?
       end
     end
   end

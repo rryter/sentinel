@@ -16,23 +16,22 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInner {
     id: number;
     project_id: number;
     status: ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum;
-    total_files?: number | null;
-    total_matches?: number | null;
-    rules_matched?: number | null;
-    completed_at?: string | null;
-    created_at?: string;
-    updated_at?: string;
-    processing_duration?: number | null;
-    duration?: number | null;
-    files_processed?: number | null;
-    files_per_second_wall_time?: number | null;
-    cumulative_processing_time_ms?: number | null;
-    avg_time_per_file_ms?: number | null;
-    files_per_second_cpu_time?: number | null;
-    parallel_cores_used?: number | null;
-    parallel_speedup_factor?: number | null;
-    parallel_efficiency_percent?: number | null;
-    project?: ApiV1AnalysisJobsGet200ResponseDataInnerProject;
+    total_files: number;
+    total_matches: number;
+    rules_matched: number;
+    completed_at: string;
+    created_at: string;
+    updated_at: string;
+    duration: number;
+    files_processed: number;
+    files_per_second_wall_time: number;
+    cumulative_processing_time_ms: number;
+    avg_time_per_file_ms: number;
+    files_per_second_cpu_time: number;
+    parallel_cores_used: number;
+    parallel_speedup_factor: number;
+    parallel_efficiency_percent: number;
+    project: ApiV1AnalysisJobsGet200ResponseDataInnerProject;
 }
 export enum ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum {
     PENDING = 'pending',

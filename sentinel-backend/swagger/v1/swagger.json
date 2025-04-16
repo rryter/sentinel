@@ -41,21 +41,17 @@
                             ]
                           },
                           "total_files": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "total_matches": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "rules_matched": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "completed_at": {
                             "type": "string",
-                            "format": "date-time",
-                            "nullable": true
+                            "format": "date-time"
                           },
                           "created_at": {
                             "type": "string",
@@ -65,45 +61,32 @@
                             "type": "string",
                             "format": "date-time"
                           },
-                          "processing_duration": {
-                            "type": "integer",
-                            "nullable": true
-                          },
                           "duration": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "files_processed": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "files_per_second_wall_time": {
-                            "type": "number",
-                            "nullable": true
+                            "type": "number"
                           },
                           "cumulative_processing_time_ms": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "avg_time_per_file_ms": {
-                            "type": "number",
-                            "nullable": true
+                            "type": "number"
                           },
                           "files_per_second_cpu_time": {
-                            "type": "number",
-                            "nullable": true
+                            "type": "number"
                           },
                           "parallel_cores_used": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "parallel_speedup_factor": {
-                            "type": "number",
-                            "nullable": true
+                            "type": "number"
                           },
                           "parallel_efficiency_percent": {
-                            "type": "number",
-                            "nullable": true
+                            "type": "number"
                           },
                           "project": {
                             "type": "object",
@@ -129,14 +112,32 @@
                             "required": [
                               "id",
                               "name",
-                              "repository_url"
+                              "repository_url",
+                              "created_at",
+                              "updated_at"
                             ]
                           }
                         },
                         "required": [
                           "id",
                           "project_id",
-                          "status"
+                          "status",
+                          "total_files",
+                          "total_matches",
+                          "rules_matched",
+                          "completed_at",
+                          "created_at",
+                          "updated_at",
+                          "duration",
+                          "files_processed",
+                          "files_per_second_wall_time",
+                          "cumulative_processing_time_ms",
+                          "avg_time_per_file_ms",
+                          "files_per_second_cpu_time",
+                          "parallel_cores_used",
+                          "parallel_speedup_factor",
+                          "parallel_efficiency_percent",
+                          "project"
                         ]
                       }
                     },
@@ -198,21 +199,17 @@
                           ]
                         },
                         "total_files": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "total_matches": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "rules_matched": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "completed_at": {
                           "type": "string",
-                          "format": "date-time",
-                          "nullable": true
+                          "format": "date-time"
                         },
                         "created_at": {
                           "type": "string",
@@ -222,45 +219,32 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "processing_duration": {
-                          "type": "integer",
-                          "nullable": true
-                        },
                         "duration": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "files_processed": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "files_per_second_wall_time": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "cumulative_processing_time_ms": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "avg_time_per_file_ms": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "files_per_second_cpu_time": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "parallel_cores_used": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "parallel_speedup_factor": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "parallel_efficiency_percent": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "project": {
                           "type": "object",
@@ -286,14 +270,32 @@
                           "required": [
                             "id",
                             "name",
-                            "repository_url"
+                            "repository_url",
+                            "created_at",
+                            "updated_at"
                           ]
                         }
                       },
                       "required": [
                         "id",
                         "project_id",
-                        "status"
+                        "status",
+                        "total_files",
+                        "total_matches",
+                        "rules_matched",
+                        "completed_at",
+                        "created_at",
+                        "updated_at",
+                        "duration",
+                        "files_processed",
+                        "files_per_second_wall_time",
+                        "cumulative_processing_time_ms",
+                        "avg_time_per_file_ms",
+                        "files_per_second_cpu_time",
+                        "parallel_cores_used",
+                        "parallel_speedup_factor",
+                        "parallel_efficiency_percent",
+                        "project"
                       ]
                     }
                   },
@@ -370,21 +372,17 @@
                           ]
                         },
                         "total_files": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "total_matches": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "rules_matched": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "completed_at": {
                           "type": "string",
-                          "format": "date-time",
-                          "nullable": true
+                          "format": "date-time"
                         },
                         "created_at": {
                           "type": "string",
@@ -394,45 +392,32 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "processing_duration": {
-                          "type": "integer",
-                          "nullable": true
-                        },
                         "duration": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "files_processed": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "files_per_second_wall_time": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "cumulative_processing_time_ms": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "avg_time_per_file_ms": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "files_per_second_cpu_time": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "parallel_cores_used": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "parallel_speedup_factor": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "parallel_efficiency_percent": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "project": {
                           "type": "object",
@@ -458,14 +443,32 @@
                           "required": [
                             "id",
                             "name",
-                            "repository_url"
+                            "repository_url",
+                            "created_at",
+                            "updated_at"
                           ]
                         }
                       },
                       "required": [
                         "id",
                         "project_id",
-                        "status"
+                        "status",
+                        "total_files",
+                        "total_matches",
+                        "rules_matched",
+                        "completed_at",
+                        "created_at",
+                        "updated_at",
+                        "duration",
+                        "files_processed",
+                        "files_per_second_wall_time",
+                        "cumulative_processing_time_ms",
+                        "avg_time_per_file_ms",
+                        "files_per_second_cpu_time",
+                        "parallel_cores_used",
+                        "parallel_speedup_factor",
+                        "parallel_efficiency_percent",
+                        "project"
                       ]
                     }
                   },
@@ -525,21 +528,17 @@
                           ]
                         },
                         "total_files": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "total_matches": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "rules_matched": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "completed_at": {
                           "type": "string",
-                          "format": "date-time",
-                          "nullable": true
+                          "format": "date-time"
                         },
                         "created_at": {
                           "type": "string",
@@ -549,45 +548,32 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "processing_duration": {
-                          "type": "integer",
-                          "nullable": true
-                        },
                         "duration": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "files_processed": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "files_per_second_wall_time": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "cumulative_processing_time_ms": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "avg_time_per_file_ms": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "files_per_second_cpu_time": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "parallel_cores_used": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "parallel_speedup_factor": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "parallel_efficiency_percent": {
-                          "type": "number",
-                          "nullable": true
+                          "type": "number"
                         },
                         "project": {
                           "type": "object",
@@ -613,14 +599,32 @@
                           "required": [
                             "id",
                             "name",
-                            "repository_url"
+                            "repository_url",
+                            "created_at",
+                            "updated_at"
                           ]
                         }
                       },
                       "required": [
                         "id",
                         "project_id",
-                        "status"
+                        "status",
+                        "total_files",
+                        "total_matches",
+                        "rules_matched",
+                        "completed_at",
+                        "created_at",
+                        "updated_at",
+                        "duration",
+                        "files_processed",
+                        "files_per_second_wall_time",
+                        "cumulative_processing_time_ms",
+                        "avg_time_per_file_ms",
+                        "files_per_second_cpu_time",
+                        "parallel_cores_used",
+                        "parallel_speedup_factor",
+                        "parallel_efficiency_percent",
+                        "project"
                       ]
                     }
                   },
