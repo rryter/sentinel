@@ -15,6 +15,17 @@ class AnalysisJob < ActiveRecord::Base
   # Configure kaminari
   paginates_per 10
 
+  # Scope to include files with violations and their counts
+  scope :with_files_and_counts, -> {
+    includes(:files_with_violations)
+    .joins('LEFT JOIN (
+        SELECT file_with_violations_id, COUNT(*) as match_count
+        FROM pattern_matches
+        GROUP BY file_with_violations_id
+      ) counts ON files_with_violations.id = counts.file_with_violations_id')
+    .select('analysis_jobs.*, COALESCE(counts.match_count, 0) as match_count')
+  }
+
   def fetch_results
     # Call the analysis service to fetch and process results
     begin

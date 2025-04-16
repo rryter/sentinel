@@ -4,13 +4,20 @@ module Api
       before_action :set_job, only: [:show, :fetch_results]
 
       def index
-        @jobs = AnalysisJob.includes(:files_with_violations, :pattern_matches)
+        @jobs = AnalysisJob
           .order(created_at: :desc)
           .page(params[:page])
           .per(params[:per_page])
 
         render json: {
-          data: ActiveModelSerializers::SerializableResource.new(@jobs, each_serializer: AnalysisJobSerializer, adapter: :attributes).as_json,
+          data: ActiveModelSerializers::SerializableResource.new(
+            @jobs, 
+            each_serializer: AnalysisJobSerializer, 
+            adapter: :attributes,
+            # Don't include files in the list view for performance
+            include_files: false,
+            include_statistics: false
+          ).as_json,
           meta: {
             current_page: @jobs.current_page,
             total_pages: @jobs.total_pages,
@@ -20,14 +27,14 @@ module Api
       end
 
       def show
-        # Preload associations to avoid N+1 queries
-        @job = AnalysisJob.includes(
-          files_with_violations: {},
-          pattern_matches: { file_with_violations: {} }
-        ).find(params[:id])
+        @job = AnalysisJob.find(params[:id])
 
         render json: {
-          data: ActiveModelSerializers::SerializableResource.new(@job, adapter: :attributes).as_json
+          data: ActiveModelSerializers::SerializableResource.new(
+            @job,
+            adapter: :attributes,
+            serializer: AnalysisJobSerializer
+          ).as_json
         }
       end
 
@@ -46,13 +53,13 @@ module Api
           begin
             # Initialize the analysis service
             service = AnalysisService.new(@job.id)
-            
+
             # Start analysis (sets status to running)
             service.start_analysis(@project.id)
-            
+
             # Perform the actual analysis
             results = service.perform_analysis(@project)
-            
+
             # Update performance metrics separately
             PerformanceMetricsService.update_job_with_metrics(@job, results)
 
@@ -74,12 +81,40 @@ module Api
         @job = AnalysisJob.find(params[:id])
 
         begin
-            render json: {
-              data: ActiveModelSerializers::SerializableResource.new(@job.reload, adapter: :attributes).as_json
-            }
+          render json: {
+            data: ActiveModelSerializers::SerializableResource.new(
+              @job.reload, 
+              adapter: :attributes,
+              serializer: AnalysisJobSerializer
+            ).as_json
+          }
         rescue StandardError => e
           render json: { error: e.message }, status: :service_unavailable
         end
+      end
+
+      # Fetch pattern matches for a specific file
+      def file_pattern_matches
+        @job = AnalysisJob.find(params[:id])
+        @file = @job.files_with_violations.find_by!(file_path: params[:file_path])
+        
+        # Paginate pattern matches to avoid large responses
+        @pattern_matches = @file.pattern_matches
+                               .page(params[:page])
+                               .per(params[:per_page] || 100)
+        
+        render json: {
+          data: ActiveModelSerializers::SerializableResource.new(
+            @pattern_matches,
+            each_serializer: PatternMatchSerializer
+          ).as_json,
+          meta: {
+            file_path: @file.file_path,
+            current_page: @pattern_matches.current_page,
+            total_pages: @pattern_matches.total_pages,
+            total_count: @pattern_matches.total_count
+          }
+        }
       end
 
       private

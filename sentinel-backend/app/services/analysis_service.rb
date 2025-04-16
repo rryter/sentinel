@@ -207,7 +207,7 @@ class AnalysisService
       # Build command with appropriate arguments
       command = [
         binary_path.to_s,
-        "--export-json"
+        "--output-dir=#{output_dir}",
       ]
 
       # Log the command being executed
@@ -216,7 +216,7 @@ class AnalysisService
       # Execute command and capture output
       stdout, stderr, status = Open3.capture3(*command)
 
-      output_file = Rails.root.join("../sentinel-analysis/findings/findings.json")
+      output_file = File.join(output_dir, "findings.json")
 
       unless status.success?
         Rails.logger.error("Error executing sentinel-analysis: #{stderr}")
@@ -258,33 +258,75 @@ class AnalysisService
       end
       
       ActiveRecord::Base.transaction do
-        # Process each finding
-        file_cache = {} # Cache to avoid repeated DB lookups
+        # Group findings by file path first
+        findings_by_file = findings_data['findings'].group_by { |finding| finding['file'] }
         
-        findings_data['findings'].each do |finding|
-          # Get or create file_with_violations record
-          file_path = finding['file']
-          file_with_violations = file_cache[file_path]
+        # Create all file_with_violations records in bulk
+        file_path_to_id = {}
+        files_to_create = findings_by_file.keys.map do |file_path|
+          { 
+            analysis_job_id: analysis_job.id, 
+            file_path: file_path,
+            created_at: Time.current,
+            updated_at: Time.current
+          }
+        end
+        
+        # Bulk insert the file records
+        if files_to_create.any?
+          # First, check for existing files to avoid duplicates
+          existing_files = analysis_job.files_with_violations.where(file_path: findings_by_file.keys).pluck(:file_path, :id).to_h
           
-          unless file_with_violations
-            file_with_violations = analysis_job.files_with_violations.find_or_create_by!(file_path: file_path)
-            file_cache[file_path] = file_with_violations
+          # Filter out files that already exist
+          files_to_create.reject! { |file| existing_files.key?(file[:file_path]) }
+          
+          # Add existing files to the mapping
+          file_path_to_id.merge!(existing_files)
+          
+          # Bulk insert new files if any remain
+          if files_to_create.any?
+            result = FileWithViolations.insert_all(files_to_create, returning: [:id, :file_path])
+            
+            # Map each file path to its ID
+            result.rows.each do |id, file_path|
+              file_path_to_id[file_path] = id
+            end
           end
+        end
+        
+        # Prepare pattern matches for bulk insert
+        pattern_matches_to_create = []
+        
+        findings_by_file.each do |file_path, findings|
+          file_id = file_path_to_id[file_path]
+          next unless file_id
           
-          # Create pattern match record
-          file_with_violations.pattern_matches.create!(
-            rule_id: nil, # Can be added if available in the data
-            rule_name: finding['rule'],
-            description: finding['message'],
-            start_line: finding['line'],
-            end_line: finding['line'], # Same as start line if not specified
-            start_col: finding['column'],
-            end_col: finding['column'] + 1, # Estimate end column if not provided
-            metadata: {
-              severity: finding['severity'],
-              help: finding['help']
+          findings.each do |finding|
+            pattern_matches_to_create << {
+              file_with_violations_id: file_id,
+              rule_id: nil, # Can be added if available in the data
+              rule_name: finding['rule'],
+              description: finding['message'],
+              start_line: finding['line'],
+              end_line: finding['line'], # Same as start line if not specified
+              start_col: finding['column'],
+              end_col: finding['column'] + 1, # Estimate end column if not provided
+              metadata: {
+                severity: finding['severity'],
+                help: finding['help']
+              }.to_json,
+              created_at: Time.current,
+              updated_at: Time.current
             }
-          )
+          end
+        end
+        
+        # Perform bulk insert of pattern matches in batches to avoid memory issues
+        if pattern_matches_to_create.any?
+          # Batch inserts in groups of 500 for better performance
+          pattern_matches_to_create.each_slice(500) do |batch|
+            PatternMatch.insert_all(batch)
+          end
         end
         
         # Update summary statistics in analysis job if provided
