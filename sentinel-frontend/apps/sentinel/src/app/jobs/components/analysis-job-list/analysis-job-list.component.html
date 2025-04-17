@@ -118,7 +118,6 @@
           >
             Created At
           </th>
-
           <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
             <span class="sr-only">Actions</span>
           </th>
@@ -128,8 +127,9 @@
       <!-- Table Body -->
       <tbody class="divide-y divide-gray-200 bg-white">
         <tr
-          class="even:bg-gray-50"
+          class="even:bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors duration-150"
           *ngFor="let job of jobs; trackBy: trackById"
+          [routerLink]="['/analysis/jobs', job.id, 'results']"
         >
           <td
             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
@@ -156,16 +156,10 @@
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
             {{ formatDate(job.created_at) }}
           </td>
-
           <td
-            class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+            class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
           >
-            <a
-              [routerLink]="['/analysis/jobs', job.id, 'results']"
-              class="text-indigo-600 hover:text-indigo-900"
-            >
-              View Results
-            </a>
+            <span class="text-indigo-600">View Results</span>
           </td>
         </tr>
       </tbody>
