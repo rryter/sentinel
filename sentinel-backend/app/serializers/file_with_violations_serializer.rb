@@ -2,7 +2,7 @@ class FileWithViolationsSerializer < ActiveModel::Serializer
   attributes :id, :file_path, :analysis_job_id, :display_path, :job_status
   
   belongs_to :analysis_job
-  has_many :pattern_matches
+  has_many :violations
   
   # Cache the serializer
   cache key: 'file_with_violations', expires_in: 1.hour

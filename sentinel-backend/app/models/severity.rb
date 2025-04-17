@@ -1,5 +1,5 @@
 class Severity < ActiveRecord::Base
-  has_many :pattern_matches
+  has_many :violations
   
   validates :name, presence: true, uniqueness: true
   validates :level, presence: true, uniqueness: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }

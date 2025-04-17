@@ -22,10 +22,6 @@ import { ApiV1AnalysisJobsPostRequest } from '../model/models';
 import { Configuration }                                     from '../configuration';
 
 
-export interface ApiV1AnalysisJobsIdFetchResultsGetRequestParams {
-    id: number;
-}
-
 export interface ApiV1AnalysisJobsIdGetRequestParams {
     id: number;
 }
@@ -48,13 +44,6 @@ export interface AnalysisJobsServiceInterface {
      * 
 */
     apiV1AnalysisJobsGet(extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsGet200Response>;
-
-    /**
-     * Fetches analysis job results
-     * 
-* @param requestParameters
-     */
-    apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsPost201Response>;
 
     /**
      * Retrieves an analysis job

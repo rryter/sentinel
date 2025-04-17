@@ -9,23 +9,17 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ApiV1ViolationsGet200ResponseDataInnerFileWithViolations } from './api-v1-violations-get200-response-data-inner-file-with-violations';
 
 
-export interface AnalysisJobResponseAnalysisJobPatternMatchesInner { 
+export interface ApiV1ViolationsGet200ResponseDataInner { 
     id?: number;
-    start_line?: number;
-    end_line?: number;
-    start_col?: number;
-    end_col?: number;
-    file_with_violations_id?: number;
     rule_id?: string;
     rule_name?: string;
-    description?: string;
     line_number?: number;
-    pattern_name?: string;
-    location?: string;
-    metadata_content?: object;
-    code_snippet?: any | null;
+    column?: number;
+    match_text?: string;
+    file_with_violations?: ApiV1ViolationsGet200ResponseDataInnerFileWithViolations;
 }
 
 

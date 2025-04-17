@@ -3,7 +3,7 @@ class FileWithViolations < ActiveRecord::Base
   self.table_name = "files_with_violations"
   
   belongs_to :analysis_job
-  has_many :pattern_matches, dependent: :destroy
+  has_many :violations, dependent: :destroy
   
   validates :file_path, presence: true
 end 

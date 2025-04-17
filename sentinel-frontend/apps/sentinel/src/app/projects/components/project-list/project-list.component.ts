@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-projects-get200-response-data-inner';
+import {
+  ApiV1ProjectsGet200ResponseDataProjectsInner,
+  ProjectsService,
+} from '@sentinel-api';
 
 @Component({
   selector: 'app-project-list',
@@ -16,7 +18,7 @@ import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/mode
 export class ProjectListComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
-  projects: ApiV1ProjectsGet200ResponseDataInner[] = [];
+  projects: ApiV1ProjectsGet200ResponseDataProjectsInner[] = [];
 
   constructor(private projectsService: ProjectsService) {}
 

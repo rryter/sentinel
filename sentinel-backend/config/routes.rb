@@ -13,18 +13,18 @@ Rails.application.routes.draw do
       
       resources :analysis_jobs, only: [:index, :show, :create] do
         member do
-          get :fetch_results
           post :process_results
+          get 'files/:file_path/violations', to: 'analysis_jobs#file_violations', constraints: { file_path: /.*/ }
         end
 
-        resources :pattern_matches, only: [:index] do
+        resources :violations, only: [:index] do
           collection do
             get :time_series
           end
         end
       end
       
-      resources :pattern_matches, only: [:index] do
+      resources :violations, only: [:index] do
         collection do
           get :time_series
         end

@@ -9,10 +9,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ApiV1ViolationsTimeSeriesGet200ResponseDataInner } from './api-v1-violations-time-series-get200-response-data-inner';
 
 
-export interface ApiV1ExamplesIdDelete200Response { 
-    message: string;
+export interface ApiV1ViolationsTimeSeriesGet200Response { 
+    data?: Array<ApiV1ViolationsTimeSeriesGet200ResponseDataInner>;
 }
 
 

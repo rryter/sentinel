@@ -1,9 +1,9 @@
 require 'swagger_helper'
 
-RSpec.describe 'Api::V1::PatternMatches', type: :request do
-  path '/api/v1/pattern_matches' do
-    get 'Lists all pattern matches' do
-      tags 'Pattern Matches'
+RSpec.describe 'Api::V1::Violations', type: :request do
+  path '/api/v1/violations' do
+    get 'Lists all violations' do
+      tags 'Violations'
       produces 'application/json'
       parameter name: :page, in: :query, type: :integer, required: false, description: 'Page number'
       parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
@@ -12,7 +12,7 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
       parameter name: :analysis_job_id, in: :query, type: :integer, required: false, description: 'Filter by analysis job ID'
       parameter name: :file_path, in: :query, type: :string, required: false, description: 'Filter by file path pattern'
       
-      response '200', 'pattern matches found' do
+      response '200', 'violations found' do
         schema type: 'object',
           properties: {
             data: { 
@@ -54,9 +54,9 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
     end
   end
   
-  path '/api/v1/pattern_matches/time_series' do
-    get 'Gets time series data for pattern matches' do
-      tags 'Pattern Matches'
+  path '/api/v1/violations/time_series' do
+    get 'Gets time series data for violations' do
+      tags 'Violations'
       produces 'application/json'
       parameter name: :start_date, in: :query, type: :string, description: 'Start date for the time series (default: 30 days ago)'
       parameter name: :end_date, in: :query, type: :string, description: 'End date for the time series (default: today)'
@@ -82,11 +82,11 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
           
         let!(:analysis_job) { create(:analysis_job) }
         let!(:file_with_violations) { create(:file_with_violations, analysis_job: analysis_job) }
-        let!(:pattern_matches) do
+        let!(:violations) do
           [
-            create(:pattern_match, file_with_violations: file_with_violations, created_at: 2.days.ago),
-            create(:pattern_match, file_with_violations: file_with_violations, created_at: 1.day.ago),
-            create(:pattern_match, file_with_violations: file_with_violations, created_at: Time.current)
+            create(:violation, file_with_violations: file_with_violations, created_at: 2.days.ago),
+            create(:violation, file_with_violations: file_with_violations, created_at: 1.day.ago),
+            create(:violation, file_with_violations: file_with_violations, created_at: Time.current)
           ]
         end
         let(:start_date) { 3.days.ago.strftime('%Y-%m-%d') }
@@ -97,7 +97,7 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
     end
   end
   
-  path '/api/v1/analysis_jobs/{analysis_job_id}/pattern_matches' do
+  path '/api/v1/analysis_jobs/{analysis_job_id}/violations' do
     parameter name: :analysis_job_id, in: :path, type: :integer
     parameter name: :page, in: :query, type: :integer, required: false, description: 'Page number'
     parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
@@ -105,11 +105,11 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
     parameter name: :rule_id, in: :query, type: :string, required: false, description: 'Filter by rule ID'
     parameter name: :file_path, in: :query, type: :string, required: false, description: 'Filter by file path pattern'
     
-    get 'Lists pattern matches for an analysis job' do
-      tags 'Pattern Matches'
+    get 'Lists violations for an analysis job' do
+      tags 'Violations'
       produces 'application/json'
       
-      response '200', 'pattern matches found' do
+      response '200', 'violations found' do
         schema type: 'object',
           properties: {
             data: { 
@@ -154,15 +154,15 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
     end
   end
   
-  path '/api/v1/analysis_jobs/{analysis_job_id}/pattern_matches/time_series' do
+  path '/api/v1/analysis_jobs/{analysis_job_id}/violations/time_series' do
     parameter name: :analysis_job_id, in: :path, type: :integer
     parameter name: :start_date, in: :query, type: :string, description: 'Start date for the time series (default: 30 days ago)'
     parameter name: :end_date, in: :query, type: :string, description: 'End date for the time series (default: today)'
     parameter name: :rule_id, in: :query, type: :string, required: false, description: 'Filter by rule ID'
     parameter name: :rule_name, in: :query, type: :string, required: false, description: 'Filter by rule name'
     
-    get 'Gets time series data for pattern matches in an analysis job' do
-      tags 'Pattern Matches'
+    get 'Gets time series data for violations in an analysis job' do
+      tags 'Violations'
       produces 'application/json'
       
       response '200', 'time series data retrieved' do
@@ -183,11 +183,11 @@ RSpec.describe 'Api::V1::PatternMatches', type: :request do
           
         let!(:analysis_job) { create(:analysis_job) }
         let!(:file_with_violations) { create(:file_with_violations, analysis_job: analysis_job) }
-        let!(:pattern_matches) do
+        let!(:violations) do
           [
-            create(:pattern_match, file_with_violations: file_with_violations, created_at: 2.days.ago),
-            create(:pattern_match, file_with_violations: file_with_violations, created_at: 1.day.ago),
-            create(:pattern_match, file_with_violations: file_with_violations, created_at: Time.current)
+            create(:violation, file_with_violations: file_with_violations, created_at: 2.days.ago),
+            create(:violation, file_with_violations: file_with_violations, created_at: 1.day.ago),
+            create(:violation, file_with_violations: file_with_violations, created_at: Time.current)
           ]
         end
         let(:analysis_job_id) { analysis_job.id }

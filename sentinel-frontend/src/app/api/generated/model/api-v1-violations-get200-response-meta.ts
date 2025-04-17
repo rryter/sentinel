@@ -9,11 +9,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1PatternMatchesTimeSeriesGet200ResponseDataInner } from './api-v1-pattern-matches-time-series-get200-response-data-inner';
 
 
-export interface ApiV1PatternMatchesTimeSeriesGet200Response { 
-    data?: Array<ApiV1PatternMatchesTimeSeriesGet200ResponseDataInner>;
+export interface ApiV1ViolationsGet200ResponseMeta { 
+    total_count?: number;
+    current_page?: number;
+    total_pages?: number;
+    analysis_job_id?: number | null;
 }
 
 

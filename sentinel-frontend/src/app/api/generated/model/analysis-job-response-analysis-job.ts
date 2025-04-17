@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 import { AnalysisJobResponseAnalysisJobFilesWithViolationsInner } from './analysis-job-response-analysis-job-files-with-violations-inner';
-import { AnalysisJobResponseAnalysisJobPatternMatchesInner } from './analysis-job-response-analysis-job-pattern-matches-inner';
 
 
 export interface AnalysisJobResponseAnalysisJob { 
@@ -23,7 +22,6 @@ export interface AnalysisJobResponseAnalysisJob {
     total_matches?: number | null;
     rules_matched?: number | null;
     files_with_violations?: Array<AnalysisJobResponseAnalysisJobFilesWithViolationsInner>;
-    pattern_matches?: Array<AnalysisJobResponseAnalysisJobPatternMatchesInner>;
 }
 export enum AnalysisJobResponseAnalysisJobStatusEnum {
     PENDING = 'pending',

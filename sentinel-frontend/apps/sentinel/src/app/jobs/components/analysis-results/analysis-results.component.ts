@@ -62,7 +62,7 @@ export class AnalysisResultsComponent {
   private async fetchResults(id: number): Promise<void> {
     try {
       const response = await firstValueFrom(
-        this.analysisJobService.apiV1AnalysisJobsIdFetchResultsGet({ id }),
+        this.analysisJobService.apiV1AnalysisJobsIdGet({ id }),
       );
       this.resultsData.set(response.data);
     } catch (error) {

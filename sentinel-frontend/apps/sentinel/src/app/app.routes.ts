@@ -8,7 +8,6 @@ import { ProjectDetailComponent } from './projects/components/project-detail/pro
 import { ProjectCreateComponent } from './projects/components/project-create/project-create.component';
 import { AnalysisJobListComponent } from './jobs/components/analysis-job-list/analysis-job-list.component';
 import { AnalysisResultsComponent } from './jobs/components/analysis-results/analysis-results.component';
-import { JobPatternMatchesComponent } from './jobs/components/job-pattern-matches/job-pattern-matches.component';
 import { PersonFormComponent } from './jobs/components/person-form/person-form.component';
 
 export const appRoutes: Route[] = [
@@ -40,10 +39,6 @@ export const appRoutes: Route[] = [
   {
     path: 'analysis/jobs/:jobId/results',
     component: AnalysisResultsComponent,
-  },
-  {
-    path: 'analysis/jobs/:jobId/pattern-matches',
-    component: JobPatternMatchesComponent,
   },
   {
     path: 'projects',

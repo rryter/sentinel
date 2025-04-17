@@ -102,8 +102,8 @@ class AnalysisService
       # If we don't have a Go job ID, check if we have already processed results
       if analysis_job.go_job_id.blank?
         # Check if we have processed findings already
-        if analysis_job.pattern_matches.exists?
-          Rails.logger.info("Job #{@job_id} has existing pattern matches but no Go job ID, skipping external fetch")
+        if analysis_job.violations.exists?
+          Rails.logger.info("Job #{@job_id} has existing violations but no Go job ID, skipping external fetch")
           return true
         else
           Rails.logger.error("Cannot process results for job #{@job_id} - missing Go job ID and no existing results")
@@ -173,10 +173,10 @@ class AnalysisService
         data['fileResults'].each do |file_result|
           file_with_violations = analysis_job.files_with_violations.find_or_create_by!(file_path: file_result['filePath'])
           
-          # Store pattern matches
+          # Store violations
           if file_result['patternMatches'].present?
             file_result['patternMatches'].each do |match|
-              file_with_violations.pattern_matches.create!(
+              file_with_violations.violations.create!(
                 rule_id: match['ruleId'],
                 rule_name: match['ruleName'],
                 description: match['description'],
@@ -294,8 +294,8 @@ class AnalysisService
           end
         end
         
-        # Prepare pattern matches for bulk insert
-        pattern_matches_to_create = []
+        # Prepare violations for bulk insert
+        violations_to_create = []
         
         findings_by_file.each do |file_path, findings|
           file_id = file_path_to_id[file_path]
@@ -313,7 +313,7 @@ class AnalysisService
               severity_id = Severity.default.id
             end
             
-            pattern_matches_to_create << {
+            violations_to_create << {
               file_with_violations_id: file_id,
               rule_id: nil, # Can be added if available in the data
               rule_name: finding['rule'],
@@ -332,11 +332,11 @@ class AnalysisService
           end
         end
         
-        # Perform bulk insert of pattern matches in batches to avoid memory issues
-        if pattern_matches_to_create.any?
+        # Perform bulk insert of violations in batches to avoid memory issues
+        if violations_to_create.any?
           # Batch inserts in groups of 500 for better performance
-          pattern_matches_to_create.each_slice(500) do |batch|
-            PatternMatch.insert_all(batch)
+          violations_to_create.each_slice(500) do |batch|
+            Violation.insert_all(batch)
           end
         end
         

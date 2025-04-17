@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :pattern_match do
+  factory :violation do
     file_with_violations
     sequence(:rule_id) { |n| "RULE_#{n}" }
     sequence(:rule_name) { |n| "Security Rule #{n}" }

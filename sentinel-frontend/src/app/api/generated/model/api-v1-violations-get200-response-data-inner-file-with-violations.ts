@@ -11,11 +11,8 @@
  */
 
 
-export interface ApiV1ProjectsGet200ResponseMeta { 
-    current_page: number;
-    total_pages: number;
-    total_count: number;
-    out_of_range: boolean;
+export interface ApiV1ViolationsGet200ResponseDataInnerFileWithViolations { 
+    file_path?: string;
 }
 
 

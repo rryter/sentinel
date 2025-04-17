@@ -11,7 +11,7 @@
  */
 
 
-export interface ApiV1PatternMatchesTimeSeriesGet200ResponseDataInner { 
+export interface ApiV1ViolationsTimeSeriesGet200ResponseDataInner { 
     date: string;
     count: number;
 }

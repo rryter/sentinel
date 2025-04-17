@@ -48,25 +48,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.index ["analysis_job_id"], name: "index_files_with_violations_on_analysis_job_id"
   end
 
-  create_table "pattern_matches", force: :cascade do |t|
-    t.bigint "file_with_violations_id", null: false
-    t.string "rule_id"
-    t.string "rule_name", null: false
-    t.text "description"
-    t.integer "start_line", null: false
-    t.integer "end_line", null: false
-    t.integer "start_col"
-    t.integer "end_col"
-    t.jsonb "metadata"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "severity_id"
-    t.index ["file_with_violations_id"], name: "index_pattern_matches_on_file_with_violations_id"
-    t.index ["rule_id"], name: "index_pattern_matches_on_rule_id"
-    t.index ["rule_name"], name: "index_pattern_matches_on_rule_name"
-    t.index ["severity_id"], name: "index_pattern_matches_on_severity_id"
-  end
-
   create_table "projects", force: :cascade do |t|
     t.string "name", null: false
     t.string "repository_url"
@@ -86,8 +67,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.index ["name"], name: "index_severities_on_name", unique: true
   end
 
+  create_table "violations", force: :cascade do |t|
+    t.bigint "file_with_violations_id", null: false
+    t.string "rule_id"
+    t.string "rule_name", null: false
+    t.text "description"
+    t.integer "start_line", null: false
+    t.integer "end_line", null: false
+    t.integer "start_col"
+    t.integer "end_col"
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "severity_id"
+    t.index ["file_with_violations_id"], name: "index_violations_on_file_with_violations_id"
+    t.index ["rule_id"], name: "index_violations_on_rule_id"
+    t.index ["rule_name"], name: "index_violations_on_rule_name"
+    t.index ["severity_id"], name: "index_violations_on_severity_id"
+  end
+
   add_foreign_key "analysis_jobs", "projects"
   add_foreign_key "files_with_violations", "analysis_jobs"
-  add_foreign_key "pattern_matches", "files_with_violations", column: "file_with_violations_id"
-  add_foreign_key "pattern_matches", "severities"
+  add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
+  add_foreign_key "violations", "severities"
 end

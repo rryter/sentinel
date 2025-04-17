@@ -1,4 +1,4 @@
-class PatternMatch < ActiveRecord::Base
+class Violation < ActiveRecord::Base
   belongs_to :file_with_violations, class_name: "FileWithViolations"
   belongs_to :severity, optional: true
   

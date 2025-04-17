@@ -1,7 +1,7 @@
 module Api
   module V1
     class AnalysisJobsController < ApplicationController
-      before_action :set_job, only: [:show, :fetch_results, :process_results]
+      before_action :set_job, only: [:show, :process_results]
 
       def index
         @jobs = AnalysisJob
@@ -30,6 +30,7 @@ module Api
 
       def show
         @job = AnalysisJob.includes(:project).find(params[:id])
+        ensure_required_fields(@job)
 
         render json: {
           data: ActiveModelSerializers::SerializableResource.new(
@@ -109,47 +110,26 @@ module Api
         end
       end
 
-      # Fetch results from the analysis service
-      def fetch_results
-        @job = AnalysisJob.includes(:project).find(params[:id])
-
-        begin
-          # Ensure all required fields have values
-          ensure_required_fields(@job)
-          
-          render json: {
-            data: ActiveModelSerializers::SerializableResource.new(
-              @job.reload, 
-              adapter: :attributes,
-              serializer: AnalysisJobSerializer,
-              include: ['project']
-            ).as_json
-          }
-        rescue StandardError => e
-          render json: { error: e.message }, status: :service_unavailable
-        end
-      end
-
-      # Fetch pattern matches for a specific file
-      def file_pattern_matches
+      # Fetch violations for a specific file
+      def file_violations
         @job = AnalysisJob.find(params[:id])
         @file = @job.files_with_violations.find_by!(file_path: params[:file_path])
         
-        # Paginate pattern matches to avoid large responses
-        @pattern_matches = @file.pattern_matches
-                               .page(params[:page])
-                               .per(params[:per_page] || 100)
+        # Paginate violations to avoid large responses
+        @violations = @file.violations
+                           .page(params[:page])
+                           .per(params[:per_page] || 100)
         
         render json: {
           data: ActiveModelSerializers::SerializableResource.new(
-            @pattern_matches,
-            each_serializer: PatternMatchSerializer
+            @violations,
+            each_serializer: ViolationSerializer
           ).as_json,
           meta: {
             file_path: @file.file_path,
-            current_page: @pattern_matches.current_page,
-            total_pages: @pattern_matches.total_pages,
-            total_count: @pattern_matches.total_count
+            current_page: @violations.current_page,
+            total_pages: @violations.total_pages,
+            total_count: @violations.total_count
           }
         }
       end

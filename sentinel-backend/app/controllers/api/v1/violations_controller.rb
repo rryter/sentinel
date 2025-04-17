@@ -1,11 +1,11 @@
 module Api
   module V1
-    class PatternMatchesController < ApplicationController
+    class ViolationsController < ApplicationController
       before_action :set_analysis_job, only: [:index, :time_series], if: -> { params[:analysis_job_id].present? }
       
       def index
         # Support filtering by various attributes
-        query = PatternMatch.joins(file_with_violations: :analysis_job)
+        query = Violation.joins(file_with_violations: :analysis_job)
         
         # Filter by rule_name if provided
         if params[:rule_name].present?
@@ -35,17 +35,17 @@ module Api
         per_page = (params[:per_page] || 25).to_i
         per_page = [per_page, 100].min # Limit to 100 per page max
         
-        @matches = query.page(page).per(per_page)
+        @violations = query.page(page).per(per_page)
         
         meta = {
-          total_count: @matches.total_count,
-          current_page: @matches.current_page,
-          total_pages: @matches.total_pages,
+          total_count: @violations.total_count,
+          current_page: @violations.current_page,
+          total_pages: @violations.total_pages,
           analysis_job_id: @analysis_job&.id
         }
         
         # Using AMS with includes and attributes adapter to prevent root wrapping
-        serialized_data = ActiveModelSerializers::SerializableResource.new(@matches, 
+        serialized_data = ActiveModelSerializers::SerializableResource.new(@violations, 
           include: { file_with_violations: { only: [:file_path] } },
           adapter: :attributes
         ).as_json
@@ -59,7 +59,7 @@ module Api
         end_date = params[:end_date] ? Date.parse(params[:end_date]) : Date.today
         
         # Get base query scope
-        scope = PatternMatch.joins(file_with_violations: :analysis_job)
+        scope = Violation.joins(file_with_violations: :analysis_job)
         
         # Filter by analysis_job_id if we're in the nested route or if explicitly provided
         if @analysis_job
@@ -78,14 +78,14 @@ module Api
           scope = scope.where(rule_name: params[:rule_name])
         end
         
-        # Group by date and count pattern matches
+        # Group by date and count violations
         # Using date_trunc to standardize how dates are formatted
         counts_by_date = scope
-          .select("DATE(pattern_matches.created_at) as match_date, COUNT(*) as match_count")
-          .where(pattern_matches: { created_at: start_date.beginning_of_day..end_date.end_of_day })
-          .group("DATE(pattern_matches.created_at)")
-          .order("match_date")
-          .map { |result| [result.match_date.to_s, result.match_count.to_i] }
+          .select("DATE(violations.created_at) as violation_date, COUNT(*) as violation_count")
+          .where(violations: { created_at: start_date.beginning_of_day..end_date.end_of_day })
+          .group("DATE(violations.created_at)")
+          .order("violation_date")
+          .map { |result| [result.violation_date.to_s, result.violation_count.to_i] }
           .to_h
         
         # Format the data for the frontend, ensuring all dates in range are included

@@ -14,11 +14,11 @@ import { FormsModule } from '@angular/forms';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-import { ApiV1ProjectsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-projects-get200-response-data-inner';
 import { JobStatusComponent } from '../job-status/job-status.component';
 import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
 import { AnalysisResultsComponent } from '../analysis-results/analysis-results.component';
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
+import { ApiV1ProjectsGet200ResponseDataProjectsInner } from '@sentinel-api';
 
 enum AnalysisJobStatus {
   PENDING = 'pending',
@@ -100,7 +100,7 @@ export class CreateAnalysisComponent implements OnInit {
   analysisResults = signal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
     null,
   );
-  projects = signal<ApiV1ProjectsGet200ResponseDataInner[]>([]);
+  projects = signal<ApiV1ProjectsGet200ResponseDataProjectsInner[]>([]);
   selectedProjectId = signal<number | null>(null);
   isLoadingProjects = signal(false);
 
@@ -371,7 +371,7 @@ export class CreateAnalysisComponent implements OnInit {
     this.isLoading.set(true);
 
     this.analysisService
-      .apiV1AnalysisJobsIdFetchResultsGet({ id: jobId })
+      .apiV1AnalysisJobsIdGet({ id: jobId })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError((err) => {

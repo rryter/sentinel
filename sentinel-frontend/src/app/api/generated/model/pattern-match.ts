@@ -13,7 +13,7 @@
 
 export interface PatternMatch { 
     id: number;
-    analysis_file_id: number;
+    file_with_violations_id: number;
     rule_id: string;
     rule_name: string;
     line_number: number;

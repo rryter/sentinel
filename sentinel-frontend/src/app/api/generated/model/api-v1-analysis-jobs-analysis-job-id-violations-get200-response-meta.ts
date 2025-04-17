@@ -11,11 +11,11 @@
  */
 
 
-export interface ApiV1PatternMatchesGet200ResponseMeta { 
+export interface ApiV1AnalysisJobsAnalysisJobIdViolationsGet200ResponseMeta { 
     total_count?: number;
     current_page?: number;
     total_pages?: number;
-    analysis_job_id?: number | null;
+    analysis_job_id?: number;
 }
 
 

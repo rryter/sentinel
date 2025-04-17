@@ -7,20 +7,20 @@ class AnalysisJobSummarySerializer < ActiveModel::Serializer
              :parallel_speedup_factor, :parallel_efficiency_percent,
              :total_matches, :rules_matched
              
-  # Include files_with_violations but not the pattern_matches
+  # Include files_with_violations but not the violations
   has_many :files_with_violations, serializer: FileWithViolationsSummarySerializer
   
-  # Add rule statistics without loading all pattern matches
+  # Add rule statistics without loading all violations
   attribute :rules_statistics
   
   def rules_statistics
     return {} unless object.id
     
-    # Use a direct SQL query to get the counts by rule name without loading pattern matches
+    # Use a direct SQL query to get the counts by rule name without loading violations
     counts = ActiveRecord::Base.connection.execute(<<-SQL
       SELECT rule_name, COUNT(*) as count
-      FROM pattern_matches
-      INNER JOIN files_with_violations ON pattern_matches.file_with_violations_id = files_with_violations.id
+      FROM violations
+      INNER JOIN files_with_violations ON violations.file_with_violations_id = files_with_violations.id
       WHERE files_with_violations.analysis_job_id = #{object.id}
       GROUP BY rule_name
     SQL
