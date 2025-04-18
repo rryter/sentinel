@@ -49,19 +49,13 @@ export interface RuleResultItem {
     BrnTableModule,
     HlmTableComponent,
     HlmTableDirective,
-    HlmCaptionComponent,
     HlmThComponent,
     HlmTdComponent,
-    HlmTrowComponent,
     HlmButtonDirective,
-    HlmBadgeDirective,
     HlmInputDirective,
-    HlmIconDirective,
     NgIcon,
     BrnMenuTriggerDirective,
     HlmMenuModule,
-    DecimalPipe,
-    TitleCasePipe
   ],
   providers: [
     provideIcons({ 
@@ -74,6 +68,9 @@ export interface RuleResultItem {
       lucideArrowUpDown
     })
   ],
+  host: {
+    class: 'w-full',
+  },
   templateUrl: './rule-results.component.html',
   styleUrl: './rule-results.component.scss',
 })
