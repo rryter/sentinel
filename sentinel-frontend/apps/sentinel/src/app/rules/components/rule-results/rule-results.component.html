@@ -1,57 +1,106 @@
 <div class="w-full">
   <!-- Loading state -->
-  @if (loading) {
+  @if (_loading()) {
     <div class="flex justify-center p-8">
       <div class="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
     </div>
   }
   
   <!-- Empty state -->
-  @if (!loading && (!violationItems || violationItems.length === 0)) {
+  @if (!_loading() && (!_filteredItems() || _filteredItems().length === 0)) {
     <div class="text-center py-10">
       <p class="text-muted-foreground">No rule results found.</p>
     </div>
   }
   
   <!-- Results table -->
-  @if (!loading && violationItems && violationItems.length > 0) {
-    <hlm-table class="w-full border rounded-md">
-      <hlm-caption>Rule Analysis Results</hlm-caption>
-      
-      <!-- Table Header -->
-      <hlm-trow class="bg-muted/50">
-        <hlm-th>Severity</hlm-th>
-        <hlm-th>Rule</hlm-th>
-        <hlm-th>Description</hlm-th>
-        <hlm-th>File</hlm-th>
-        <hlm-th>Location</hlm-th>
-      </hlm-trow>
-      
-      <!-- Table Body -->
-      @for (item of violationItems; track $index) {
-        <hlm-trow>
-          <hlm-td>
+  @if (!_loading() && _filteredItems() && _filteredItems().length > 0) {
+    <div class="flex flex-col justify-between gap-4 sm:flex-row mb-4">
+      <input
+        hlmInput
+        class="w-full md:w-80"
+        placeholder="Filter results..."
+        [(ngModel)]="_filter"
+      />
+
+      <button hlmBtn variant="outline" align="end" [brnMenuTriggerFor]="menu">
+        Columns
+        <ng-icon name="lucideChevronDown" class="ml-2" size="sm" />
+      </button>
+      <ng-template #menu>
+        <hlm-menu class="w-32">
+          @for (column of _brnColumnManager.allColumns; track column.name) {
+            <button
+              hlmMenuItemCheckbox
+              [disabled]="_brnColumnManager.isColumnDisabled(column.name)"
+              [checked]="_brnColumnManager.isColumnVisible(column.name)"
+              (triggered)="_brnColumnManager.toggleVisibility(column.name)"
+            >
+              <hlm-menu-item-check />
+              <span>{{ column.label }}</span>
+            </button>
+          }
+        </hlm-menu>
+      </ng-template>
+    </div>
+
+    <div class="w-full overflow-auto border rounded-md border-border">
+      <brn-table
+        hlm
+        stickyHeader
+        class="w-full flex-table"
+        [dataSource]="_filteredItems()"
+        [displayedColumns]="_allDisplayedColumns()"
+      >
+        <brn-column-def name="severity">
+          <hlm-th *brnHeaderDef>Severity</hlm-th>
+          <hlm-td *brnCellDef="let item">
             <div class="flex items-center">
               <ng-icon 
-                class="mr-2"
+                name="lucideInfo"
+                class="text-blue-500 mr-2"
                 size="1rem">
               </ng-icon>
               <span class="font-medium">
-                {{ item.rule_name }}
+                Info
               </span>
             </div>
           </hlm-td>
-          <hlm-td>{{ item |json}}</hlm-td>
-          <hlm-td truncate="true">{{ 'rule desc' || No description' }}</hlm-td>
-          <hlm-td truncate="true">
+        </brn-column-def>
+
+        <brn-column-def name="rule">
+          <hlm-th *brnHeaderDef>Rule</hlm-th>
+          <hlm-td *brnCellDef="let item">
+            {{ item.rule_name || 'Unknown rule' }}
+          </hlm-td>
+        </brn-column-def>
+
+        <brn-column-def name="description">
+          <hlm-th *brnHeaderDef>Description</hlm-th>
+          <hlm-td *brnCellDef="let item" class="max-w-md truncate">
+            {{ item.match_text || 'No description' }}
+          </hlm-td>
+        </brn-column-def>
+
+        <brn-column-def name="file">
+          <hlm-th *brnHeaderDef>File</hlm-th>
+          <hlm-td *brnCellDef="let item" class="max-w-md truncate">
             <div class="flex items-center">
-              <ng-icon name="lucideFile" class="mr-2" size="1rem"></ng-icon>
-              {{ item.file_with_violations?.file_path || 'Unknown file' }}
+              <ng-icon name="lucideFile" class="mr-2 flex-shrink-0" size="1rem"></ng-icon>
+              <span class="truncate">{{ item.file_with_violations?.file_path || 'Unknown file' }}</span>
             </div>
           </hlm-td>
-          <hlm-td>{{ getLocationString(item) }}</hlm-td>
-        </hlm-trow>
-      }
-    </hlm-table>
+        </brn-column-def>
+
+        <brn-column-def name="location">
+          <hlm-th *brnHeaderDef>Location</hlm-th>
+          <hlm-td *brnCellDef="let item">
+            {{ getLocationString(item) }}
+          </hlm-td>
+        </brn-column-def>
+
+        <div class="flex items-center justify-center p-20 text-muted-foreground" brnNoDataRow>No data</div>
+      </brn-table>
+    </div>
   }
 </div> 
