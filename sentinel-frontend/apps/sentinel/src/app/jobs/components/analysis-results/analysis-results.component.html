@@ -1,4 +1,6 @@
 @let data = results();
+@let violations = violationsData()?.data;
+
 @if (!data) {
   <div class="flex flex-col gap-4 md:flex-row">
     <div class="bg-white shadow rounded-lg p-6 flex-1">
@@ -85,33 +87,16 @@
 
   <!-- Rules Breakdown Section -->
   <div class="mt-8">
-    <h3 class="text-lg font-medium text-gray-900 mb-4">Matches by Rule</h3>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Violations</h3>
     <div class="bg-white shadow rounded-lg overflow-hidden">
+   
+
       @if (violationsData()) {
         <div class="overflow-y-auto">
-          @for (violation of violationsData()?.data; track $index) {
-            <div
-              class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
-            >
-              <div>
-                <p class="font-medium text-gray-800">{{ violation.file_with_violations?.file_path | stripPathPrefix }}</p>
-                <p class="text-xs text-gray-500">Pattern match</p>
-              </div>
-              <div>
-                <span
-                  class="px-3 py-1 text-sm font-medium rounded-full"
-                >
-                 <!--  {{ violation | json }} matches -->
-                </span>
-              </div>
-            </div>
+         
+          @if (!isLoading() && violations) {
+            <app-rule-results [results]="violationsData()" [loading]="isLoading()"></app-rule-results>
           }
-
-          <p class="mb-4">
-            Current Page: {{ currentPage() }} | 
-            Items Per Page: {{ itemsPerPage() }} | 
-            Total Items: {{ totalItems() }}
-          </p>
 
           <app-pagination
             [currentPage]="currentPage()"
@@ -137,4 +122,5 @@
       }
     </div>
   </div>
+
 }

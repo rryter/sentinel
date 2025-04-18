@@ -1,0 +1,57 @@
+<div class="w-full">
+  <!-- Loading state -->
+  @if (loading) {
+    <div class="flex justify-center p-8">
+      <div class="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+    </div>
+  }
+  
+  <!-- Empty state -->
+  @if (!loading && (!violationItems || violationItems.length === 0)) {
+    <div class="text-center py-10">
+      <p class="text-muted-foreground">No rule results found.</p>
+    </div>
+  }
+  
+  <!-- Results table -->
+  @if (!loading && violationItems && violationItems.length > 0) {
+    <hlm-table class="w-full border rounded-md">
+      <hlm-caption>Rule Analysis Results</hlm-caption>
+      
+      <!-- Table Header -->
+      <hlm-trow class="bg-muted/50">
+        <hlm-th>Severity</hlm-th>
+        <hlm-th>Rule</hlm-th>
+        <hlm-th>Description</hlm-th>
+        <hlm-th>File</hlm-th>
+        <hlm-th>Location</hlm-th>
+      </hlm-trow>
+      
+      <!-- Table Body -->
+      @for (item of violationItems; track $index) {
+        <hlm-trow>
+          <hlm-td>
+            <div class="flex items-center">
+              <ng-icon 
+                class="mr-2"
+                size="1rem">
+              </ng-icon>
+              <span class="font-medium">
+                {{ item.rule_name }}
+              </span>
+            </div>
+          </hlm-td>
+          <hlm-td>{{ item |json}}</hlm-td>
+          <hlm-td truncate="true">{{ 'rule desc' || No description' }}</hlm-td>
+          <hlm-td truncate="true">
+            <div class="flex items-center">
+              <ng-icon name="lucideFile" class="mr-2" size="1rem"></ng-icon>
+              {{ item.file_with_violations?.file_path || 'Unknown file' }}
+            </div>
+          </hlm-td>
+          <hlm-td>{{ getLocationString(item) }}</hlm-td>
+        </hlm-trow>
+      }
+    </hlm-table>
+  }
+</div> 

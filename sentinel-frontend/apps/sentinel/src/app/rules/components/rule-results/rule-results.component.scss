@@ -1,0 +1,20 @@
+// Additional styling if needed beyond what Spartan UI provides
+:host {
+  display: block;
+  width: 100%;
+}
+
+hlm-table {
+  width: 100%;
+}
+
+hlm-td, hlm-th {
+  white-space: nowrap;
+}
+
+hlm-td[truncate="true"] {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+} 

@@ -23,6 +23,7 @@ import { lucideCircleSlash } from '@ng-icons/lucide';
 import { ApiV1ViolationsGet200Response, ViolationsService } from '@sentinel-api';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { StripPathPrefixPipe } from '../../../shared/pipes/strip-path-prefix.pipe';
+import { RuleResultsComponent } from '../../../rules/components/rule-results/rule-results.component';
 
 @Component({
   selector: 'app-analysis-results',
@@ -37,6 +38,7 @@ import { StripPathPrefixPipe } from '../../../shared/pipes/strip-path-prefix.pip
     NgIcon,
     PaginationComponent,
     StripPathPrefixPipe,
+    RuleResultsComponent,
   ],
   providers: [provideIcons({ lucideCircleSlash })],
   templateUrl: './analysis-results.component.html',
@@ -69,7 +71,7 @@ export class AnalysisResultsComponent {
   // Computed signal that derives from resultsData
   results = computed(() => this.resultsData());
   violations = computed(() => this.violationsData());
-  
+  isLoading = computed(() => this.resultsData() === null || this.violationsData() === null);
   constructor(private analysisJobService: AnalysisJobsService, private violationsService: ViolationsService) {
     // Side effect to fetch data when jobId changes
     effect(() => {
