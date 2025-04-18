@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@shared/*": ["src/app/shared/*"],
       "@sentinel-api": ["src/app/api/generated"],
       "@spartan-ng/ui-accordion-helm": [
         "libs/ui/ui-accordion-helm/src/index.ts"

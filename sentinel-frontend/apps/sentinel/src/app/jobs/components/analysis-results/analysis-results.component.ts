@@ -5,6 +5,7 @@ import {
   effect,
   signal,
   computed,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AnalysisResults } from '../model/analysis/analysis.model';
@@ -19,6 +20,9 @@ import { BadgeVariants } from '@spartan-ng/ui-badge-helm';
 import { firstValueFrom } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleSlash } from '@ng-icons/lucide';
+import { ApiV1ViolationsGet200Response, ViolationsService } from '@sentinel-api';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { StripPathPrefixPipe } from '../../../shared/pipes/strip-path-prefix.pipe';
 
 @Component({
   selector: 'app-analysis-results',
@@ -31,9 +35,12 @@ import { lucideCircleSlash } from '@ng-icons/lucide';
     DetailsContainerComponent,
     TileDividerComponent,
     NgIcon,
+    PaginationComponent,
+    StripPathPrefixPipe,
   ],
   providers: [provideIcons({ lucideCircleSlash })],
   templateUrl: './analysis-results.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnalysisResultsComponent {
   @Input() totalExecutionTimeSeconds = 0;
@@ -45,16 +52,42 @@ export class AnalysisResultsComponent {
   private resultsData = signal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
     null,
   );
+  
+  violationsData = signal<ApiV1ViolationsGet200Response | null>(
+    null,
+  );
+    
+  // Use writable signals instead of computed ones for pagination
+  private _currentPage = signal<number>(1);
+  private _itemsPerPage = signal<number>(10);
+
+  // Computed properties that derive from signals
+  currentPage = computed(() => this._currentPage());
+  itemsPerPage = computed(() => this._itemsPerPage());
+  totalItems = computed(() => this.violationsData()?.meta?.total_count || 0);
 
   // Computed signal that derives from resultsData
   results = computed(() => this.resultsData());
-
-  constructor(private analysisJobService: AnalysisJobsService) {
+  violations = computed(() => this.violationsData());
+  
+  constructor(private analysisJobService: AnalysisJobsService, private violationsService: ViolationsService) {
     // Side effect to fetch data when jobId changes
     effect(() => {
       const id = this.jobId();
       if (id) {
         this.fetchResults(id);
+        this.fetchViolations(id, this._currentPage(), this._itemsPerPage());
+      }
+    });
+
+    // Side effect to fetch violations when pagination changes
+    effect(() => {
+      const id = this.jobId();
+      const page = this._currentPage();
+      const perPage = this._itemsPerPage();
+      
+      if (id) {
+        this.fetchViolations(id, page, perPage);
       }
     });
   }
@@ -68,6 +101,32 @@ export class AnalysisResultsComponent {
     } catch (error) {
       console.error('Error fetching results:', error);
     }
+  }
+
+  private async fetchViolations(id: number, page: number = 1, perPage: number = 10): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.violationsService.apiV1ViolationsGet({ 
+          analysisJobId: id,
+          page,
+          perPage
+        }),
+      );
+      this.violationsData.set(response ?? null);
+    } catch (error) {
+      console.error('Error fetching violations:', error);
+    }
+  }
+
+  // Update these methods to handle pagination changes
+  setCurrentPage(page: number): void {
+    this._currentPage.set(page);
+  }
+
+  setItemsPerPage(perPage: number): void {
+    this._itemsPerPage.set(perPage);
+    // Reset to first page when changing items per page
+    this._currentPage.set(1);
   }
 
   getBadgeVariant(status: string): BadgeVariants['variant'] {

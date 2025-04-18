@@ -87,31 +87,40 @@
   <div class="mt-8">
     <h3 class="text-lg font-medium text-gray-900 mb-4">Matches by Rule</h3>
     <div class="bg-white shadow rounded-lg overflow-hidden">
-      @if (false) {
-        <div class="max-h-80 overflow-y-auto">
-          @for (rule of getObjectEntries(data || {}); track $index) {
+      @if (violationsData()) {
+        <div class="overflow-y-auto">
+          @for (violation of violationsData()?.data; track $index) {
             <div
               class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
             >
               <div>
-                <p class="font-medium text-gray-800">{{ rule[0] }}</p>
+                <p class="font-medium text-gray-800">{{ violation.file_with_violations?.file_path | stripPathPrefix }}</p>
                 <p class="text-xs text-gray-500">Pattern match</p>
               </div>
               <div>
                 <span
                   class="px-3 py-1 text-sm font-medium rounded-full"
-                  [ngClass]="{
-                    'bg-red-100 text-red-800': rule[1] > 100,
-                    'bg-yellow-100 text-yellow-800':
-                      rule[1] > 20 && rule[1] <= 100,
-                    'bg-green-100 text-green-800': rule[1] <= 20,
-                  }"
                 >
-                  {{ rule[1] }} matches
+                 <!--  {{ violation | json }} matches -->
                 </span>
               </div>
             </div>
           }
+
+          <p class="mb-4">
+            Current Page: {{ currentPage() }} | 
+            Items Per Page: {{ itemsPerPage() }} | 
+            Total Items: {{ totalItems() }}
+          </p>
+
+          <app-pagination
+            [currentPage]="currentPage()"
+            [itemsPerPage]="itemsPerPage()"
+            [totalItems]="totalItems()"
+            [pageSizes]="[5, 10, 25, 50]"
+            (currentPageChange)="setCurrentPage($event)"
+            (itemsPerPageChange)="setItemsPerPage($event)"
+          ></app-pagination>
         </div>
       } @else {
         <div class="p-8 text-center">
