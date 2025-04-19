@@ -3,7 +3,8 @@ use oxc_span::GetSpan;
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::Instant;
-
+use oxc_diagnostics::Error;
+use oxc_diagnostics::reporter::Info;
 // Import the Rule trait and rule implementations
 use crate::RuleDiagnostic;
 pub use crate::rules::Rule;
@@ -111,6 +112,8 @@ impl RulesRegistry {
                             rule_id: rule_name.clone(),
                             diagnostic,
                             source_code: source_code.to_string(),
+                            column_number: 0,
+                            line_number: 0
                         });
                     }
 
@@ -159,10 +162,15 @@ impl RulesRegistry {
 
                                 // Add all diagnostics from the Vec to your collection
                                 for diagnostic in diagnostics_vec {
+                                    let error = diagnostic.clone()
+                                        .with_source_code(source_code.to_string());
+                                    let (line, column) = extract_position_info(&error);
                                     diagnostics.push(RuleDiagnostic {
                                         rule_id: rule_name.clone(),
-                                        diagnostic: diagnostic,
+                                        diagnostic,
                                         source_code: source_code.to_string(),
+                                        line_number: line,
+                                        column_number: column
                                     });
                                 }
                             }
@@ -173,75 +181,6 @@ impl RulesRegistry {
         }
 
         (diagnostics, rule_durations)
-    }
-
-    /// Run all enabled rules on a file's semantic analysis (no metrics)
-    pub fn run_rules(
-        &self,
-        semantic_result: &SemanticBuilderReturn,
-        file_path: &str,
-        _source_code: &str,
-    ) -> RuleResult {
-        let mut diagnostics = Vec::new();
-
-        // Only process if we have rules enabled
-        if !self.enabled_rules.is_empty() {
-            // First, run visitor-based rules
-            for rule_name in &self.enabled_rules {
-                if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                    // Run visitor-based analysis
-                    let visitor_diagnostics = rule.run_on_semantic(semantic_result, file_path);
-
-                    // Wrap each diagnostic with rule ID
-                    for diagnostic in visitor_diagnostics {
-                        diagnostics.push(RuleDiagnostic {
-                            rule_id: rule_name.clone(),
-                            diagnostic,
-                            source_code: _source_code.to_string(),
-                        });
-                    }
-                }
-            }
-
-            // Check if any enabled rule actually uses node-based processing
-            let has_node_based_rules = self.enabled_rules.iter().any(|rule_name| {
-                self.rules.get(rule_name.as_str()).map_or(false, |_rule| {
-                    // Heuristic check - see comments in run_rules_with_metrics
-                    true
-                })
-            });
-
-            // >>> Section 2: Run traditional node-based rules (Conditionally) <<<
-            if has_node_based_rules {
-                for node in semantic_result.semantic.nodes() {
-                    let node_kind = node.kind();
-                    let span = node.span();
-
-                    // Run each enabled rule on this node
-                    for rule_name in &self.enabled_rules {
-                        if let Some(rule) = self.rules.get(rule_name.as_str()) {
-                            let diagnostic_vec = rule.run_on_node(&node_kind, span);
-
-                            if !diagnostic_vec.is_empty() {
-                                // Wrap each diagnostic with rule ID
-                                for diagnostic in diagnostic_vec {
-                                    diagnostics.push(RuleDiagnostic {
-                                        rule_id: rule_name.clone(),
-                                        diagnostic,
-                                        source_code: _source_code.to_string(),
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        RuleResult {
-            file_path: file_path.to_string(),
-            diagnostics,
-        }
     }
 }
 
@@ -379,6 +318,11 @@ pub fn setup_rules_registry(
     }
 
     registry
+}
+
+fn extract_position_info(error: &Error) -> (usize, usize) {
+    let info = Info::new(error);
+    return (info.start.line, info.start.column);
 }
 
 /// Apply rules from configuration file

@@ -77,7 +77,7 @@ impl Rule for AngularLegacyDecoratorsRule {
                 Expression::Identifier(ident) => {
                     let name = ident.name.as_str();
                     if self.restricted_decorators.contains(name) {
-                        diagnostics.push(self.create_decorator_diagnostic(name, span));
+                        diagnostics.push(self.create_decorator_diagnostic(name, ident.span));
                     }
                 }
                 // Decorator with arguments: @Input() or @Input('propName')
@@ -86,7 +86,7 @@ impl Rule for AngularLegacyDecoratorsRule {
                     if let Expression::Identifier(callee_ident) = &call_expr.callee {
                         let name = callee_ident.name.as_str();
                         if self.restricted_decorators.contains(name) {
-                            diagnostics.push(self.create_decorator_diagnostic(name, span));
+                            diagnostics.push(self.create_decorator_diagnostic(name, callee_ident.span));
                         }
                     }
                 }

@@ -49,13 +49,7 @@ pub struct FindingsSummary {
 }
 
 /// Extract position information from diagnostic when available
-fn extract_position_info(errors: &[Error]) -> (usize, usize) {
-    if let Some(err) = errors.first() {
-        let info = Info::new(err);
-        return (info.start.line, info.start.column);
-    }
-    (0, 1)
-}
+
 
 /// Get total duration in ms
 fn get_total_duration_ms(metrics: &crate::Metrics) -> u64 {
@@ -101,8 +95,6 @@ pub fn export_findings_json(
     // Process each file result
     for result in results {
         // Extract position information once per file rather than per diagnostic
-        let (line, column) = extract_position_info(&result.errors);
-
         for rule_diagnostic in &result.diagnostics {
             // Get the message text
             let message = rule_diagnostic.diagnostic.message.to_string();
@@ -135,8 +127,8 @@ pub fn export_findings_json(
                 rule: rule_name.clone(),
                 message,
                 file: result.file_path.clone(),
-                line,
-                column,
+                line: rule_diagnostic.line_number,
+                column: rule_diagnostic.column_number,
                 severity,
                 help: rule_diagnostic
                     .diagnostic

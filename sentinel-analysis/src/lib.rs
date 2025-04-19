@@ -19,6 +19,9 @@ pub struct RuleDiagnostic {
     pub diagnostic: OxcDiagnostic,
     /// The source code of the file where the diagnostic was found
     pub source_code: String,
+    // TBD
+    pub line_number: usize,
+    pub column_number: usize,
 }
 
 /// Structure to hold analysis results for a single file
@@ -30,7 +33,6 @@ pub struct FileAnalysisResult {
     pub rule_durations: HashMap<String, Duration>,
     pub total_duration: Duration,
     pub diagnostics: Vec<RuleDiagnostic>,
-    pub errors: Vec<Error>,
 }
 
 // Add any other public exports needed from the library modules here

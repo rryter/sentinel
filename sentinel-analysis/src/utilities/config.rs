@@ -172,7 +172,10 @@ pub fn get_output_dir(config: &Config, args: &[String]) -> String {
     }
 
     // Fall back to config file
-    config.output_dir.clone().unwrap_or_else(|| "findings".to_string())
+    config
+        .output_dir
+        .clone()
+        .unwrap_or_else(|| "findings".to_string())
 }
 
 /// Helper function to get metrics JSON path based on output directory

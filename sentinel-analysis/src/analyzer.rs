@@ -123,6 +123,8 @@ impl BatchProcessor {
                     rule_id: "parser".to_string(),
                     diagnostic: err,
                     source_code: content.content.clone(),
+                    line_number: 0,
+                    column_number: 0,
                 })
                 .collect();
 
@@ -133,7 +135,6 @@ impl BatchProcessor {
                 rule_durations: HashMap::new(),
                 total_duration: file_start.elapsed(),
                 diagnostics: parser_diagnostics,
-                errors: Vec::new(),
             };
         }
 
@@ -151,18 +152,6 @@ impl BatchProcessor {
             &content.content,
         );
 
-        let source_code = content.content.clone();
-
-        let errors: Vec<Error> = diagnostics
-            .iter()
-            .map(|diagnostic| {
-                diagnostic
-                    .clone()
-                    .diagnostic
-                    .with_source_code(source_code.clone())
-            })
-            .collect();
-
         FileAnalysisResult {
             file_path: file_path.to_string(),
             parse_duration,
@@ -170,7 +159,6 @@ impl BatchProcessor {
             rule_durations,
             total_duration: file_start.elapsed(),
             diagnostics,
-            errors,
         }
     }
 
@@ -188,7 +176,6 @@ impl BatchProcessor {
             rule_durations: HashMap::new(),
             total_duration: Duration::from_secs(0),
             diagnostics: Vec::new(),
-            errors: Vec::new(),
         }
     }
 }

@@ -541,7 +541,6 @@ pub fn aggregate_metrics(
             rule_durations: result.rule_durations.clone(),
             total_duration: result.total_duration,
             diagnostics: Vec::new(), // Empty vec as diagnostics aren't needed for metrics
-            errors: Vec::new(),
         };
         metrics.aggregate_file_result(result_to_aggregate);
     }
@@ -555,26 +554,24 @@ pub fn aggregate_metrics(
 /// Export metrics to files if configured
 pub fn export_metrics(config: &Config, metrics: &Metrics, debug_level: DebugLevel) {
     // Get the output directory
-    let output_dir = crate::utilities::config::get_output_dir(config, &std::env::args().collect::<Vec<_>>());
-    
+    let output_dir =
+        crate::utilities::config::get_output_dir(config, &std::env::args().collect::<Vec<_>>());
+
     // Set metrics paths based on output directory
     let json_path = if let Some(path) = &config.export_metrics_json {
         path.clone()
     } else {
         format!("{}/metrics.json", output_dir)
     };
-    
+
     let csv_path = if let Some(path) = &config.export_metrics_csv {
         path.clone()
     } else {
         format!("{}/metrics.csv", output_dir)
     };
-    
+
     // Call the export_to_configured_formats method on Metrics
-    if let Err(err) = metrics.export_to_configured_formats(
-        Some(&json_path),
-        Some(&csv_path),
-    ) {
+    if let Err(err) = metrics.export_to_configured_formats(Some(&json_path), Some(&csv_path)) {
         log(
             DebugLevel::Error,
             debug_level,
@@ -591,10 +588,11 @@ pub fn export_results(
     debug_level: DebugLevel,
 ) {
     export_metrics(config, metrics, debug_level);
-    
+
     // Get output directory
-    let output_dir = crate::utilities::config::get_output_dir(config, &std::env::args().collect::<Vec<_>>());
-    
+    let output_dir =
+        crate::utilities::config::get_output_dir(config, &std::env::args().collect::<Vec<_>>());
+
     // Pass output_dir to export_findings_json
     export_findings_json(analysis_results, metrics, debug_level, &output_dir);
 }
