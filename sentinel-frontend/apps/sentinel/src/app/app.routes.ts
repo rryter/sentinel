@@ -9,6 +9,7 @@ import { ProjectCreateComponent } from './projects/components/project-create/pro
 import { AnalysisJobListComponent } from './jobs/components/analysis-job-list/analysis-job-list.component';
 import { AnalysisResultsComponent } from './jobs/components/analysis-results/analysis-results.component';
 import { PersonFormComponent } from './jobs/components/person-form/person-form.component';
+import { BuildListComponent } from './builds/components/build-list/build-list.component';
 
 export const appRoutes: Route[] = [
   {
@@ -55,5 +56,9 @@ export const appRoutes: Route[] = [
   {
     path: 'person',
     component: PersonFormComponent,
+  },
+  {
+    path: 'builds',
+    component: BuildListComponent,
   },
 ];

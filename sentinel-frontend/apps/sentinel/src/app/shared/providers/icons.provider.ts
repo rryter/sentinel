@@ -18,6 +18,11 @@ import {
   lucideInfo,
   lucideLayoutGrid,
   lucideX,
+  lucideFolders,
+  lucideScroll,
+  lucideSearch,
+  lucideCircleCheck,
+  lucideHammer,
 } from '@ng-icons/lucide';
 
 export function provideIcons(): Provider[] {
@@ -40,6 +45,11 @@ export function provideIcons(): Provider[] {
       lucideInfo,
       lucideLayoutGrid,
       lucideX,
+      lucideFolders,
+      lucideScroll,
+      lucideSearch,
+      lucideCircleCheck,
+      lucideHammer,
     }),
   ];
 }
