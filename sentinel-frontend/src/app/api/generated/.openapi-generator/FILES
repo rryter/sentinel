@@ -6,6 +6,8 @@ api/analysis-jobs.serviceInterface.ts
 api/api.ts
 api/examples.service.ts
 api/examples.serviceInterface.ts
+api/files-with-violations.service.ts
+api/files-with-violations.serviceInterface.ts
 api/projects.service.ts
 api/projects.serviceInterface.ts
 api/violations.service.ts
@@ -14,7 +16,6 @@ configuration.ts
 encoder.ts
 git_push.sh
 index.ts
-model/analysis-job-response-analysis-job-files-with-violations-inner.ts
 model/analysis-job-response-analysis-job.ts
 model/analysis-job-response.ts
 model/analysis-job.ts
@@ -29,6 +30,9 @@ model/api-v1-analysis-jobs-post-request.ts
 model/api-v1-analysis-jobs-post201-response.ts
 model/api-v1-examples-get200-response-inner.ts
 model/api-v1-examples-post-request.ts
+model/api-v1-files-with-violations-get200-response-data-inner.ts
+model/api-v1-files-with-violations-get200-response-meta.ts
+model/api-v1-files-with-violations-get200-response.ts
 model/api-v1-projects-get200-response-data-projects-inner.ts
 model/api-v1-projects-get200-response-data.ts
 model/api-v1-projects-get200-response.ts

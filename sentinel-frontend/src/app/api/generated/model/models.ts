@@ -1,7 +1,6 @@
 export * from './analysis-job';
 export * from './analysis-job-response';
 export * from './analysis-job-response-analysis-job';
-export * from './analysis-job-response-analysis-job-files-with-violations-inner';
 export * from './api-v1-analysis-jobs-analysis-job-id-violations-get200-response';
 export * from './api-v1-analysis-jobs-analysis-job-id-violations-get200-response-meta';
 export * from './api-v1-analysis-jobs-get200-response';
@@ -13,6 +12,9 @@ export * from './api-v1-analysis-jobs-post201-response';
 export * from './api-v1-analysis-jobs-post-request';
 export * from './api-v1-examples-get200-response-inner';
 export * from './api-v1-examples-post-request';
+export * from './api-v1-files-with-violations-get200-response';
+export * from './api-v1-files-with-violations-get200-response-data-inner';
+export * from './api-v1-files-with-violations-get200-response-meta';
 export * from './api-v1-projects-get200-response';
 export * from './api-v1-projects-get200-response-data';
 export * from './api-v1-projects-get200-response-data-projects-inner';

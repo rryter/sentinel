@@ -30,9 +30,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :file_violations, only: [:index] do
-       
-      end
+      get 'files_with_violations', to: 'files_with_violations#index'
 
       resources :examples
     end

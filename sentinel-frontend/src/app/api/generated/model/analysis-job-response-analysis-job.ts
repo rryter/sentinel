@@ -9,7 +9,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { AnalysisJobResponseAnalysisJobFilesWithViolationsInner } from './analysis-job-response-analysis-job-files-with-violations-inner';
+import { ApiV1FilesWithViolationsGet200ResponseDataInner } from './api-v1-files-with-violations-get200-response-data-inner';
 
 
 export interface AnalysisJobResponseAnalysisJob { 
@@ -21,7 +21,7 @@ export interface AnalysisJobResponseAnalysisJob {
     total_files?: number | null;
     total_matches?: number | null;
     rules_matched?: number | null;
-    files_with_violations?: Array<AnalysisJobResponseAnalysisJobFilesWithViolationsInner>;
+    files_with_violations?: Array<ApiV1FilesWithViolationsGet200ResponseDataInner>;
 }
 export enum AnalysisJobResponseAnalysisJobStatusEnum {
     PENDING = 'pending',
