@@ -109,6 +109,7 @@ export class FilesWithViolationsService implements FilesWithViolationsServiceInt
         const perPage = requestParameters.perPage;
         const analysisJobId = requestParameters.analysisJobId;
         const filePath = requestParameters.filePath;
+        const ruleName = requestParameters.ruleName;
         const sort = requestParameters.sort;
         const direction = requestParameters.direction;
 
@@ -128,6 +129,10 @@ export class FilesWithViolationsService implements FilesWithViolationsServiceInt
         if (filePath !== undefined && filePath !== null) {
           localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
             <any>filePath, 'file_path');
+        }
+        if (ruleName !== undefined && ruleName !== null) {
+          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+            <any>ruleName, 'rule_name');
         }
         if (sort !== undefined && sort !== null) {
           localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,

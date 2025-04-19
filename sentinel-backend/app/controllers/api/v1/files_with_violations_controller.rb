@@ -16,6 +16,15 @@ module Api
           query = query.where("file_path LIKE ?", pattern)
         end
 
+        # Filter by rule name if provided
+        if params[:rule_name].present?
+          rule_names = params[:rule_name].split(',').map(&:strip)
+          query = query
+            .joins(:violations)
+            .where(violations: { rule_name: rule_names })
+            .distinct
+        end
+
         # Handle sorting
         sort_field = params[:sort] || "file_path"
         sort_direction = params[:direction] && %w[asc desc].include?(params[:direction].downcase) ? params[:direction].downcase : "asc"
@@ -54,7 +63,8 @@ module Api
         render json: {
           data: ActiveModel::Serializer::CollectionSerializer.new(
             @files_with_violations,
-            serializer: FileWithViolationsSerializer
+            serializer: FileWithViolationsSerializer,
+            scope: { rule_name: params[:rule_name] }
           ).as_json,
           meta: meta
         }

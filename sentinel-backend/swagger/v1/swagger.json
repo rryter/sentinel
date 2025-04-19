@@ -715,6 +715,15 @@
           }
         },
         {
+          "name": "rule_name",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
           "name": "sort",
           "in": "query",
           "required": false,

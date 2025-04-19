@@ -24,6 +24,7 @@ export interface ApiV1FilesWithViolationsGetRequestParams {
     perPage?: number;
     analysisJobId?: number;
     filePath?: string;
+    ruleName?: string;
     sort?: string;
     direction?: string;
 }
