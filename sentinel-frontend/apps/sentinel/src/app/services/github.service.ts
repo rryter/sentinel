@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -35,7 +35,7 @@ export class GitHubService {
   }
 
   handleAuthCallback(code: string): Observable<any> {
-    return this.http.post('/api/v1/auth/github/callback', { code });
+    return this.http.post('http://localhost:3000/api/v1/auth/github/callback', { code });
   }
 
   setAccessToken(token: string): void {
@@ -44,7 +44,11 @@ export class GitHubService {
   }
 
   getRepositories(): Observable<GitHubRepository[]> {
-    return this.http.get<GitHubRepository[]>('/api/v1/github/repositories');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.accessToken.value}`
+    });
+
+    return this.http.get<GitHubRepository[]>('http://localhost:3000/api/v1/github/repositories', { headers });
   }
 
   isAuthenticated(): boolean {

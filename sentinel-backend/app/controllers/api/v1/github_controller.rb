@@ -15,21 +15,32 @@ module Api
       end
 
       def repositories
-        client = Octokit::Client.new(access_token: request.headers['Authorization']&.split(' ')&.last)
-        repos = client.repositories(nil, sort: :updated)
-        
-        render json: { 
-          data: repos.map { |repo| {
-            id: repo.id,
-            name: repo.name,
-            full_name: repo.full_name,
-            html_url: repo.html_url,
-            private: repo.private,
-            description: repo.description
-          }}
-        }
-      rescue Octokit::Error => e
-        render json: { error: e.message }, status: :unprocessable_entity
+        token = request.headers['Authorization']&.split(' ')&.last
+        return render json: { error: 'No authorization token provided' }, status: :unauthorized unless token
+
+        begin
+          client = Octokit::Client.new(access_token: token)
+          # Verify the token by making a test request
+          client.user
+          
+          # Now fetch repositories
+          repos = client.repositories(nil, sort: :updated, type: 'all')
+          
+          render json: { 
+            data: repos.map { |repo| {
+              id: repo.id,
+              name: repo.name,
+              full_name: repo.full_name,
+              html_url: repo.html_url,
+              private: repo.private,
+              description: repo.description
+            }}
+          }
+        rescue Octokit::Unauthorized
+          render json: { error: 'Invalid GitHub token' }, status: :unauthorized
+        rescue Octokit::Error => e
+          render json: { error: e.message }, status: :unprocessable_entity
+        end
       end
     end
   end
