@@ -32,6 +32,10 @@ Rails.application.routes.draw do
 
       get 'files_with_violations', to: 'files_with_violations#index'
 
+      # GitHub integration routes
+      post 'auth/github/callback', to: 'github#callback'
+      get 'github/repositories', to: 'github#repositories'
+
       resources :examples
     end
   end

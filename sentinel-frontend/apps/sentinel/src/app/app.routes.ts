@@ -10,12 +10,12 @@ import { AnalysisJobListComponent } from './jobs/components/analysis-job-list/an
 import { AnalysisResultsComponent } from './jobs/components/analysis-results/analysis-results.component';
 import { PersonFormComponent } from './jobs/components/person-form/person-form.component';
 import { BuildListComponent } from './builds/components/build-list/build-list.component';
+import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
 
 export const appRoutes: Route[] = [
   {
-    path: '',
-    redirectTo: 'rules',
-    pathMatch: 'full',
+    path: 'auth/github/callback',
+    component: GitHubCallbackComponent
   },
   {
     path: 'rules',
