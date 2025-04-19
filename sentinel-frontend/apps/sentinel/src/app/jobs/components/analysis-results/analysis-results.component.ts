@@ -73,15 +73,6 @@ export class AnalysisResultsComponent {
   violations = computed(() => this.violationsData());
   isLoading = computed(() => this.resultsData() === null || this.violationsData() === null);
   constructor(private analysisJobService: AnalysisJobsService, private violationsService: ViolationsService) {
-    // Side effect to fetch data when jobId changes
-    effect(() => {
-      const id = this.jobId();
-      if (id) {
-        this.fetchResults(id);
-        this.fetchViolations(id, this._currentPage(), this._itemsPerPage());
-      }
-    });
-
     // Side effect to fetch violations when pagination changes
     effect(() => {
       const id = this.jobId();
@@ -89,6 +80,7 @@ export class AnalysisResultsComponent {
       const perPage = this._itemsPerPage();
       
       if (id) {
+        this.fetchResults(id);
         this.fetchViolations(id, page, perPage);
       }
     });

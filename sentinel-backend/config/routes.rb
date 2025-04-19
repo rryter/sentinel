@@ -30,6 +30,10 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :file_violations, only: [:index] do
+       
+      end
+
       resources :examples
     end
   end
