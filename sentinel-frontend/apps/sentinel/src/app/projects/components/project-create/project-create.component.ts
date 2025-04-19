@@ -12,6 +12,11 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
 import { GitHubService, GitHubRepository } from '../../../services/github.service';
 import { map } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
+import { HttpHeaders } from '@angular/common/http';
+import { ApiV1ProjectsPostRequest } from 'src/app/api/generated/model/api-v1-projects-post-request';
+import { ApiV1ProjectsPost201Response } from 'src/app/api/generated/model/api-v1-projects-post201-response';
+import { ProjectService } from '../../../services/project.service';
 
 interface GroupedRepositories {
   [owner: string]: GitHubRepository[];
@@ -239,7 +244,7 @@ export class ProjectCreateComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private projectsService: ProjectsService,
+    private projectService: ProjectService,
     private router: Router,
     public githubService: GitHubService
   ) {
@@ -291,30 +296,30 @@ export class ProjectCreateComponent implements OnInit {
     });
   }
 
-  onSubmit() {
-    if (this.projectForm.invalid) return;
+  async onSubmit() {
+    if (this.projectForm.valid) {
+      this.isLoading = true;
+      this.errorMessage = '';
 
-    this.isLoading = true;
-    this.errorMessage = '';
+      try {
+        const response = await firstValueFrom(
+          this.projectService.createProject(
+            this.projectForm.get('name')?.value,
+            this.projectForm.get('repository_url')?.value
+          )
+        );
 
-    this.projectsService
-      .apiV1ProjectsPost({
-        apiV1ProjectsPostRequest: {
-          project: this.projectForm.value,
-        },
-      })
-      .subscribe({
-        next: () => {
-          this.isLoading = false;
+        if (response.data.project.id) {
+          await firstValueFrom(
+            this.projectService.cloneRepository(response.data.project.id)
+          );
           this.router.navigate(['/projects']);
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.errorMessage =
-            error.error?.errors?.join(', ') ||
-            'Failed to create project. Please try again.';
-          console.error('Error creating project:', error);
-        },
-      });
+        }
+      } catch (error: any) {
+        this.errorMessage = error.error?.message || 'An error occurred while creating the project';
+      } finally {
+        this.isLoading = false;
+      }
+    }
   }
 }
