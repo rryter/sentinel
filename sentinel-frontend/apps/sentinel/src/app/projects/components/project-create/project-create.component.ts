@@ -5,11 +5,17 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  FormControl,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
 import { GitHubService, GitHubRepository } from '../../../services/github.service';
+import { map } from 'rxjs/operators';
+
+interface GroupedRepositories {
+  [owner: string]: GitHubRepository[];
+}
 
 @Component({
   selector: 'app-project-create',
@@ -65,21 +71,52 @@ import { GitHubService, GitHubRepository } from '../../../services/github.servic
 
       @if (githubService.isAuthenticated()) {
         <div class="mt-8">
-          <label
-            for="repository"
-            class="block text-sm/6 font-medium text-gray-900"
-            >Select Repository</label
-          >
-          <select
-            id="repository"
-            (change)="onRepositorySelect($event)"
-            class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          >
-            <option value="">Select a repository...</option>
-            @for (repo of repositories; track repo.id) {
-              <option [value]="repo.full_name">{{ repo.full_name }}</option>
-            }
-          </select>
+          <div class="mb-4">
+            <label
+              for="search"
+              class="block text-sm/6 font-medium text-gray-900"
+              >Search Repositories</label
+            >
+            <input
+              type="text"
+              id="search"
+              [formControl]="searchControl"
+              class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              placeholder="Type to search..."
+            />
+          </div>
+
+          @for (owner of filteredOwners; track owner) {
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-2">{{ owner }}</h3>
+              <div class="space-y-2">
+                @for (repo of groupedAndFilteredRepos[owner]; track repo.id) {
+                  <div
+                    class="flex items-center p-3 rounded-lg border border-gray-200 hover:border-indigo-500 cursor-pointer"
+                    [class.border-indigo-500]="selectedRepo?.id === repo.id"
+                    (click)="selectRepository(repo)"
+                  >
+                    <div class="flex-1">
+                      <div class="flex items-center">
+                        <span class="font-medium">{{ repo.name }}</span>
+                        @if (repo.private) {
+                          <span class="ml-2 px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Private</span>
+                        }
+                      </div>
+                      @if (repo.description) {
+                        <p class="text-sm text-gray-600 mt-1">{{ repo.description }}</p>
+                      }
+                    </div>
+                    @if (selectedRepo?.id === repo.id) {
+                      <svg class="h-5 w-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                      </svg>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -173,6 +210,32 @@ export class ProjectCreateComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   repositories: GitHubRepository[] = [];
+  groupedRepos: GroupedRepositories = {};
+  selectedRepo: GitHubRepository | null = null;
+  searchControl = new FormControl('');
+  
+  get groupedAndFilteredRepos(): GroupedRepositories {
+    const searchTerm = this.searchControl.value?.toLowerCase() || '';
+    const filtered: GroupedRepositories = {};
+    
+    Object.entries(this.groupedRepos).forEach(([owner, repos]) => {
+      const filteredRepos = repos.filter(repo => 
+        repo.name.toLowerCase().includes(searchTerm) ||
+        repo.description?.toLowerCase().includes(searchTerm) ||
+        repo.full_name.toLowerCase().includes(searchTerm)
+      );
+      
+      if (filteredRepos.length > 0) {
+        filtered[owner] = filteredRepos;
+      }
+    });
+    
+    return filtered;
+  }
+  
+  get filteredOwners(): string[] {
+    return Object.keys(this.groupedAndFilteredRepos).sort();
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -198,8 +261,9 @@ export class ProjectCreateComponent implements OnInit {
 
   loadRepositories() {
     this.githubService.getRepositories().subscribe({
-      next: (repos) => {
-        this.repositories = repos;
+      next: (response) => {
+        this.repositories = response.data;
+        this.groupRepositories();
       },
       error: (error) => {
         console.error('Error loading repositories:', error);
@@ -208,18 +272,23 @@ export class ProjectCreateComponent implements OnInit {
     });
   }
 
-  onRepositorySelect(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const repoFullName = select.value;
-    if (repoFullName) {
-      const repo = this.repositories.find(r => r.full_name === repoFullName);
-      if (repo) {
-        this.projectForm.patchValue({
-          name: repo.name,
-          repository_url: repo.html_url
-        });
+  groupRepositories() {
+    this.groupedRepos = this.repositories.reduce((groups: GroupedRepositories, repo) => {
+      const owner = repo.full_name.split('/')[0];
+      if (!groups[owner]) {
+        groups[owner] = [];
       }
-    }
+      groups[owner].push(repo);
+      return groups;
+    }, {});
+  }
+
+  selectRepository(repo: GitHubRepository) {
+    this.selectedRepo = repo;
+    this.projectForm.patchValue({
+      name: repo.name,
+      repository_url: repo.html_url
+    });
   }
 
   onSubmit() {

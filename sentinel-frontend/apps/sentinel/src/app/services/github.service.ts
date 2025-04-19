@@ -12,6 +12,10 @@ export interface GitHubRepository {
   description: string;
 }
 
+export interface GitHubRepositoriesResponse {
+  data: GitHubRepository[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,12 +47,12 @@ export class GitHubService {
     this.accessToken.next(token);
   }
 
-  getRepositories(): Observable<GitHubRepository[]> {
+  getRepositories(): Observable<GitHubRepositoriesResponse> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.accessToken.value}`
     });
 
-    return this.http.get<GitHubRepository[]>('http://localhost:3000/api/v1/github/repositories', { headers });
+    return this.http.get<GitHubRepositoriesResponse>('http://localhost:3000/api/v1/github/repositories', { headers });
   }
 
   isAuthenticated(): boolean {
