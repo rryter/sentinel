@@ -12,14 +12,15 @@ import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
-import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
-import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
-import { ApiV1ProjectsGet200ResponseDataProjectsInner } from '@sentinel-api';
+import {
+  AnalysisJobsService,
+  ApiV1AnalysisJobsGet200ResponseDataInner,
+  ApiV1ProjectsGet200ResponseDataProjectsInner,
+  ProjectsService,
+} from '@sentinel-api';
 import { LintResultsComponent } from '../lint-results/lint-results.component';
 import { LintStatusComponent } from '../lint-status/lint-status.component';
-
+import { ProjectSelectorComponent } from '@shared/ui-custom';
 enum LintStatus {
   PENDING = 'pending',
   RUNNING = 'running',
@@ -35,14 +36,14 @@ interface Lint {
 }
 
 @Component({
-  selector: 'app-create-analysis',
+  selector: 'app-lint-create',
   imports: [
     CommonModule,
     FormsModule,
     HlmButtonDirective,
-    ProjectSelectorComponent,
     LintResultsComponent,
     LintStatusComponent,
+    ProjectSelectorComponent,
   ],
   template: `
     <div class="flex flex-col gap-4 p-6">
@@ -87,7 +88,7 @@ interface Lint {
     </div>
   `,
 })
-export class CreateAnalysisComponent implements OnInit {
+export class LintCreateComponent implements OnInit {
   private analysisService = inject(AnalysisJobsService);
   private projectsService = inject(ProjectsService);
   private destroyRef = inject(DestroyRef);
