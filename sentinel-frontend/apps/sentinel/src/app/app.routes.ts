@@ -1,8 +1,8 @@
 import { Route } from '@angular/router';
-import { ProjectListComponent } from './projects/components/project-list/project-list.component';
-import { ProjectDetailComponent } from './projects/components/project-detail/project-detail.component';
-import { ProjectCreateComponent } from './projects/components/project-create/project-create.component';
-import { BuildListComponent } from './builds/components/build-list/build-list.component';
+import { ProjectListComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-list/project-list.component';
+import { ProjectDetailComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-detail/project-detail.component';
+import { ProjectCreateComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-create/project-create.component';
+import { BuildListComponent } from '../../../../libs/sentinel/build/src/lib/build/components/build-list/build-list.component';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
 import { PersonFormComponent } from '@sentinel/linting';
 export const appRoutes: Route[] = [
@@ -17,15 +17,8 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'projects',
-    component: ProjectListComponent,
-  },
-  {
-    path: 'projects/create',
-    component: ProjectCreateComponent,
-  },
-  {
-    path: 'projects/:id',
-    component: ProjectDetailComponent,
+    loadChildren: () =>
+      import('@sentinel/projects').then((m) => m.projectsRoutes),
   },
   {
     path: 'person',

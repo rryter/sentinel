@@ -13,13 +13,13 @@ import { ProjectsService } from 'src/app/api/generated/api/projects.service';
 import {
   GitHubService,
   GitHubRepository,
-} from '../../../services/github.service';
+} from '../../../../../../../apps/sentinel/src/app/services/github.service';
 import { map } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { HttpHeaders } from '@angular/common/http';
 import { ApiV1ProjectsPostRequest } from 'src/app/api/generated/model/api-v1-projects-post-request';
 import { ApiV1ProjectsPost201Response } from 'src/app/api/generated/model/api-v1-projects-post201-response';
-import { ProjectService } from '../../../services/project.service';
+import { ProjectService } from '../../../../../../../apps/sentinel/src/app/services/project.service';
 
 interface GroupedRepositories {
   [owner: string]: GitHubRepository[];
