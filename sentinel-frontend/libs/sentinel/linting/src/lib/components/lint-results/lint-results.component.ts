@@ -29,7 +29,7 @@ import {
 } from '@shared/ui-custom';
 
 @Component({
-  selector: 'app-analysis-results',
+  selector: 'sen-analysis-results',
   imports: [
     CommonModule,
     ContentTileComponent,
@@ -104,8 +104,8 @@ export class LintResultsComponent {
 
   private async fetchViolations(
     id: number,
-    page: number = 1,
-    perPage: number = 10,
+    page = 1,
+    perPage = 10,
   ): Promise<void> {
     try {
       const response = await firstValueFrom(
@@ -174,10 +174,6 @@ export class LintResultsComponent {
     }
 
     return value.toString();
-  }
-
-  getObjectKeys(obj: any): string[] {
-    return Object.keys(obj || {});
   }
 
   getObjectEntries(obj: any): [string, any][] {

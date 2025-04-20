@@ -11,7 +11,7 @@ import {
 } from '@sentinel-api';
 
 @Component({
-  selector: 'app-lint-list',
+  selector: 'sen-lint-list',
   imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [DatePipe],
   templateUrl: './lint-list.component.html',

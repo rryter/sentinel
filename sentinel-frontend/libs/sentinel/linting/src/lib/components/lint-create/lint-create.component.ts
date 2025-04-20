@@ -36,7 +36,7 @@ interface Lint {
 }
 
 @Component({
-  selector: 'app-lint-create',
+  selector: 'sen-lint-create',
   imports: [
     CommonModule,
     FormsModule,
@@ -277,11 +277,6 @@ export class LintCreateComponent implements OnInit {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
-
-  // Helper methods for the template
-  getObjectKeys(obj: any): string[] {
-    return Object.keys(obj || {});
   }
 
   getObjectEntries(obj: any): [string, any][] {

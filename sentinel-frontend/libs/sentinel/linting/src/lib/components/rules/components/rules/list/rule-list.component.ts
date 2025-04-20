@@ -5,7 +5,7 @@ import { Rule, RulesService } from '../../../services/rules.service';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
-  selector: 'app-rule-list',
+  selector: 'sen-rule-list',
   imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [RulesService],
   templateUrl: './rule-list.component.html',

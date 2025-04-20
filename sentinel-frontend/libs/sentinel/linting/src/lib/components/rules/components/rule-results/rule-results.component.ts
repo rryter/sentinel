@@ -1,17 +1,13 @@
-import { Component, Input, OnInit, computed, signal } from '@angular/core';
-import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { Component, Input, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  HlmTableComponent,
   HlmTableDirective,
-  HlmCaptionComponent,
   HlmThComponent,
   HlmTdComponent,
-  HlmTrowComponent,
 } from '@spartan-ng/ui-table-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -30,7 +26,6 @@ import {
 import { BrnMenuTriggerDirective } from '@spartan-ng/brain/menu';
 import { HlmMenuModule } from '@spartan-ng/ui-menu-helm';
 import { BrnTableModule, useBrnColumnManager } from '@spartan-ng/brain/table';
-import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 export interface RuleResultItem {
   id: string;
@@ -43,7 +38,7 @@ export interface RuleResultItem {
 }
 
 @Component({
-  selector: 'app-rule-results',
+  selector: 'sen-rule-results',
   imports: [
     CommonModule,
     RouterModule,
@@ -75,7 +70,7 @@ export interface RuleResultItem {
   templateUrl: './rule-results.component.html',
   styleUrl: './rule-results.component.scss',
 })
-export class RuleResultsComponent implements OnInit {
+export class RuleResultsComponent {
   @Input() set results(value: ApiV1ViolationsGet200Response | null) {
     this._results.set(value);
   }
@@ -114,22 +109,6 @@ export class RuleResultsComponent implements OnInit {
         item.file_with_violations?.file_path?.toLowerCase().includes(filter),
     );
   });
-
-  ngOnInit(): void {
-    // Nothing to initialize
-  }
-
-  getSeverityIcon(severity: string): string {
-    // For now, we map all results to 'info' level
-    // In the future, severity can be derived from rule metadata
-    return 'lucideInfo';
-  }
-
-  getSeverityClass(severity: string): string {
-    // For now, we map all results to 'info' level
-    // In the future, severity can be derived from rule metadata
-    return 'text-blue-500';
-  }
 
   getLocationString(item: ApiV1ViolationsGet200ResponseDataInner): string {
     if (item.line_number && item.column) {

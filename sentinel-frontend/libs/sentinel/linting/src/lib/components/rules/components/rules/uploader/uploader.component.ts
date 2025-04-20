@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
-  selector: 'lib-uploader',
+  selector: 'sen-uploader',
   imports: [CommonModule, HttpClientModule, RouterModule, HlmButtonDirective],
   templateUrl: './uploader.component.html',
   styleUrl: './uploader.component.scss',

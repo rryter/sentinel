@@ -16,7 +16,7 @@ enum AnalysisJobStatus {
 }
 
 @Component({
-  selector: 'app-lint-status',
+  selector: 'sen-lint-status',
   imports: [CommonModule],
   providers: [DatePipe],
   template: `
