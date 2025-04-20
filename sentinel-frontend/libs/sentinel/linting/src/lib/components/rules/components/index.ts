@@ -3,5 +3,6 @@ export {
   RuleResultItem,
   RuleResultsComponent,
 } from './rule-results/rule-results.component';
-export { RuleDetailsComponent } from './rules/details/details.component';
-export { UploaderComponent } from './rules/uploader/uploader.component';
+export { RuleDetailsComponent } from './details/details.component';
+export { UploaderComponent } from './uploader/uploader.component';
+export { RuleListComponent } from './list/rule-list.component';

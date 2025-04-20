@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Rule, RulesService } from '../../../services/rules.service';
+import { Rule, RulesService } from '../../services/rules.service';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
