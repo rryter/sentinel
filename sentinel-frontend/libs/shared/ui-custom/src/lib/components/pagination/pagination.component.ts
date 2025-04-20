@@ -1,10 +1,15 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+} from '@angular/core';
 import { HlmNumberedPaginationComponent } from '@spartan-ng/ui-pagination-helm';
 
 /**
  * A reusable pagination component that wraps Spartan UI's HlmNumberedPaginationComponent
  * and provides a clean API for handling pagination in the application.
- * 
+ *
  * Example usage:
  * ```html
  * <app-pagination
@@ -60,4 +65,4 @@ export class PaginationComponent {
    * @default [10, 20, 50, 100]
    */
   public readonly pageSizes = input<number[]>([10, 20, 50, 100]);
-} 
+}
