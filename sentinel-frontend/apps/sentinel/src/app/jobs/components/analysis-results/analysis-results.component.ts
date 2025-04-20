@@ -22,7 +22,6 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleSlash, lucideGitBranch } from '@ng-icons/lucide';
 import { ApiV1ViolationsGet200Response, ViolationsService } from '@sentinel-api';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { StripPathPrefixPipe } from '../../../shared/pipes/strip-path-prefix.pipe';
 import { RuleResultsComponent } from '../../../rules/components/rule-results/rule-results.component';
 
 @Component({
@@ -37,7 +36,6 @@ import { RuleResultsComponent } from '../../../rules/components/rule-results/rul
     TileDividerComponent,
     NgIcon,
     PaginationComponent,
-    StripPathPrefixPipe,
     RuleResultsComponent,
     HlmBadgeDirective,
   ],

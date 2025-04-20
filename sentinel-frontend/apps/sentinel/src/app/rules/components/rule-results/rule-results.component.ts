@@ -47,7 +47,6 @@ export interface RuleResultItem {
     RouterModule,
     FormsModule,
     BrnTableModule,
-    HlmTableComponent,
     HlmTableDirective,
     HlmThComponent,
     HlmTdComponent,
