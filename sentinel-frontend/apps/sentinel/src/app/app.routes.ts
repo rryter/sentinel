@@ -1,21 +1,17 @@
 import { Route } from '@angular/router';
-import { RuleListComponent } from './rules/components/rules/list/rule-list.component';
-import { UploaderComponent } from './rules/components/rules/uploader/uploader.component';
-import { RuleDetailsComponent } from './rules/components/rules/details/details.component';
-import { CreateAnalysisComponent } from './jobs/components/create-analysis/create-analysis.component';
+import { RuleListComponent } from '../../../../libs/sentinel/linting/src/lib/components/rules/components/rules/list/rule-list.component';
+import { UploaderComponent } from '../../../../libs/sentinel/linting/src/lib/components/rules/components/rules/uploader/uploader.component';
+import { RuleDetailsComponent } from '../../../../libs/sentinel/linting/src/lib/components/rules/components/rules/details/details.component';
 import { ProjectListComponent } from './projects/components/project-list/project-list.component';
 import { ProjectDetailComponent } from './projects/components/project-detail/project-detail.component';
 import { ProjectCreateComponent } from './projects/components/project-create/project-create.component';
-import { AnalysisJobListComponent } from './jobs/components/analysis-job-list/analysis-job-list.component';
-import { AnalysisResultsComponent } from './jobs/components/analysis-results/analysis-results.component';
-import { PersonFormComponent } from './jobs/components/person-form/person-form.component';
 import { BuildListComponent } from './builds/components/build-list/build-list.component';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
-
+import { PersonFormComponent } from '@sentinel/linting';
 export const appRoutes: Route[] = [
   {
     path: 'auth/github/callback',
-    component: GitHubCallbackComponent
+    component: GitHubCallbackComponent,
   },
   {
     path: 'rules',
@@ -30,16 +26,9 @@ export const appRoutes: Route[] = [
     component: RuleDetailsComponent,
   },
   {
-    path: 'analysis',
-    component: AnalysisJobListComponent,
-  },
-  {
-    path: 'analysis/create',
-    component: CreateAnalysisComponent,
-  },
-  {
-    path: 'analysis/jobs/:jobId/results',
-    component: AnalysisResultsComponent,
+    path: 'linting',
+    loadChildren: () =>
+      import('@sentinel/linting').then((m) => m.lintingRoutes),
   },
   {
     path: 'projects',
