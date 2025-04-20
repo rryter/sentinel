@@ -24,7 +24,7 @@ export class RuleListComponent implements OnInit {
         this.rules = rules;
         this.isLoading = false;
       },
-      error: (error) => {
+      error: () => {
         this.errorMessage = 'Failed to fetch rules';
         this.isLoading = false;
       },
@@ -35,7 +35,7 @@ export class RuleListComponent implements OnInit {
     rule.isActive = !rule.isActive;
     // Here you would typically call a service to update the rule status
     console.log(
-      `Rule ${rule.name} is now ${rule.isActive ? 'active' : 'inactive'}`
+      `Rule ${rule.name} is now ${rule.isActive ? 'active' : 'inactive'}`,
     );
   }
 }

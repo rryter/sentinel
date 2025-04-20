@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
-  selector: 'app-uploader',
+  selector: 'lib-uploader',
   imports: [CommonModule, HttpClientModule, RouterModule, HlmButtonDirective],
   templateUrl: './uploader.component.html',
   styleUrl: './uploader.component.scss',
@@ -161,7 +161,7 @@ export class UploaderComponent {
         finalize(() => {
           this.isUploading = false;
           this.cdr.markForCheck();
-        })
+        }),
       )
       .subscribe({
         next: (response) => {

@@ -4,7 +4,6 @@ import { ProjectDetailComponent } from '../../../../libs/sentinel/projects/src/l
 import { ProjectCreateComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-create/project-create.component';
 import { BuildListComponent } from '../../../../libs/sentinel/build/src/lib/build/components/build-list/build-list.component';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
-import { PersonFormComponent } from '@sentinel/linting';
 export const appRoutes: Route[] = [
   {
     path: 'auth/github/callback',
@@ -20,10 +19,7 @@ export const appRoutes: Route[] = [
     loadChildren: () =>
       import('@sentinel/projects').then((m) => m.projectsRoutes),
   },
-  {
-    path: 'person',
-    component: PersonFormComponent,
-  },
+
   {
     path: 'builds',
     component: BuildListComponent,
