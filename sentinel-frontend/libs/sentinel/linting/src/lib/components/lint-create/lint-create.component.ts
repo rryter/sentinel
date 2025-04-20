@@ -47,7 +47,7 @@ interface Lint {
   ],
   template: `
     <div class="flex flex-col gap-4 p-6">
-      <app-project-selector
+      <sen-project-selector
         [projects]="projects()"
         [isLoading]="isLoadingProjects()"
         [disabled]="isJobRunning()"
@@ -75,13 +75,13 @@ interface Lint {
         </div>
       }
       @if (job()) {
-        <app-lint-status
+        <sen-lint-status
           [job]="job()"
           [runningTimeSeconds]="runningTimeSeconds()"
         />
       }
       @if (analysisResults()) {
-        <app-analysis-results
+        <sen-lint-results
           [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"
         />
       }

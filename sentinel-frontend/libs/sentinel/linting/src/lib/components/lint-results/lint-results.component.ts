@@ -29,7 +29,7 @@ import {
 } from '@shared/ui-custom';
 
 @Component({
-  selector: 'sen-analysis-results',
+  selector: 'sen-lint-results',
   imports: [
     CommonModule,
     ContentTileComponent,

@@ -89,13 +89,13 @@
   <div class="mt-8">
     <h3 class="text-lg font-medium text-gray-900 mb-4">Violations</h3>
     <div class="bg-white shadow rounded-lg overflow-hidden">
-   
-
       @if (violations) {
         <div class="overflow-y-auto">
-         
           @if (!isLoading() && violations) {
-            <app-rule-results [results]="violationsData()" [loading]="isLoading()"></app-rule-results>
+            <sen-rule-results
+              [results]="violationsData()"
+              [loading]="isLoading()"
+            ></sen-rule-results>
           }
 
           <app-pagination
@@ -122,5 +122,4 @@
       }
     </div>
   </div>
-
 }
