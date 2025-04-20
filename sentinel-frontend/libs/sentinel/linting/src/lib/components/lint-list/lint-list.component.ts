@@ -11,13 +11,13 @@ import {
 } from '@sentinel-api';
 
 @Component({
-  selector: 'app-analysis-job-list',
+  selector: 'app-lint-list',
   imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [DatePipe],
-  templateUrl: './analysis-job-list.component.html',
-  styleUrls: ['./analysis-job-list.component.scss'],
+  templateUrl: './lint-list.component.html',
+  styleUrls: ['./lint-list.component.scss'],
 })
-export class AnalysisJobListComponent implements OnInit {
+export class LintListComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
   jobs: ApiV1AnalysisJobsGet200ResponseDataInner[] = [];

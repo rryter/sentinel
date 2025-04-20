@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { AnalysisJobListComponent } from './components/analysis-job-list/analysis-job-list.component';
+import { LintListComponent } from './components/lint-list/lint-list.component';
 import { CreateAnalysisComponent } from './components/create-analysis/create-analysis.component';
 import { RuleListComponent } from './components/rules/components/rules/list/rule-list.component';
 import { RuleDetailsComponent } from './components/rules/components/rules/details/details.component';
@@ -8,7 +8,7 @@ import { UploaderComponent } from './components/rules/components';
 export const lintingRoutes: Route[] = [
   {
     path: '',
-    component: AnalysisJobListComponent,
+    component: LintListComponent,
   },
   {
     path: 'create',
@@ -16,7 +16,7 @@ export const lintingRoutes: Route[] = [
   },
   {
     path: ':jobId/results',
-    component: AnalysisJobListComponent,
+    component: LintListComponent,
   },
   {
     path: 'rules',
