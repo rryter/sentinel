@@ -16,10 +16,10 @@ import { ContentTileComponent } from '../../../shared/components/content-tile/co
 import { TileDetailComponent } from '../../../shared/components/content-tile/tile-detail/tile-detail.component';
 import { DetailsContainerComponent } from '../../../shared/components/content-tile/details-container/details-container.component';
 import { TileDividerComponent } from '../../../shared/components/content-tile/tile-divider/tile-divider.component';
-import { BadgeVariants } from '@spartan-ng/ui-badge-helm';
+import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
 import { firstValueFrom } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCircleSlash } from '@ng-icons/lucide';
+import { lucideCircleSlash, lucideGitBranch } from '@ng-icons/lucide';
 import { ApiV1ViolationsGet200Response, ViolationsService } from '@sentinel-api';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { StripPathPrefixPipe } from '../../../shared/pipes/strip-path-prefix.pipe';
@@ -39,8 +39,9 @@ import { RuleResultsComponent } from '../../../rules/components/rule-results/rul
     PaginationComponent,
     StripPathPrefixPipe,
     RuleResultsComponent,
+    HlmBadgeDirective,
   ],
-  providers: [provideIcons({ lucideCircleSlash })],
+  providers: [provideIcons({ lucideCircleSlash, lucideGitBranch })],
   templateUrl: './analysis-results.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
