@@ -14,11 +14,11 @@ import { FormsModule } from '@angular/forms';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-import { JobStatusComponent } from '../job-status/job-status.component';
 import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 import { ApiV1ProjectsGet200ResponseDataProjectsInner } from '@sentinel-api';
 import { LintResultsComponent } from '../lint-results/lint-results.component';
+import { LintStatusComponent } from '../lint-status/lint-status.component';
 
 enum LintStatus {
   PENDING = 'pending',
@@ -40,9 +40,9 @@ interface Lint {
     CommonModule,
     FormsModule,
     HlmButtonDirective,
-    JobStatusComponent,
     ProjectSelectorComponent,
     LintResultsComponent,
+    LintStatusComponent,
   ],
   template: `
     <div class="flex flex-col gap-4 p-6">
@@ -74,7 +74,7 @@ interface Lint {
         </div>
       }
       @if (job()) {
-        <app-job-status
+        <app-lint-status
           [job]="job()"
           [runningTimeSeconds]="runningTimeSeconds()"
         />

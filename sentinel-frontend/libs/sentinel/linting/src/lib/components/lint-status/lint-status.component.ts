@@ -16,7 +16,7 @@ enum AnalysisJobStatus {
 }
 
 @Component({
-  selector: 'app-job-status',
+  selector: 'app-lint-status',
   imports: [CommonModule],
   providers: [DatePipe],
   template: `
@@ -49,7 +49,7 @@ enum AnalysisJobStatus {
     </div>
   `,
 })
-export class JobStatusComponent {
+export class LintStatusComponent {
   @Input() job: AnalysisJob | null = null;
   @Input() runningTimeSeconds = 0;
 
