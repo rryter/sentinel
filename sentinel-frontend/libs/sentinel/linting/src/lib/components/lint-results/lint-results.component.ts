@@ -43,10 +43,10 @@ import {
     TileDividerComponent,
   ],
   providers: [provideIcons({ lucideCircleSlash, lucideGitBranch })],
-  templateUrl: './analysis-results.component.html',
+  templateUrl: './lint-results.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnalysisResultsComponent {
+export class LintResultsComponent {
   @Input() totalExecutionTimeSeconds = 0;
   jobId = input<number>(0);
 

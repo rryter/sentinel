@@ -1,6 +1,6 @@
 // Components
 export * from './lib/components/create-analysis/create-analysis.component';
-export * from './lib/components/analysis-results/analysis-results.component';
+export * from './lib/components/lint-results/lint-results.component';
 export * from './lib/components/person-form/person-form.component';
 export * from './lib/components/project-selector/project-selector.component';
 export * from './lib/components/job-status/job-status.component';

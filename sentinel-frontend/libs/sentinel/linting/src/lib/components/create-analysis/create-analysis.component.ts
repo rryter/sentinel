@@ -16,9 +16,9 @@ import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.ser
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
 import { JobStatusComponent } from '../job-status/job-status.component';
 import { ProjectSelectorComponent } from '../project-selector/project-selector.component';
-import { AnalysisResultsComponent } from '../analysis-results/analysis-results.component';
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 import { ApiV1ProjectsGet200ResponseDataProjectsInner } from '@sentinel-api';
+import { LintResultsComponent } from '../lint-results/lint-results.component';
 
 enum LintStatus {
   PENDING = 'pending',
@@ -42,7 +42,7 @@ interface Lint {
     HlmButtonDirective,
     JobStatusComponent,
     ProjectSelectorComponent,
-    AnalysisResultsComponent,
+    LintResultsComponent,
   ],
   template: `
     <div class="flex flex-col gap-4 p-6">
