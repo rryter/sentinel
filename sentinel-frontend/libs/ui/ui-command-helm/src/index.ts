@@ -29,23 +29,23 @@ export * from './lib/hlm-command-shortcut.component';
 export * from './lib/hlm-command.component';
 
 export const HlmCommandImports = [
-	HlmCommandComponent,
-	HlmCommandItemComponent,
-	HlmCommandSeparatorComponent,
-	HlmCommandGroupComponent,
-	HlmCommandListComponent,
-	HlmCommandShortcutComponent,
-	HlmCommandIconDirective,
-	HlmCommandDialogCloseButtonDirective,
-	HlmCommandDialogDirective,
-	HlmCommandSearchInputComponent,
-	HlmCommandSearchComponent,
-	HlmCommandGroupLabelComponent,
-	HlmCommandEmptyDirective,
+  HlmCommandComponent,
+  HlmCommandItemComponent,
+  HlmCommandSeparatorComponent,
+  HlmCommandGroupComponent,
+  HlmCommandListComponent,
+  HlmCommandShortcutComponent,
+  HlmCommandIconDirective,
+  HlmCommandDialogCloseButtonDirective,
+  HlmCommandDialogDirective,
+  HlmCommandSearchInputComponent,
+  HlmCommandSearchComponent,
+  HlmCommandGroupLabelComponent,
+  HlmCommandEmptyDirective,
 ] as const;
 
 @NgModule({
-	imports: [...HlmCommandImports],
-	exports: [...HlmCommandImports],
+  imports: [...HlmCommandImports],
+  exports: [...HlmCommandImports],
 })
 export class HlmCommandModule {}

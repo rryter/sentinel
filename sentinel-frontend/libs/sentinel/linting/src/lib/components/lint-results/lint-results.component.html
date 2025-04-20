@@ -1,0 +1,126 @@
+@let data = results();
+@let violations = violationsData()?.data;
+
+@if (!data) {
+  <div class="flex flex-col gap-4 md:flex-row">
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+    <div class="bg-white shadow rounded-lg p-6 flex-1">
+      <hlm-skeleton class="w-12 h-4 mb-2" />
+      <hlm-skeleton class="w-24 h-8" />
+    </div>
+  </div>
+} @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Project Card -->
+    <app-content-tile title="Project" iconName="lucideFile">
+      {{ data.project.name || 'N/A' }}
+      <app-details-container details>
+        <app-tile-detail icon="lucideFile">
+          {{ data.total_files }} files
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="lucideGitBranch">
+          Branch: <span hlmBadge variant="secondary">main</span>
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
+
+    <!-- Status Card -->
+    <app-content-tile
+      title="Status"
+      iconName="lucideCheck"
+      [iconClass]="
+        data.status === 'completed' ? 'text-green-500' : 'text-yellow-500'
+      "
+    >
+      {{ capitalizeFirstLetter(data.status) }}
+      <app-details-container details>
+        <app-tile-detail icon="lucideFile">
+          Scan #{{ data.id }}
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="lucideClock">
+          {{ (data.created_at | date: 'MMM d, yyyy, h:mm a') || 'N/A' }}
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
+
+    <!-- Duration Card -->
+    <app-content-tile title="Duration" iconName="lucideClock">
+      {{ data.duration ? data.duration + ' ms' : 'N/A' }}
+      <app-details-container details>
+        <app-tile-detail icon="lucideClock">
+          {{ formatNumber(data.files_per_second_wall_time) || 0 }} files/s
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="lucideBookmark">
+          {{ data.parallel_cores_used || 1 }} cores
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
+
+    <!-- Matches Card -->
+    <app-content-tile title="Matches" iconName="lucideLayoutGrid">
+      {{ data.total_matches }}
+      <app-details-container details>
+        <app-tile-detail icon="lucideFile">
+          in {{ data.total_files }} files
+        </app-tile-detail>
+        <app-tile-divider></app-tile-divider>
+        <app-tile-detail icon="lucideLayoutGrid">
+          from {{ data.rules_matched }} rules
+        </app-tile-detail>
+      </app-details-container>
+    </app-content-tile>
+  </div>
+
+  <!-- Rules Breakdown Section -->
+  <div class="mt-8">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Violations</h3>
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+   
+
+      @if (violations) {
+        <div class="overflow-y-auto">
+         
+          @if (!isLoading() && violations) {
+            <app-rule-results [results]="violationsData()" [loading]="isLoading()"></app-rule-results>
+          }
+
+          <app-pagination
+            [currentPage]="currentPage()"
+            [itemsPerPage]="itemsPerPage()"
+            [totalItems]="totalItems()"
+            [pageSizes]="[5, 10, 25, 50]"
+            (currentPageChange)="setCurrentPage($event)"
+            (itemsPerPageChange)="setItemsPerPage($event)"
+          ></app-pagination>
+        </div>
+      } @else {
+        <div class="p-8 text-center">
+          <div class="mx-auto w-24 h-24 mb-4 text-gray-300">
+            <ng-icon name="lucideCircleSlash" class="w-full h-full"></ng-icon>
+          </div>
+          <h3 class="text-lg font-medium text-gray-800 mb-1">
+            No matches found
+          </h3>
+          <p class="text-gray-500">
+            No rule matches were detected in this scan.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+
+}

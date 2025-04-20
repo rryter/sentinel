@@ -1,0 +1,58 @@
+// Additional styling if needed beyond what Spartan UI provides
+:host {
+  display: block;
+  width: 100%;
+}
+
+hlm-table {
+  width: 100%;
+}
+
+hlm-td, hlm-th {
+  white-space: nowrap;
+}
+
+hlm-td[truncate="true"] {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Table column width guidance
+:host ::ng-deep {
+  .cdk-table {
+    width: 100%;
+  }
+
+  .flex-table {
+    table-layout: auto;
+    width: 100%;
+  }
+
+  // Set minimum widths for specific columns
+  .brn-column-severity {
+    min-width: 100px;
+    width: 10%;
+  }
+
+  .brn-column-rule {
+    min-width: 120px;
+    width: 15%;
+  }
+
+  .brn-column-description {
+    min-width: 200px;
+    width: 30%;
+  }
+
+  .brn-column-file {
+    min-width: 200px;
+    width: 30%;
+  }
+
+  .brn-column-location {
+    min-width: 120px;
+    width: 15%;
+  }
+} 

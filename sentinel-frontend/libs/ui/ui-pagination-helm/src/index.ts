@@ -19,18 +19,18 @@ export * from './lib/hlm-pagination-previous.component';
 export * from './lib/hlm-pagination.directive';
 
 export const HlmPaginationImports = [
-	HlmPaginationDirective,
-	HlmPaginationContentDirective,
-	HlmPaginationItemDirective,
-	HlmPaginationLinkDirective,
-	HlmPaginationPreviousComponent,
-	HlmPaginationNextComponent,
-	HlmPaginationEllipsisComponent,
-	HlmNumberedPaginationComponent,
+  HlmPaginationDirective,
+  HlmPaginationContentDirective,
+  HlmPaginationItemDirective,
+  HlmPaginationLinkDirective,
+  HlmPaginationPreviousComponent,
+  HlmPaginationNextComponent,
+  HlmPaginationEllipsisComponent,
+  HlmNumberedPaginationComponent,
 ] as const;
 
 @NgModule({
-	imports: [...HlmPaginationImports],
-	exports: [...HlmPaginationImports],
+  imports: [...HlmPaginationImports],
+  exports: [...HlmPaginationImports],
 })
 export class HlmPaginationModule {}

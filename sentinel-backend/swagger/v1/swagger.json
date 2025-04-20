@@ -41,21 +41,13 @@
                             ]
                           },
                           "total_files": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "total_matches": {
-                            "type": "integer",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "rules_matched": {
-                            "type": "integer",
-                            "nullable": true
-                          },
-                          "completed_at": {
-                            "type": "string",
-                            "format": "date-time",
-                            "nullable": true
+                            "type": "integer"
                           },
                           "created_at": {
                             "type": "string",
@@ -65,15 +57,78 @@
                             "type": "string",
                             "format": "date-time"
                           },
-                          "processing_duration": {
-                            "type": "integer",
-                            "nullable": true
+                          "duration": {
+                            "type": "integer"
+                          },
+                          "files_per_second_wall_time": {
+                            "type": "number"
+                          },
+                          "cumulative_processing_time_ms": {
+                            "type": "integer"
+                          },
+                          "avg_time_per_file_ms": {
+                            "type": "number"
+                          },
+                          "files_per_second_cpu_time": {
+                            "type": "number"
+                          },
+                          "parallel_cores_used": {
+                            "type": "integer"
+                          },
+                          "parallel_speedup_factor": {
+                            "type": "number"
+                          },
+                          "parallel_efficiency_percent": {
+                            "type": "number"
+                          },
+                          "project": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "repository_url": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "repository_url",
+                              "created_at",
+                              "updated_at"
+                            ]
                           }
                         },
                         "required": [
                           "id",
                           "project_id",
-                          "status"
+                          "status",
+                          "total_files",
+                          "total_matches",
+                          "rules_matched",
+                          "created_at",
+                          "updated_at",
+                          "duration",
+                          "files_per_second_wall_time",
+                          "cumulative_processing_time_ms",
+                          "avg_time_per_file_ms",
+                          "files_per_second_cpu_time",
+                          "parallel_cores_used",
+                          "parallel_speedup_factor",
+                          "parallel_efficiency_percent",
+                          "project"
                         ]
                       }
                     },
@@ -135,21 +190,13 @@
                           ]
                         },
                         "total_files": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "total_matches": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "rules_matched": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "completed_at": {
-                          "type": "string",
-                          "format": "date-time",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "created_at": {
                           "type": "string",
@@ -159,15 +206,78 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "processing_duration": {
-                          "type": "integer",
-                          "nullable": true
+                        "duration": {
+                          "type": "integer"
+                        },
+                        "files_per_second_wall_time": {
+                          "type": "number"
+                        },
+                        "cumulative_processing_time_ms": {
+                          "type": "integer"
+                        },
+                        "avg_time_per_file_ms": {
+                          "type": "number"
+                        },
+                        "files_per_second_cpu_time": {
+                          "type": "number"
+                        },
+                        "parallel_cores_used": {
+                          "type": "integer"
+                        },
+                        "parallel_speedup_factor": {
+                          "type": "number"
+                        },
+                        "parallel_efficiency_percent": {
+                          "type": "number"
+                        },
+                        "project": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "repository_url": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "repository_url",
+                            "created_at",
+                            "updated_at"
+                          ]
                         }
                       },
                       "required": [
                         "id",
                         "project_id",
-                        "status"
+                        "status",
+                        "total_files",
+                        "total_matches",
+                        "rules_matched",
+                        "created_at",
+                        "updated_at",
+                        "duration",
+                        "files_per_second_wall_time",
+                        "cumulative_processing_time_ms",
+                        "avg_time_per_file_ms",
+                        "files_per_second_cpu_time",
+                        "parallel_cores_used",
+                        "parallel_speedup_factor",
+                        "parallel_efficiency_percent",
+                        "project"
                       ]
                     }
                   },
@@ -244,21 +354,13 @@
                           ]
                         },
                         "total_files": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "total_matches": {
-                          "type": "integer",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "rules_matched": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "completed_at": {
-                          "type": "string",
-                          "format": "date-time",
-                          "nullable": true
+                          "type": "integer"
                         },
                         "created_at": {
                           "type": "string",
@@ -268,107 +370,78 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "processing_duration": {
-                          "type": "integer",
-                          "nullable": true
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "project_id",
-                        "status"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "analysis job not found"
-          }
-        }
-      }
-    },
-    "/api/v1/analysis_jobs/{id}/fetch_results": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "integer"
-          }
-        }
-      ],
-      "get": {
-        "summary": "Fetches analysis job results",
-        "tags": [
-          "Analysis Jobs"
-        ],
-        "responses": {
-          "200": {
-            "description": "analysis job results found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
+                        "duration": {
                           "type": "integer"
                         },
-                        "project_id": {
+                        "files_per_second_wall_time": {
+                          "type": "number"
+                        },
+                        "cumulative_processing_time_ms": {
                           "type": "integer"
                         },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "pending",
-                            "running",
-                            "completed",
-                            "failed"
+                        "avg_time_per_file_ms": {
+                          "type": "number"
+                        },
+                        "files_per_second_cpu_time": {
+                          "type": "number"
+                        },
+                        "parallel_cores_used": {
+                          "type": "integer"
+                        },
+                        "parallel_speedup_factor": {
+                          "type": "number"
+                        },
+                        "parallel_efficiency_percent": {
+                          "type": "number"
+                        },
+                        "project": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "repository_url": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "repository_url",
+                            "created_at",
+                            "updated_at"
                           ]
-                        },
-                        "total_files": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "total_matches": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "rules_matched": {
-                          "type": "integer",
-                          "nullable": true
-                        },
-                        "completed_at": {
-                          "type": "string",
-                          "format": "date-time",
-                          "nullable": true
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "processing_duration": {
-                          "type": "integer",
-                          "nullable": true
                         }
                       },
                       "required": [
                         "id",
                         "project_id",
-                        "status"
+                        "status",
+                        "total_files",
+                        "total_matches",
+                        "rules_matched",
+                        "created_at",
+                        "updated_at",
+                        "duration",
+                        "files_per_second_wall_time",
+                        "cumulative_processing_time_ms",
+                        "avg_time_per_file_ms",
+                        "files_per_second_cpu_time",
+                        "parallel_cores_used",
+                        "parallel_speedup_factor",
+                        "parallel_efficiency_percent",
+                        "project"
                       ]
                     }
                   },
@@ -381,9 +454,6 @@
           },
           "404": {
             "description": "analysis job not found"
-          },
-          "503": {
-            "description": "service unavailable"
           }
         }
       }
@@ -606,231 +676,8 @@
         }
       }
     },
-    "/api/v1/pattern_matches": {
-      "get": {
-        "summary": "Lists all pattern matches",
-        "tags": [
-          "Pattern Matches"
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "description": "Page number",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "per_page",
-            "in": "query",
-            "required": false,
-            "description": "Items per page",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "rule_name",
-            "in": "query",
-            "required": false,
-            "description": "Filter by rule name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "rule_id",
-            "in": "query",
-            "required": false,
-            "description": "Filter by rule ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "analysis_job_id",
-            "in": "query",
-            "required": false,
-            "description": "Filter by analysis job ID",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "file_path",
-            "in": "query",
-            "required": false,
-            "description": "Filter by file path pattern",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "pattern matches found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "rule_id": {
-                            "type": "string"
-                          },
-                          "rule_name": {
-                            "type": "string"
-                          },
-                          "line_number": {
-                            "type": "integer"
-                          },
-                          "column": {
-                            "type": "integer"
-                          },
-                          "match_text": {
-                            "type": "string"
-                          },
-                          "file_with_violations": {
-                            "type": "object",
-                            "properties": {
-                              "file_path": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "total_count": {
-                          "type": "integer"
-                        },
-                        "current_page": {
-                          "type": "integer"
-                        },
-                        "total_pages": {
-                          "type": "integer"
-                        },
-                        "analysis_job_id": {
-                          "type": "integer",
-                          "nullable": true
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/pattern_matches/time_series": {
-      "get": {
-        "summary": "Gets time series data for pattern matches",
-        "tags": [
-          "Pattern Matches"
-        ],
-        "parameters": [
-          {
-            "name": "start_date",
-            "in": "query",
-            "description": "Start date for the time series (default: 30 days ago)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "end_date",
-            "in": "query",
-            "description": "End date for the time series (default: today)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "rule_id",
-            "in": "query",
-            "required": false,
-            "description": "Filter by rule ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "rule_name",
-            "in": "query",
-            "required": false,
-            "description": "Filter by rule name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "analysis_job_id",
-            "in": "query",
-            "required": false,
-            "description": "Filter by analysis job ID",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "time series data retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "date": {
-                            "type": "string"
-                          },
-                          "count": {
-                            "type": "integer"
-                          }
-                        },
-                        "required": [
-                          "date",
-                          "count"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/analysis_jobs/{analysis_job_id}/pattern_matches": {
+    "/api/v1/files_with_violations": {
       "parameters": [
-        {
-          "name": "analysis_job_id",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "integer"
-          }
-        },
         {
           "name": "page",
           "in": "query",
@@ -850,21 +697,12 @@
           }
         },
         {
-          "name": "rule_name",
+          "name": "analysis_job_id",
           "in": "query",
           "required": false,
-          "description": "Filter by rule name",
+          "description": "Filter by analysis job ID",
           "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "rule_id",
-          "in": "query",
-          "required": false,
-          "description": "Filter by rule ID",
-          "schema": {
-            "type": "string"
+            "type": "integer"
           }
         },
         {
@@ -875,16 +713,43 @@
           "schema": {
             "type": "string"
           }
+        },
+        {
+          "name": "rule_name",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "sort",
+          "in": "query",
+          "required": false,
+          "description": "Sort field (file_path, analysis_job_id, violation_count)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "direction",
+          "in": "query",
+          "required": false,
+          "description": "Sort direction (asc, desc)",
+          "schema": {
+            "type": "string"
+          }
         }
       ],
       "get": {
-        "summary": "Lists pattern matches for an analysis job",
+        "summary": "Lists files with violations",
         "tags": [
-          "Pattern Matches"
+          "Files With Violations"
         ],
         "responses": {
           "200": {
-            "description": "pattern matches found",
+            "description": "files with violations found",
             "content": {
               "application/json": {
                 "schema": {
@@ -898,28 +763,23 @@
                           "id": {
                             "type": "integer"
                           },
-                          "rule_id": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "rule_name": {
-                            "type": "string"
-                          },
-                          "line_number": {
+                          "analysis_job_id": {
                             "type": "integer"
                           },
-                          "column": {
-                            "type": "integer"
-                          },
-                          "match_text": {
+                          "display_path": {
                             "type": "string"
                           },
-                          "file_with_violations": {
-                            "type": "object",
-                            "properties": {
-                              "file_path": {
-                                "type": "string"
-                              }
-                            }
+                          "job_status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "running",
+                              "completed",
+                              "failed"
+                            ]
                           }
                         }
                       }
@@ -936,8 +796,11 @@
                         "total_pages": {
                           "type": "integer"
                         },
-                        "analysis_job_id": {
-                          "type": "integer"
+                        "sort": {
+                          "type": "string"
+                        },
+                        "direction": {
+                          "type": "string"
                         }
                       }
                     }
@@ -945,96 +808,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "analysis job not found"
-          }
-        }
-      }
-    },
-    "/api/v1/analysis_jobs/{analysis_job_id}/pattern_matches/time_series": {
-      "parameters": [
-        {
-          "name": "analysis_job_id",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "integer"
-          }
-        },
-        {
-          "name": "start_date",
-          "in": "query",
-          "description": "Start date for the time series (default: 30 days ago)",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "end_date",
-          "in": "query",
-          "description": "End date for the time series (default: today)",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "rule_id",
-          "in": "query",
-          "required": false,
-          "description": "Filter by rule ID",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "rule_name",
-          "in": "query",
-          "required": false,
-          "description": "Filter by rule name",
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
-      "get": {
-        "summary": "Gets time series data for pattern matches in an analysis job",
-        "tags": [
-          "Pattern Matches"
-        ],
-        "responses": {
-          "200": {
-            "description": "time series data retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "date": {
-                            "type": "string"
-                          },
-                          "count": {
-                            "type": "integer"
-                          }
-                        },
-                        "required": [
-                          "date",
-                          "count"
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "analysis job not found"
           }
         }
       }
@@ -1283,6 +1056,439 @@
           }
         }
       }
+    },
+    "/api/v1/violations": {
+      "get": {
+        "summary": "Lists all violations",
+        "tags": [
+          "Violations"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Items per page",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "rule_name",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "analysis_job_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by analysis job ID",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": false,
+            "description": "Filter by file path pattern",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "violations found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "rule_id": {
+                            "type": "string"
+                          },
+                          "rule_name": {
+                            "type": "string"
+                          },
+                          "line_number": {
+                            "type": "integer"
+                          },
+                          "column": {
+                            "type": "integer"
+                          },
+                          "match_text": {
+                            "type": "string"
+                          },
+                          "file_with_violations": {
+                            "type": "object",
+                            "properties": {
+                              "file_path": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total_count": {
+                          "type": "integer"
+                        },
+                        "current_page": {
+                          "type": "integer"
+                        },
+                        "total_pages": {
+                          "type": "integer"
+                        },
+                        "analysis_job_id": {
+                          "type": "integer",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/violations/time_series": {
+      "get": {
+        "summary": "Gets time series data for violations",
+        "tags": [
+          "Violations"
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "Start date for the time series (default: 30 days ago)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "End date for the time series (default: today)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rule_name",
+            "in": "query",
+            "required": false,
+            "description": "Filter by rule name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "analysis_job_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by analysis job ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "time series data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "count"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{analysis_job_id}/violations": {
+      "parameters": [
+        {
+          "name": "analysis_job_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "description": "Page number",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "description": "Items per page",
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "rule_name",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "rule_id",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule ID",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "file_path",
+          "in": "query",
+          "required": false,
+          "description": "Filter by file path pattern",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Lists violations for an analysis job",
+        "tags": [
+          "Violations"
+        ],
+        "responses": {
+          "200": {
+            "description": "violations found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "rule_id": {
+                            "type": "string"
+                          },
+                          "rule_name": {
+                            "type": "string"
+                          },
+                          "line_number": {
+                            "type": "integer"
+                          },
+                          "column": {
+                            "type": "integer"
+                          },
+                          "match_text": {
+                            "type": "string"
+                          },
+                          "file_with_violations": {
+                            "type": "object",
+                            "properties": {
+                              "file_path": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total_count": {
+                          "type": "integer"
+                        },
+                        "current_page": {
+                          "type": "integer"
+                        },
+                        "total_pages": {
+                          "type": "integer"
+                        },
+                        "analysis_job_id": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          }
+        }
+      }
+    },
+    "/api/v1/analysis_jobs/{analysis_job_id}/violations/time_series": {
+      "parameters": [
+        {
+          "name": "analysis_job_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "description": "Start date for the time series (default: 30 days ago)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "description": "End date for the time series (default: today)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "rule_id",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule ID",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "rule_name",
+          "in": "query",
+          "required": false,
+          "description": "Filter by rule name",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Gets time series data for violations in an analysis job",
+        "tags": [
+          "Violations"
+        ],
+        "responses": {
+          "200": {
+            "description": "time series data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "count"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "analysis job not found"
+          }
+        }
+      }
     }
   },
   "servers": [
@@ -1428,59 +1634,6 @@
                     }
                   }
                 }
-              },
-              "pattern_matches": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "start_line": {
-                      "type": "integer"
-                    },
-                    "end_line": {
-                      "type": "integer"
-                    },
-                    "start_col": {
-                      "type": "integer"
-                    },
-                    "end_col": {
-                      "type": "integer"
-                    },
-                    "file_with_violations_id": {
-                      "type": "integer"
-                    },
-                    "rule_id": {
-                      "type": "string"
-                    },
-                    "rule_name": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "line_number": {
-                      "type": "integer"
-                    },
-                    "pattern_name": {
-                      "type": "string"
-                    },
-                    "location": {
-                      "type": "string"
-                    },
-                    "metadata_content": {
-                      "type": "object"
-                    },
-                    "code_snippet": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    }
-                  }
-                }
               }
             },
             "required": [
@@ -1525,7 +1678,7 @@
           "id": {
             "type": "integer"
           },
-          "analysis_file_id": {
+          "file_with_violations_id": {
             "type": "integer"
           },
           "rule_id": {
@@ -1554,7 +1707,7 @@
         },
         "required": [
           "id",
-          "analysis_file_id",
+          "file_with_violations_id",
           "rule_id",
           "rule_name",
           "line_number"

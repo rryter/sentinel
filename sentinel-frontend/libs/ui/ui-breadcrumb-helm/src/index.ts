@@ -16,17 +16,17 @@ export * from './lib/breadcrumb-separator.component';
 export * from './lib/breadcrumb.directive';
 
 export const HlmBreadCrumbImports = [
-	HlmBreadcrumbDirective,
-	HlmBreadcrumbEllipsisComponent,
-	HlmBreadcrumbSeparatorComponent,
-	HlmBreadcrumbItemDirective,
-	HlmBreadcrumbLinkDirective,
-	HlmBreadcrumbPageDirective,
-	HlmBreadcrumbListDirective,
+  HlmBreadcrumbDirective,
+  HlmBreadcrumbEllipsisComponent,
+  HlmBreadcrumbSeparatorComponent,
+  HlmBreadcrumbItemDirective,
+  HlmBreadcrumbLinkDirective,
+  HlmBreadcrumbPageDirective,
+  HlmBreadcrumbListDirective,
 ] as const;
 
 @NgModule({
-	imports: [...HlmBreadCrumbImports],
-	exports: [...HlmBreadCrumbImports],
+  imports: [...HlmBreadCrumbImports],
+  exports: [...HlmBreadCrumbImports],
 })
 export class HlmBreadCrumbModule {}

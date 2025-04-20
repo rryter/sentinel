@@ -1,7 +1,46 @@
-analysis/
-patterns.json
 node_modules
-bin/
-bin/indexer
-results/
-results/ast-cache.json
+.sentinel-cache
+.idea
+.vscode
+
+# Rust-related
+/target/
+**/*.rs.bk
+Cargo.lock
+*.so
+*.dylib
+*.dll
+
+# Go-related
+/bin/
+/pkg/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build artifacts
+/build/
+/dist/
+
+# Editor-specific
+.idea/
+.vscode/
+*.swp
+*.swo
+
+sentinel
+
+results
+metrics
+docs
+findings
+venv
+
+
+findings/*
+metrics/*
+results/*

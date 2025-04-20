@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Structure
+
+- To run the app, run ./run.sh
+- Whenever you make a mistake, you analyze why you made the mistake, and to learn from it, you document it in MISTAKES.md so that you can avoid them in the future. that means you need to be aware of the mistakes you made in the past at all times.

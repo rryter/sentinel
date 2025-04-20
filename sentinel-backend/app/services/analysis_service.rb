@@ -1,3 +1,6 @@
+require 'fileutils'
+require 'open3'
+
 # app/services/analysis_service.rb
 class AnalysisService
     def analyzer_service_url
@@ -96,6 +99,19 @@ class AnalysisService
     end
     
     def process_results(analysis_job)
+      # If we don't have a Go job ID, check if we have already processed results
+      if analysis_job.go_job_id.blank?
+        # Check if we have processed findings already
+        if analysis_job.violations.exists?
+          Rails.logger.info("Job #{@job_id} has existing violations but no Go job ID, skipping external fetch")
+          return true
+        else
+          Rails.logger.error("Cannot process results for job #{@job_id} - missing Go job ID and no existing results")
+          return false
+        end
+      end
+      
+      # Fetch data from Go service
       data = fetch_patterns
       return false unless data
       
@@ -157,10 +173,10 @@ class AnalysisService
         data['fileResults'].each do |file_result|
           file_with_violations = analysis_job.files_with_violations.find_or_create_by!(file_path: file_result['filePath'])
           
-          # Store pattern matches
+          # Store violations
           if file_result['patternMatches'].present?
             file_result['patternMatches'].each do |match|
-              file_with_violations.pattern_matches.create!(
+              file_with_violations.violations.create!(
                 rule_id: match['ruleId'],
                 rule_name: match['ruleName'],
                 description: match['description'],
@@ -173,6 +189,166 @@ class AnalysisService
             end
           end
         end
+      end
+      
+      true
+    end
+    
+    def perform_analysis(project)
+      # Path to the Rust binary
+      binary_path = Rails.root.join("../sentinel-analysis/target/release/typescript-analyzer")
+
+      # Create a temporary directory for output
+      output_dir = Rails.root.join("tmp", "analysis_job_#{@job_id}")
+      FileUtils.mkdir_p(output_dir)
+      
+      job = AnalysisJob.find(@job_id)
+
+      # Build command with appropriate arguments
+      command = [
+        binary_path.to_s,
+        "--output-dir=#{output_dir}",
+      ]
+
+      # Log the command being executed
+      Rails.logger.info("Executing: #{command.join(' ')}")
+
+      # Execute command and capture output
+      stdout, stderr, status = Open3.capture3(*command)
+
+      output_file = File.join(output_dir, "findings.json")
+
+      unless status.success?
+        Rails.logger.error("Error executing sentinel-analysis: #{stderr}")
+        job.update(status: "failed", error_message: stderr)
+        raise "Analysis failed: #{stderr}"
+      end
+
+      # Read and parse the results file
+      if File.exist?(output_file)
+        results = JSON.parse(File.read(output_file))
+        Rails.logger.info("Analysis completed successfully with #{results.size} results")
+        
+        # Process the findings directly
+        if process_findings(job, results)
+          Rails.logger.info("Successfully processed #{results['findings']&.size || 0} findings for job #{job.id}")
+          # Mark job as completed
+          job.update(status: "completed")
+        else
+          Rails.logger.warn("Failed to process findings for job #{job.id}")
+          job.update(status: "failed", error_message: "Failed to process findings")
+        end
+        
+        results
+      else
+        error_message = "Analysis output file not found: #{"./sentinel-analysis/findings/findings.json"}"
+        job.update(status: "failed", error_message: error_message)
+        raise error_message
+      end
+    ensure
+      # Clean up temporary files unless we want to keep them for debugging
+      FileUtils.rm_rf(output_dir) if output_dir && !Rails.env.development?
+    end
+    
+    def process_findings(analysis_job, findings_data)
+      # Validate input
+      unless findings_data.is_a?(Hash) && findings_data['findings'].is_a?(Array)
+        Rails.logger.error("Invalid findings data format for job #{analysis_job.id}")
+        return false
+      end
+      
+      ActiveRecord::Base.transaction do
+        # Group findings by file path first
+        findings_by_file = findings_data['findings'].group_by { |finding| finding['file'] }
+        
+        # Create all file_with_violations records in bulk
+        file_path_to_id = {}
+        files_to_create = findings_by_file.keys.map do |file_path|
+          { 
+            analysis_job_id: analysis_job.id, 
+            file_path: file_path,
+            created_at: Time.current,
+            updated_at: Time.current
+          }
+        end
+        
+        # Bulk insert the file records
+        if files_to_create.any?
+          # First, check for existing files to avoid duplicates
+          existing_files = analysis_job.files_with_violations.where(file_path: findings_by_file.keys).pluck(:file_path, :id).to_h
+          
+          # Filter out files that already exist
+          files_to_create.reject! { |file| existing_files.key?(file[:file_path]) }
+          
+          # Add existing files to the mapping
+          file_path_to_id.merge!(existing_files)
+          
+          # Bulk insert new files if any remain
+          if files_to_create.any?
+            result = FileWithViolations.insert_all(files_to_create, returning: [:id, :file_path])
+            
+            # Map each file path to its ID
+            result.rows.each do |id, file_path|
+              file_path_to_id[file_path] = id
+            end
+          end
+        end
+        
+        # Prepare violations for bulk insert
+        violations_to_create = []
+        
+        findings_by_file.each do |file_path, findings|
+          file_id = file_path_to_id[file_path]
+          next unless file_id
+          
+          findings.each do |finding|
+            # Find or use default severity
+            severity_id = nil
+            if finding['severity'].present?
+              # Map the severity name to our standard levels
+              mapped_severity = Severity.map_legacy_severity(finding['severity'])
+              severity = Severity.find_by_name_ignore_case(mapped_severity) || Severity.default
+              severity_id = severity.id
+            else
+              severity_id = Severity.default.id
+            end
+            
+            violations_to_create << {
+              file_with_violations_id: file_id,
+              rule_id: nil, # Can be added if available in the data
+              rule_name: finding['rule'],
+              description: finding['message'],
+              start_line: finding['line'],
+              end_line: finding['line'], # Same as start line if not specified
+              start_col: finding['column'],
+              end_col: finding['column'] + 1, # Estimate end column if not provided
+              severity_id: severity_id,
+              metadata: {
+                help: finding['help']
+              }.to_json,
+              created_at: Time.current,
+              updated_at: Time.current
+            }
+          end
+        end
+        
+        # Perform bulk insert of violations in batches to avoid memory issues
+        if violations_to_create.any?
+          # Batch inserts in groups of 500 for better performance
+          violations_to_create.each_slice(500) do |batch|
+            Violation.insert_all(batch)
+          end
+        end
+        
+        # Update summary statistics in analysis job
+        analysis_job.update!(
+          total_files: findings_data['summary']&.dig('files_processed') || findings_by_file.keys.count,
+          total_matches: findings_data['findings'].size,
+          rules_matched: findings_data['summary']&.dig('findings_by_rule')&.keys&.size || 0
+        )
+        
+        # Update performance metrics using the dedicated service
+        PerformanceMetricsService.update_job_with_metrics(analysis_job, findings_data)
       end
       
       true

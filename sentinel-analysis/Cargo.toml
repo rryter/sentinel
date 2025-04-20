@@ -1,0 +1,47 @@
+[package]
+name = "typescript-analyzer"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = []
+custom_rules = []
+
+[dependencies]
+walkdir = "2.4"
+
+# Command line argument parsing
+clap = { version = "4.4", features = ["derive"] }
+
+# For the future integration with oxc parser
+oxc_allocator = "0.63.0"
+oxc_parser = "0.63.0"
+oxc_ast = "0.63.0"
+oxc_ast_visit = "0.63.0"
+oxc_span = "0.63.0"
+oxc_semantic = "0.63.0"
+oxc_diagnostics = "0.63.0"
+
+# For config file parsing
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "5.0"
+
+# For timestamps in metrics
+chrono = "0.4"
+
+# For parallel processing
+rayon = "1.8"
+
+# For getting CPU cores count
+num_cpus = "1.16"
+tabled = "0.18.0"
+
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+walkdir = "2.4"
+tempfile = "3.8.0"
+
+[[bench]]
+name = "analyzer_bench"
+harness = false

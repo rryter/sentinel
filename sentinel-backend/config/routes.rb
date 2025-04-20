@@ -9,26 +9,36 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :projects, only: [:index, :show, :create]
+      resources :projects, only: [:index, :show, :create] do
+        member do
+          post :clone_repository
+        end
+      end
       
       resources :analysis_jobs, only: [:index, :show, :create] do
         member do
-          get :fetch_results
           post :process_results
+          get 'files/:file_path/violations', to: 'analysis_jobs#file_violations', constraints: { file_path: /.*/ }
         end
 
-        resources :pattern_matches, only: [:index] do
+        resources :violations, only: [:index] do
           collection do
             get :time_series
           end
         end
       end
       
-      resources :pattern_matches, only: [:index] do
+      resources :violations, only: [:index] do
         collection do
           get :time_series
         end
       end
+
+      get 'files_with_violations', to: 'files_with_violations#index'
+
+      # GitHub integration routes
+      post 'auth/github/callback', to: 'github#callback'
+      get 'github/repositories', to: 'github#repositories'
 
       resources :examples
     end

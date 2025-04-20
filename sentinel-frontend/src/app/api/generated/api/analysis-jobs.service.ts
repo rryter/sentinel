@@ -32,7 +32,6 @@ import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables'
 import { Configuration }                                     from '../configuration';
 import {
     AnalysisJobsServiceInterface,
-    ApiV1AnalysisJobsIdFetchResultsGetRequestParams,
     ApiV1AnalysisJobsIdGetRequestParams,
     ApiV1AnalysisJobsIdProcessResultsPostRequestParams,
     ApiV1AnalysisJobsPostRequestParams
@@ -147,65 +146,6 @@ export class AnalysisJobsService implements AnalysisJobsServiceInterface {
 
         let localVarPath = `/api/v1/analysis_jobs`;
         return this.httpClient.request<ApiV1AnalysisJobsGet200Response>('get', `${this.configuration.basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
-                headers: localVarHeaders,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Fetches analysis job results
-     * @param requestParameters
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<ApiV1AnalysisJobsPost201Response>;
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<ApiV1AnalysisJobsPost201Response>>;
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<ApiV1AnalysisJobsPost201Response>>;
-    public apiV1AnalysisJobsIdFetchResultsGet(requestParameters: ApiV1AnalysisJobsIdFetchResultsGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
-        const id = requestParameters.id;
-        if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling apiV1AnalysisJobsIdFetchResultsGet.');
-        }
-
-        let localVarHeaders = this.defaultHeaders;
-
-        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-        if (localVarHttpHeaderAcceptSelected === undefined) {
-            // to determine the Accept header
-            const httpHeaderAccepts: string[] = [
-                'application/json'
-            ];
-            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        }
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        let localVarHttpContext: HttpContext | undefined = options && options.context;
-        if (localVarHttpContext === undefined) {
-            localVarHttpContext = new HttpContext();
-        }
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/v1/analysis_jobs/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: undefined})}/fetch_results`;
-        return this.httpClient.request<ApiV1AnalysisJobsPost201Response>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

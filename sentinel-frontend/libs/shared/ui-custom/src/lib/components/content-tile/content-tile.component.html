@@ -1,0 +1,18 @@
+<div class="bg-white shadow-xl border border-gray-200 rounded-lg p-6">
+  <div class="flex justify-between items-start">
+    <span class="text-gray-500 text-sm">{{ title }}</span>
+    <span [class]="iconClass">
+      <ng-icon hlm size="sm" [name]="iconName"></ng-icon>
+    </span>
+  </div>
+
+  <!-- Main value uses primary content projection -->
+  <h2 class="text-3xl font-bold text-gray-800 mt-2">
+    <ng-content></ng-content>
+  </h2>
+
+  <!-- Details use named content projection -->
+  <div class="mt-4 flex items-center text-sm">
+    <ng-content select="[details]"></ng-content>
+  </div>
+</div>

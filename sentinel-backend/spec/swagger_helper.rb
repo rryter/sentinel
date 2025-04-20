@@ -88,28 +88,6 @@ RSpec.configure do |config|
                         'job_status' => { 'type' => 'string', 'enum' => ['pending', 'running', 'completed', 'failed'] }
                       }
                     }
-                  },
-                  'pattern_matches' => {
-                    'type' => 'array',
-                    'items' => {
-                      'type' => 'object',
-                      'properties' => {
-                        'id' => { 'type' => 'integer' },
-                        'start_line' => { 'type' => 'integer' },
-                        'end_line' => { 'type' => 'integer' },
-                        'start_col' => { 'type' => 'integer' },
-                        'end_col' => { 'type' => 'integer' },
-                        'file_with_violations_id' => { 'type' => 'integer' },
-                        'rule_id' => { 'type' => 'string' },
-                        'rule_name' => { 'type' => 'string' },
-                        'description' => { 'type' => 'string' },
-                        'line_number' => { 'type' => 'integer' },
-                        'pattern_name' => { 'type' => 'string' },
-                        'location' => { 'type' => 'string' },
-                        'metadata_content' => { 'type' => 'object' },
-                        'code_snippet' => { 'type' => ['string', 'null'] }
-                      }
-                    }
                   }
                 },
                 'required' => ['id', 'status', 'created_at', 'updated_at']
@@ -135,7 +113,7 @@ RSpec.configure do |config|
             'type' => 'object',
             'properties' => {
               'id' => { 'type' => 'integer' },
-              'analysis_file_id' => { 'type' => 'integer' },
+              'file_with_violations_id' => { 'type' => 'integer' },
               'rule_id' => { 'type' => 'string' },
               'rule_name' => { 'type' => 'string' },
               'line_number' => { 'type' => 'integer' },
@@ -144,7 +122,7 @@ RSpec.configure do |config|
               'created_at' => { 'type' => 'string', 'format' => 'date-time' },
               'updated_at' => { 'type' => 'string', 'format' => 'date-time' }
             },
-            'required' => ['id', 'analysis_file_id', 'rule_id', 'rule_name', 'line_number']
+            'required' => ['id', 'file_with_violations_id', 'rule_id', 'rule_name', 'line_number']
           },
           
           # Example schema (for demonstration purposes)

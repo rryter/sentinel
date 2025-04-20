@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "npx nx run sentinel:serve",
+    "start": "npx nx run sentinel:serve -- --disable-host-check",
     "generate:api": "openapi-generator-cli generate --generator-key sentinel-api"
   },
   "private": true,
@@ -18,7 +18,7 @@
     "@angular/router": "~19.2.0",
     "@ng-icons/core": "^29.10.0",
     "@ng-icons/lucide": ">=29.0.0",
-    "@spartan-ng/brain": "0.0.1-alpha.427",
+    "@spartan-ng/brain": "0.0.1-alpha.444",
     "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -26,7 +26,7 @@
     "marked": "^15.0.7",
     "ngx-markdown": "^19.1.1",
     "ngx-scrollbar": ">=16.0.0",
-    "ngx-sonner": "^2.0.0",
+    "ngx-sonner": "^3.0.0",
     "prismjs": "^1.30.0",
     "rxjs": "~7.8.0",
     "zone.js": "~0.15.0"
@@ -72,7 +72,7 @@
     "nx": "20.6.2",
     "postcss": "^8.4.5",
     "postcss-url": "~10.1.3",
-    "prettier": "^2.6.2",
+    "prettier": "3.5.3",
     "tailwind-merge": "^2.2.0",
     "tailwindcss": "^3.0.2",
     "tailwindcss-animate": "^1.0.6",
