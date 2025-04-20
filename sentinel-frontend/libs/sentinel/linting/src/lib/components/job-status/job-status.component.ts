@@ -17,7 +17,6 @@ enum AnalysisJobStatus {
 
 @Component({
   selector: 'app-job-status',
-  standalone: true,
   imports: [CommonModule],
   providers: [DatePipe],
   template: `
@@ -31,18 +30,20 @@ enum AnalysisJobStatus {
         <div class="text-gray-900">
           <span [class]="getStatusClass(job?.status)">
             {{ getStatusText(job?.status) }}
-            @if (isRunning()) { ({{ formatTime(runningTimeSeconds) }}) }
+            @if (isRunning()) {
+              ({{ formatTime(runningTimeSeconds) }})
+            }
           </span>
         </div>
 
         <div class="text-gray-500">Started:</div>
-        <div class="text-gray-900">{{ job?.created_at | date : 'medium' }}</div>
+        <div class="text-gray-900">{{ job?.created_at | date: 'medium' }}</div>
 
         @if (job?.completed_at) {
-        <div class="text-gray-500">Completed:</div>
-        <div class="text-gray-900">
-          {{ job?.completed_at | date : 'medium' }}
-        </div>
+          <div class="text-gray-500">Completed:</div>
+          <div class="text-gray-900">
+            {{ job?.completed_at | date: 'medium' }}
+          </div>
         }
       </div>
     </div>
@@ -53,7 +54,7 @@ export class JobStatusComponent {
   @Input() runningTimeSeconds = 0;
 
   readonly isRunning = computed(
-    () => this.job?.status === AnalysisJobStatus.RUNNING
+    () => this.job?.status === AnalysisJobStatus.RUNNING,
   );
 
   getStatusClass(status: string | undefined): string {

@@ -30,7 +30,6 @@ import {
 
 @Component({
   selector: 'app-analysis-results',
-  standalone: true,
   imports: [
     CommonModule,
     ContentTileComponent,

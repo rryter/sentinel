@@ -7,7 +7,6 @@ import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 
 @Component({
   selector: 'app-project-selector',
-  standalone: true,
   imports: [CommonModule, FormsModule, BrnSelectImports, HlmSelectImports],
   template: `
     <div class="mb-4">

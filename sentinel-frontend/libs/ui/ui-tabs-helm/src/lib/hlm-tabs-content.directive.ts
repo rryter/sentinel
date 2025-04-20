@@ -5,7 +5,7 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: '[hlmTabsContent]',
-  standalone: true,
+  ,
   hostDirectives: [
     {
       directive: BrnTabsContentDirective,

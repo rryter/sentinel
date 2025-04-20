@@ -4,7 +4,6 @@ import { GitHubService } from '../../services/github.service';
 
 @Component({
   selector: 'app-github-callback',
-  standalone: true,
   template: `
     <div class="flex min-h-screen items-center justify-center">
       <div class="text-center">
@@ -20,11 +19,11 @@ export class GitHubCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private githubService: GitHubService
+    private githubService: GitHubService,
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const code = params['code'];
       if (code) {
         this.githubService.handleAuthCallback(code).subscribe({
@@ -35,11 +34,11 @@ export class GitHubCallbackComponent implements OnInit {
           error: (error) => {
             console.error('GitHub authentication error:', error);
             this.router.navigate(['/projects/create']);
-          }
+          },
         });
       } else {
         this.router.navigate(['/projects/create']);
       }
     });
   }
-} 
+}

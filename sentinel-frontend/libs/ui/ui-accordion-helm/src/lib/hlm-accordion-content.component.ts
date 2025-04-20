@@ -18,7 +18,7 @@ import type { ClassValue } from 'clsx';
       </p>
     </div>
   `,
-  standalone: true,
+  ,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {

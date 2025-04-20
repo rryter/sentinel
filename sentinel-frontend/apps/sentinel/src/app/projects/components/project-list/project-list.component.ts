@@ -9,7 +9,6 @@ import {
 
 @Component({
   selector: 'app-project-list',
-  standalone: true,
   imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [ProjectsService],
   templateUrl: './project-list.component.html',

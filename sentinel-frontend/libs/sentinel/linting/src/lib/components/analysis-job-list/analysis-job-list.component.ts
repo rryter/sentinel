@@ -12,7 +12,6 @@ import {
 
 @Component({
   selector: 'app-analysis-job-list',
-  standalone: true,
   imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [DatePipe],
   templateUrl: './analysis-job-list.component.html',

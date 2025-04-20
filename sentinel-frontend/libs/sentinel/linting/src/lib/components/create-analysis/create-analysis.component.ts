@@ -20,14 +20,14 @@ import { AnalysisResultsComponent } from '../analysis-results/analysis-results.c
 import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 import { ApiV1ProjectsGet200ResponseDataProjectsInner } from '@sentinel-api';
 
-enum AnalysisJobStatus {
+enum LintStatus {
   PENDING = 'pending',
   RUNNING = 'running',
   COMPLETED = 'completed',
   FAILED = 'failed',
 }
 
-interface AnalysisJob {
+interface Lint {
   id: number;
   status: string;
   created_at: string;
@@ -36,7 +36,6 @@ interface AnalysisJob {
 
 @Component({
   selector: 'app-create-analysis',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -96,7 +95,7 @@ export class CreateAnalysisComponent implements OnInit {
   // Primary state signals
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
-  job = signal<AnalysisJob | null>(null);
+  job = signal<Lint | null>(null);
   analysisResults = signal<ApiV1AnalysisJobsGet200ResponseDataInner | null>(
     null,
   );
@@ -113,17 +112,17 @@ export class CreateAnalysisComponent implements OnInit {
   // Computed signals
   readonly isJobRunning = computed(() => {
     const job = this.job();
-    return job !== null && job.status === AnalysisJobStatus.RUNNING;
+    return job !== null && job.status === LintStatus.RUNNING;
   });
 
   readonly isJobCompleted = computed(() => {
     const job = this.job();
-    return job !== null && job.status === AnalysisJobStatus.COMPLETED;
+    return job !== null && job.status === LintStatus.COMPLETED;
   });
 
   readonly isJobFailed = computed(() => {
     const job = this.job();
-    return job !== null && job.status === AnalysisJobStatus.FAILED;
+    return job !== null && job.status === LintStatus.FAILED;
   });
 
   readonly shouldFetchResults = computed(() => {
@@ -404,7 +403,7 @@ export class CreateAnalysisComponent implements OnInit {
   }
 
   // Helper to map API response to our model
-  private mapToAnalysisJob(apiJob: any): AnalysisJob | null {
+  private mapToAnalysisJob(apiJob: any): Lint | null {
     if (!apiJob.data) {
       return null;
     }
@@ -416,15 +415,15 @@ export class CreateAnalysisComponent implements OnInit {
     };
   }
 
-  private getProcessingStatusFromJobStatus(status: AnalysisJobStatus): string {
+  private getProcessingStatusFromJobStatus(status: LintStatus): string {
     switch (status) {
-      case AnalysisJobStatus.PENDING:
+      case LintStatus.PENDING:
         return 'Waiting to start';
-      case AnalysisJobStatus.RUNNING:
+      case LintStatus.RUNNING:
         return 'Processing in progress';
-      case AnalysisJobStatus.COMPLETED:
+      case LintStatus.COMPLETED:
         return 'Completed';
-      case AnalysisJobStatus.FAILED:
+      case LintStatus.FAILED:
         return 'Failed';
       default:
         return 'Unknown';

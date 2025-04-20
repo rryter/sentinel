@@ -5,7 +5,7 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: '[hlmTabsTrigger]',
-  standalone: true,
+  ,
   hostDirectives: [
     {
       directive: BrnTabsTriggerDirective,

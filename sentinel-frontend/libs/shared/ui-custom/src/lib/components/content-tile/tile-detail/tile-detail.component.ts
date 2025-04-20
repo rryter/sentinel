@@ -5,7 +5,6 @@ import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 @Component({
   selector: 'app-tile-detail',
-  standalone: true,
   imports: [CommonModule, NgIcon, HlmIconDirective],
   template: `
     <div class="flex items-center text-gray-500">

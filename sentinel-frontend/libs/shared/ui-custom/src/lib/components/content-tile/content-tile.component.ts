@@ -5,7 +5,6 @@ import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 @Component({
   selector: 'app-content-tile',
-  standalone: true,
   imports: [CommonModule, NgIcon, HlmIconDirective],
   templateUrl: './content-tile.component.html',
   styleUrls: ['./content-tile.component.scss'],

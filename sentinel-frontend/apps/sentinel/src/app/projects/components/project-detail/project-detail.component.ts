@@ -10,7 +10,6 @@ import {
 
 @Component({
   selector: 'app-project-detail',
-  standalone: true,
   imports: [CommonModule, RouterModule, HlmButtonDirective],
   providers: [ProjectsService],
   template: `

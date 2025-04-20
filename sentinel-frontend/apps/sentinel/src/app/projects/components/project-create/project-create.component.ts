@@ -10,7 +10,10 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-import { GitHubService, GitHubRepository } from '../../../services/github.service';
+import {
+  GitHubService,
+  GitHubRepository,
+} from '../../../services/github.service';
 import { map } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { HttpHeaders } from '@angular/common/http';
@@ -24,7 +27,6 @@ interface GroupedRepositories {
 
 @Component({
   selector: 'app-project-create',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -93,7 +95,9 @@ interface GroupedRepositories {
 
           @for (owner of filteredOwners; track owner) {
             <div class="mb-6">
-              <h3 class="text-lg font-medium text-gray-900 mb-2">{{ owner }}</h3>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">
+                {{ owner }}
+              </h3>
               <div class="space-y-2">
                 @for (repo of groupedAndFilteredRepos[owner]; track repo.id) {
                   <div
@@ -105,16 +109,29 @@ interface GroupedRepositories {
                       <div class="flex items-center">
                         <span class="font-medium">{{ repo.name }}</span>
                         @if (repo.private) {
-                          <span class="ml-2 px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Private</span>
+                          <span
+                            class="ml-2 px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600"
+                            >Private</span
+                          >
                         }
                       </div>
                       @if (repo.description) {
-                        <p class="text-sm text-gray-600 mt-1">{{ repo.description }}</p>
+                        <p class="text-sm text-gray-600 mt-1">
+                          {{ repo.description }}
+                        </p>
                       }
                     </div>
                     @if (selectedRepo?.id === repo.id) {
-                      <svg class="h-5 w-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                      <svg
+                        class="h-5 w-5 text-indigo-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd"
+                        />
                       </svg>
                     }
                   </div>
@@ -144,11 +161,13 @@ interface GroupedRepositories {
                     placeholder="My Project"
                   />
                 </div>
-                @if (projectForm.get('name')?.errors?.['required'] &&
-                projectForm.get('name')?.touched) {
-                <p class="mt-2 text-sm text-red-600">
-                  Project name is required
-                </p>
+                @if (
+                  projectForm.get('name')?.errors?.['required'] &&
+                  projectForm.get('name')?.touched
+                ) {
+                  <p class="mt-2 text-sm text-red-600">
+                    Project name is required
+                  </p>
                 }
               </div>
 
@@ -167,11 +186,13 @@ interface GroupedRepositories {
                     placeholder="https://github.com/username/repository"
                   />
                 </div>
-                @if (projectForm.get('repository_url')?.errors?.['required'] &&
-                projectForm.get('repository_url')?.touched) {
-                <p class="mt-2 text-sm text-red-600">
-                  Repository URL is required
-                </p>
+                @if (
+                  projectForm.get('repository_url')?.errors?.['required'] &&
+                  projectForm.get('repository_url')?.touched
+                ) {
+                  <p class="mt-2 text-sm text-red-600">
+                    Repository URL is required
+                  </p>
                 }
               </div>
             </div>
@@ -179,15 +200,15 @@ interface GroupedRepositories {
         </div>
 
         @if (errorMessage) {
-        <div class="mt-6 rounded-md bg-red-50 p-4">
-          <div class="flex">
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">
-                {{ errorMessage }}
-              </h3>
+          <div class="mt-6 rounded-md bg-red-50 p-4">
+            <div class="flex">
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">
+                  {{ errorMessage }}
+                </h3>
+              </div>
             </div>
           </div>
-        </div>
         }
 
         <div class="mt-6 flex items-center justify-end gap-x-6">
@@ -200,9 +221,9 @@ interface GroupedRepositories {
             [disabled]="projectForm.invalid || isLoading"
           >
             @if (isLoading) {
-            <span>Creating...</span>
+              <span>Creating...</span>
             } @else {
-            <span>Create Project</span>
+              <span>Create Project</span>
             }
           </button>
         </div>
@@ -218,26 +239,27 @@ export class ProjectCreateComponent implements OnInit {
   groupedRepos: GroupedRepositories = {};
   selectedRepo: GitHubRepository | null = null;
   searchControl = new FormControl('');
-  
+
   get groupedAndFilteredRepos(): GroupedRepositories {
     const searchTerm = this.searchControl.value?.toLowerCase() || '';
     const filtered: GroupedRepositories = {};
-    
+
     Object.entries(this.groupedRepos).forEach(([owner, repos]) => {
-      const filteredRepos = repos.filter(repo => 
-        repo.name.toLowerCase().includes(searchTerm) ||
-        repo.description?.toLowerCase().includes(searchTerm) ||
-        repo.full_name.toLowerCase().includes(searchTerm)
+      const filteredRepos = repos.filter(
+        (repo) =>
+          repo.name.toLowerCase().includes(searchTerm) ||
+          repo.description?.toLowerCase().includes(searchTerm) ||
+          repo.full_name.toLowerCase().includes(searchTerm),
       );
-      
+
       if (filteredRepos.length > 0) {
         filtered[owner] = filteredRepos;
       }
     });
-    
+
     return filtered;
   }
-  
+
   get filteredOwners(): string[] {
     return Object.keys(this.groupedAndFilteredRepos).sort();
   }
@@ -246,7 +268,7 @@ export class ProjectCreateComponent implements OnInit {
     private fb: FormBuilder,
     private projectService: ProjectService,
     private router: Router,
-    public githubService: GitHubService
+    public githubService: GitHubService,
   ) {
     this.projectForm = this.fb.group({
       name: ['', Validators.required],
@@ -273,26 +295,29 @@ export class ProjectCreateComponent implements OnInit {
       error: (error) => {
         console.error('Error loading repositories:', error);
         this.errorMessage = 'Failed to load repositories. Please try again.';
-      }
+      },
     });
   }
 
   groupRepositories() {
-    this.groupedRepos = this.repositories.reduce((groups: GroupedRepositories, repo) => {
-      const owner = repo.full_name.split('/')[0];
-      if (!groups[owner]) {
-        groups[owner] = [];
-      }
-      groups[owner].push(repo);
-      return groups;
-    }, {});
+    this.groupedRepos = this.repositories.reduce(
+      (groups: GroupedRepositories, repo) => {
+        const owner = repo.full_name.split('/')[0];
+        if (!groups[owner]) {
+          groups[owner] = [];
+        }
+        groups[owner].push(repo);
+        return groups;
+      },
+      {},
+    );
   }
 
   selectRepository(repo: GitHubRepository) {
     this.selectedRepo = repo;
     this.projectForm.patchValue({
       name: repo.name,
-      repository_url: repo.html_url
+      repository_url: repo.html_url,
     });
   }
 
@@ -305,18 +330,20 @@ export class ProjectCreateComponent implements OnInit {
         const response = await firstValueFrom(
           this.projectService.createProject(
             this.projectForm.get('name')?.value,
-            this.projectForm.get('repository_url')?.value
-          )
+            this.projectForm.get('repository_url')?.value,
+          ),
         );
 
         if (response.data.project.id) {
           await firstValueFrom(
-            this.projectService.cloneRepository(response.data.project.id)
+            this.projectService.cloneRepository(response.data.project.id),
           );
           this.router.navigate(['/projects']);
         }
       } catch (error: any) {
-        this.errorMessage = error.error?.message || 'An error occurred while creating the project';
+        this.errorMessage =
+          error.error?.message ||
+          'An error occurred while creating the project';
       } finally {
         this.isLoading = false;
       }

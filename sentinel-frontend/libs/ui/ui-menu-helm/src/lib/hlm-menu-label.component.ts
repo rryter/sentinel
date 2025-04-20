@@ -11,7 +11,6 @@ import type { ClassValue } from 'clsx';
 
 @Component({
   selector: 'hlm-menu-label',
-  standalone: true,
   template: ` <ng-content /> `,
   host: {
     '[class]': '_computedClass()',

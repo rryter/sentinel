@@ -6,7 +6,6 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-person-form',
-  standalone: true,
   imports: [CommonModule, FormsModule, HlmInputDirective, HlmButtonDirective],
   template: `
     <form>

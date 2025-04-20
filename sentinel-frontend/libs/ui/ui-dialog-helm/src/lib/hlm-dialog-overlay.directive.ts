@@ -7,7 +7,7 @@ export const hlmDialogOverlayClass =
 
 @Directive({
   selector: '[hlmDialogOverlay],brn-dialog-overlay[hlm]',
-  standalone: true,
+  ,
 })
 export class HlmDialogOverlayDirective {
   private readonly _classSettable = injectCustomClassSettable({

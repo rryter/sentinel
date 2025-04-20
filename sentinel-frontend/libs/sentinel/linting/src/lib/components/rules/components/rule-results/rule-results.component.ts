@@ -2,28 +2,31 @@ import { Component, Input, OnInit, computed, signal } from '@angular/core';
 import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { 
-  HlmTableComponent, 
-  HlmTableDirective, 
-  HlmCaptionComponent, 
-  HlmThComponent, 
-  HlmTdComponent, 
-  HlmTrowComponent 
+import {
+  HlmTableComponent,
+  HlmTableDirective,
+  HlmCaptionComponent,
+  HlmThComponent,
+  HlmTdComponent,
+  HlmTrowComponent,
 } from '@spartan-ng/ui-table-helm';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { 
-  lucideCircle, 
-  lucideFile, 
+import {
+  lucideCircle,
+  lucideFile,
   lucideInfo,
   lucideX,
   lucideChevronDown,
   lucideEllipsis,
-  lucideArrowUpDown
+  lucideArrowUpDown,
 } from '@ng-icons/lucide';
-import { ApiV1ViolationsGet200Response, ApiV1ViolationsGet200ResponseDataInner } from '@sentinel-api';
+import {
+  ApiV1ViolationsGet200Response,
+  ApiV1ViolationsGet200ResponseDataInner,
+} from '@sentinel-api';
 import { BrnMenuTriggerDirective } from '@spartan-ng/brain/menu';
 import { HlmMenuModule } from '@spartan-ng/ui-menu-helm';
 import { BrnTableModule, useBrnColumnManager } from '@spartan-ng/brain/table';
@@ -41,7 +44,6 @@ export interface RuleResultItem {
 
 @Component({
   selector: 'app-rule-results',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,
@@ -57,15 +59,15 @@ export interface RuleResultItem {
     HlmMenuModule,
   ],
   providers: [
-    provideIcons({ 
-      lucideCircle, 
-      lucideFile, 
+    provideIcons({
+      lucideCircle,
+      lucideFile,
       lucideInfo,
       lucideX,
       lucideChevronDown,
       lucideEllipsis,
-      lucideArrowUpDown
-    })
+      lucideArrowUpDown,
+    }),
   ],
   host: {
     class: 'w-full',
@@ -76,12 +78,14 @@ export interface RuleResultItem {
 export class RuleResultsComponent implements OnInit {
   @Input() set results(value: ApiV1ViolationsGet200Response | null) {
     this._results.set(value);
-  };
+  }
   @Input() set loading(value: boolean) {
     this._loading.set(value);
-  };
+  }
 
-  protected readonly _results = signal<ApiV1ViolationsGet200Response | null>(null);
+  protected readonly _results = signal<ApiV1ViolationsGet200Response | null>(
+    null,
+  );
   protected readonly _loading = signal<boolean>(false);
   protected readonly _filter = signal<string>('');
 
@@ -94,22 +98,23 @@ export class RuleResultsComponent implements OnInit {
   });
 
   protected readonly _allDisplayedColumns = computed(() => [
-    ...this._brnColumnManager.displayedColumns()
+    ...this._brnColumnManager.displayedColumns(),
   ]);
 
   protected readonly _filteredItems = computed(() => {
     const filter = this._filter()?.toLowerCase()?.trim();
     const items = this._results()?.data || [];
-    
+
     if (!filter) return items;
-    
-    return items.filter(item => 
-      item.rule_name?.toLowerCase().includes(filter) ||
-      item.match_text?.toLowerCase().includes(filter) ||
-      item.file_with_violations?.file_path?.toLowerCase().includes(filter)
+
+    return items.filter(
+      (item) =>
+        item.rule_name?.toLowerCase().includes(filter) ||
+        item.match_text?.toLowerCase().includes(filter) ||
+        item.file_with_violations?.file_path?.toLowerCase().includes(filter),
     );
   });
-  
+
   ngOnInit(): void {
     // Nothing to initialize
   }
@@ -134,4 +139,4 @@ export class RuleResultsComponent implements OnInit {
     }
     return 'N/A';
   }
-} 
+}
