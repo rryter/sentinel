@@ -11,7 +11,6 @@ import { CommonModule } from '@angular/common';
 import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
   AnalysisJobsService,
   ApiV1AnalysisJobsGet200ResponseDataInner,
@@ -21,6 +20,8 @@ import {
 import { LintResultsComponent } from '../lint-results/lint-results.component';
 import { LintStatusComponent } from '../lint-status/lint-status.component';
 import { ProjectSelectorComponent } from '@shared/ui-custom';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+
 enum LintStatus {
   PENDING = 'pending',
   RUNNING = 'running',

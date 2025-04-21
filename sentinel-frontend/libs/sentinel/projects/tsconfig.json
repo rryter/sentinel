@@ -6,7 +6,13 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@sentinel-api": ["../../../src/app/api/generated"],
+      "@shared/ui-custom": ["../../../libs/shared/ui-custom/src/index.ts"]
+    }
   },
   "files": [],
   "include": [],

@@ -7,15 +7,25 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:application",
+      "executor": "@nx/angular:browser-esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/sentinel",
         "index": "apps/sentinel/src/index.html",
-        "browser": "apps/sentinel/src/main.ts",
+        "main": "apps/sentinel/src/main.ts",
         "polyfills": ["zone.js"],
         "tsConfig": "apps/sentinel/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
+        "namedChunks": true,
+        "plugins": [
+          {
+            "path": "tools/hello-world.middleware.ts",
+            "options": {
+              "backendUrl": "http://localhost:3000",
+              "logToConsole": false
+            }
+          }
+        ],
         "assets": [
           {
             "glob": "**/*",
@@ -45,18 +55,20 @@
               "maximumError": "8kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "namedChunks": true
         },
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "namedChunks": true
         }
       },
       "defaultConfiguration": "production"
     },
     "serve": {
-      "executor": "@angular-devkit/build-angular:dev-server",
+      "executor": "@nx/angular:dev-server",
       "configurations": {
         "production": {
           "buildTarget": "sentinel:build:production",
