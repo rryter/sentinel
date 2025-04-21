@@ -3,41 +3,34 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BuildMetricsChartComponent } from '../../components/build-metrics-chart/build-metrics-chart.component';
 import { BuildMetricsResponse } from '../../interfaces/build-metrics.interface';
-
+import { map, Observable } from 'rxjs';
 @Component({
   selector: 'sentinel-build-metrics',
   imports: [CommonModule, BuildMetricsChartComponent],
   template: `
     <div class="p-4">
       <h1 class="text-2xl font-bold mb-4">Build Metrics</h1>
-      <sentinel-build-metrics-chart
-        [metrics]="metrics"
-      ></sentinel-build-metrics-chart>
+      @if (metrics$ | async; as metrics) {
+        <sentinel-build-metrics-chart
+          [metrics]="metrics"
+        ></sentinel-build-metrics-chart>
+      } @else {
+        <div class="text-center text-gray-500">Loading...</div>
+      }
     </div>
   `,
   styles: [``],
 })
-export class BuildMetricsComponent implements OnInit {
-  metrics: BuildMetricsResponse['metrics'] = [];
+export class BuildMetricsComponent {
+  metrics$: Observable<BuildMetricsResponse['metrics']> = this.fetchMetrics();
 
   constructor(private http: HttpClient) {}
 
-  ngOnInit() {
-    this.fetchMetrics();
-  }
-
   private fetchMetrics() {
-    this.http
+    return this.http
       .get<BuildMetricsResponse>(
         `http://localhost:3000/api/v1/build_metrics?interval=2h`,
       )
-      .subscribe({
-        next: (response) => {
-          this.metrics = response.metrics;
-        },
-        error: (error) => {
-          console.error('Error fetching build metrics:', error);
-        },
-      });
+      .pipe(map((response) => response.metrics));
   }
 }
