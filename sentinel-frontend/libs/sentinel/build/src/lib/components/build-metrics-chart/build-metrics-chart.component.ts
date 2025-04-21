@@ -30,7 +30,6 @@ Chart.register(
 
 @Component({
   selector: 'sentinel-build-metrics-chart',
-  standalone: true,
   imports: [CommonModule, BaseChartDirective],
   template: `
     <div class="space-y-8">
@@ -170,7 +169,7 @@ export class BuildMetricsChartComponent implements OnChanges {
     plugins: {
       ...this.baseChartOptions.plugins,
       title: {
-        display: false,
+        display: true,
       },
     },
   };
