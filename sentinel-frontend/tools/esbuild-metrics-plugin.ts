@@ -5,45 +5,43 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 interface BuildMetrics {
-  id: string;
+  id?: string;
   timestamp: number;
   duration: number;
-  isInitialBuild: boolean;
-  machine: {
-    hostname: string;
-    platform: string;
-    cpuCount: number;
-    memory: {
-      total: number;
-      free: number;
-    };
-  };
-  process: {
-    nodeVersion: string;
-    memory: number;
-  };
-  build: {
-    files: number;
-    entryPoints: string[];
-    outputDir: string;
-    errors: number;
-    warnings: number;
-    fileTypes: Record<string, number>;
-  };
-  workspace: {
-    name: string;
-    project: string;
-    environment: string;
-    user: string;
-  };
+  is_initial_build: boolean;
+
+  // Machine metrics
+  machine_hostname: string;
+  machine_platform: string;
+  machine_cpu_count: number;
+  machine_memory_total: number;
+  machine_memory_free: number;
+
+  // Process metrics
+  process_node_version: string;
+  process_memory: number;
+
+  // Build metrics
+  build_files_count: number;
+  build_entry_points: string[];
+  build_output_dir: string;
+  build_error_count: number;
+  build_warning_count: number;
+  build_file_types: Record<string, number>;
+
+  // Workspace info
+  workspace_name: string;
+  workspace_project: string;
+  workspace_environment: string;
+  workspace_user: string;
 }
 
 interface PluginOptions {
   // Rails backend URL to post metrics to
   backendUrl: string;
 
-  // API token for authentication (optional)
-  apiToken?: string;
+  // API token for authentication (required)
+  apiToken: string;
 
   // Whether to enable the plugin
   enabled?: boolean;
@@ -141,6 +139,15 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
     sendInterval = 5000, // 5 seconds
   } = options;
 
+  // Validate required options
+  if (!backendUrl) {
+    throw new Error('[Build Metrics] backendUrl is required');
+  }
+
+  if (!apiToken) {
+    throw new Error('[Build Metrics] apiToken is required for authentication');
+  }
+
   // Skip if disabled
   if (!enabled) {
     return {
@@ -189,26 +196,40 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         );
       }
 
-      //   const response = await fetch(backendUrl, {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       ...(apiToken && { Authorization: `Bearer ${apiToken}` }),
-      //     },
-      //     body: JSON.stringify({ metrics: metricsToSend }),
-      //   });
+      const response = await fetch(`${backendUrl}/api/v1/build_metrics`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ metrics: metricsToSend }),
+      });
 
-      console.log(metricsToSend);
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: 'Unknown error' }));
+        throw new Error(
+          `Failed to send metrics: ${response.status} ${response.statusText} - ${errorData.error}`,
+        );
+      }
 
-      //   if (!response.ok) {
-      //     throw new Error(
-      //       `Failed to send metrics: ${response.status} ${response.statusText}`,
-      //     );
-      //   }
+      const result = await response.json();
 
       if (logToConsole) {
         console.log(
           `[Build Metrics] Successfully sent ${metricsToSend.length} metrics`,
+          result,
+        );
+      }
+
+      // Handle any failed metrics
+      const failedMetrics =
+        result.results?.filter((r) => r.status === 'error') || [];
+      if (failedMetrics.length > 0) {
+        console.error(
+          '[Build Metrics] Some metrics failed to save:',
+          failedMetrics,
         );
       }
     } catch (error) {
@@ -262,7 +283,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
   const createBuildMetrics = (
     buildResult: BuildResult,
     duration: number,
-  ): BuildMetrics => {
+  ): Omit<BuildMetrics, 'id'> => {
     // Get entry points from metafile
     const entryPoints = buildResult.metafile?.inputs
       ? Object.entries(buildResult.metafile.inputs)
@@ -283,38 +304,33 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       outputDir = path.dirname(buildResult.outputFiles[0].path);
     }
 
+    // Process file types with double quotes
+    const fileTypes: Record<string, number> = {};
+    for (const [ext, count] of Object.entries({ ...fileTypes })) {
+      fileTypes[ext.replace(/'/g, '"')] = count;
+    }
+
     return {
-      id: generateBuildId(),
       timestamp: Date.now(),
       duration,
-      isInitialBuild: isFirstBuild,
-      machine: {
-        hostname: os.hostname(),
-        platform: process.platform,
-        cpuCount: os.cpus().length,
-        memory: {
-          total: os.totalmem(),
-          free: os.freemem(),
-        },
-      },
-      process: {
-        nodeVersion: process.version,
-        memory: process.memoryUsage().heapUsed,
-      },
-      build: {
-        files: fileCount,
-        entryPoints,
-        outputDir,
-        errors: buildResult.errors.length,
-        warnings: buildResult.warnings.length,
-        fileTypes: { ...fileTypes }, // Create a copy to avoid reference issues
-      },
-      workspace: {
-        name: process.env.NX_WORKSPACE_NAME || 'sentinel',
-        project: process.env.NX_PROJECT_NAME || 'sentinel',
-        environment: process.env.NODE_ENV || 'development',
-        user: process.env.USER || os.userInfo().username || 'unknown',
-      },
+      is_initial_build: isFirstBuild,
+      machine_hostname: os.hostname(),
+      machine_platform: process.platform,
+      machine_cpu_count: os.cpus().length,
+      machine_memory_total: os.totalmem(),
+      machine_memory_free: os.freemem(),
+      process_node_version: process.version,
+      process_memory: process.memoryUsage().heapUsed,
+      build_files_count: fileCount,
+      build_entry_points: entryPoints,
+      build_output_dir: outputDir.replace(/'/g, '"'),
+      build_error_count: buildResult.errors.length,
+      build_warning_count: buildResult.warnings.length,
+      build_file_types: fileTypes,
+      workspace_name: process.env.NX_WORKSPACE_NAME || 'sentinel',
+      workspace_project: process.env.NX_PROJECT_NAME || 'sentinel',
+      workspace_environment: process.env.NODE_ENV || 'development',
+      workspace_user: process.env.USER || os.userInfo().username || 'unknown',
     };
   };
 
@@ -363,12 +379,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       // Track build completion
       build.onEnd(async (result) => {
         const buildEndTime = performance.now();
-        const duration = buildEndTime - buildStartTime;
-
-        console.log('result');
-
-        console.log(result.metafile?.inputs);
-        console.log(result.metafile?.outputs);
+        const duration = Math.round(buildEndTime - buildStartTime); // Round to ensure integer milliseconds
 
         // Process files from metafile
         if (result.metafile?.inputs) {
@@ -388,13 +399,19 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         // Create metrics object with workspace info
         const metrics = {
           ...createBuildMetrics(result, duration),
-          workspace,
+          workspace_name: workspace.name,
+          workspace_project: workspace.project,
+          workspace_environment: workspace.environment,
+          workspace_user: workspace.user,
         };
+
+        console.log('metrics');
+        console.log(metrics);
 
         // Log metrics
         if (logToConsole) {
           console.log(
-            `[Build Metrics] ${isFirstBuild ? 'Initial' : 'Hot reload'} build completed in ${duration.toFixed(2)}ms`,
+            `[Build Metrics] ${isFirstBuild ? 'Initial' : 'Hot reload'} build completed in ${duration}ms`,
           );
           console.log(`[Build Metrics] Processed ${fileCount} files`);
           console.log(`[Build Metrics] File types:`, fileTypes);

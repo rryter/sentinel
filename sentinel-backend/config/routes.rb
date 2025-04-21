@@ -41,6 +41,8 @@ Rails.application.routes.draw do
       get 'github/repositories', to: 'github#repositories'
 
       resources :examples
+
+      resources :build_metrics, only: [:create]
     end
   end
 end

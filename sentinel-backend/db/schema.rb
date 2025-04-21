@@ -26,7 +26,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.text "error_message"
     t.integer "total_matches"
     t.integer "rules_matched"
-    t.integer "duration", comment: "Duration of the analysis in milliseconds"
     t.integer "files_processed", comment: "Number of files processed during analysis"
     t.float "files_per_second_wall_time", comment: "Files processed per second (wall time)"
     t.integer "cumulative_processing_time_ms", comment: "Cumulative processing time in milliseconds"
@@ -35,8 +34,37 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.integer "parallel_cores_used", comment: "Number of CPU cores used in parallel processing"
     t.float "parallel_speedup_factor", comment: "Speedup factor from parallel processing"
     t.float "parallel_efficiency_percent", comment: "Efficiency of parallel processing in percent"
+    t.bigint "duration_ms", default: 0, null: false
     t.index ["project_id"], name: "index_analysis_jobs_on_project_id"
     t.index ["status"], name: "index_analysis_jobs_on_status"
+  end
+
+  create_table "build_metrics", force: :cascade do |t|
+    t.bigint "timestamp", null: false
+    t.boolean "is_initial_build", null: false
+    t.string "machine_hostname", null: false
+    t.string "machine_platform", null: false
+    t.integer "machine_cpu_count", null: false
+    t.bigint "machine_memory_total", null: false
+    t.bigint "machine_memory_free", null: false
+    t.string "process_node_version", null: false
+    t.bigint "process_memory", null: false
+    t.integer "build_files_count", null: false
+    t.string "build_output_dir", null: false
+    t.integer "build_error_count", null: false
+    t.integer "build_warning_count", null: false
+    t.string "build_entry_points", default: [], array: true
+    t.jsonb "build_file_types", default: {}
+    t.string "workspace_name", null: false
+    t.string "workspace_project", null: false
+    t.string "workspace_environment", null: false
+    t.string "workspace_user", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "duration_ms", default: 0, null: false
+    t.index ["timestamp"], name: "index_build_metrics_on_timestamp"
+    t.index ["workspace_environment"], name: "index_build_metrics_on_workspace_environment"
+    t.index ["workspace_project"], name: "index_build_metrics_on_workspace_project"
   end
 
   create_table "files_with_violations", force: :cascade do |t|
