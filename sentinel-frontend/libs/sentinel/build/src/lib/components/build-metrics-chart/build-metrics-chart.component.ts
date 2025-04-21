@@ -33,14 +33,34 @@ Chart.register(
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
   template: `
-    <div class="w-full h-[400px]">
-      <canvas
-        baseChart
-        [data]="chartData"
-        [options]="chartOptions"
-        [type]="'line'"
-      >
-      </canvas>
+    <div class="space-y-8">
+      <!-- Initial Builds Chart -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Initial Builds</h2>
+        <div class="w-full h-[400px]">
+          <canvas
+            baseChart
+            [data]="initialBuildChartData"
+            [options]="initialBuildChartOptions"
+            [type]="'line'"
+          >
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Hot Reloads Chart -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Hot Reloads</h2>
+        <div class="w-full h-[400px]">
+          <canvas
+            baseChart
+            [data]="hotReloadChartData"
+            [options]="hotReloadChartOptions"
+            [type]="'line'"
+          >
+          </canvas>
+        </div>
+      </div>
     </div>
   `,
   styles: [``],
@@ -48,32 +68,7 @@ Chart.register(
 export class BuildMetricsChartComponent implements OnChanges {
   @Input() metrics: BuildMetric[] = [];
 
-  chartData: ChartConfiguration<'line'>['data'] = {
-    labels: [],
-    datasets: [
-      {
-        label: 'Initial Build Duration (avg)',
-        data: [],
-        borderColor: 'rgb(59, 130, 246)',
-        tension: 0.1,
-      },
-      {
-        label: 'Hot Reload Duration (avg)',
-        data: [],
-        borderColor: 'rgb(234, 88, 12)',
-        tension: 0.1,
-      },
-      {
-        label: 'Memory Usage %',
-        data: [],
-        borderColor: 'rgb(22, 163, 74)',
-        tension: 0.1,
-        yAxisID: 'memory',
-      },
-    ],
-  };
-
-  chartOptions: ChartOptions = {
+  private baseChartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -90,21 +85,26 @@ export class BuildMetricsChartComponent implements OnChanges {
           text: 'Time',
         },
       },
-      y: {
+      duration: {
+        type: 'linear',
+        position: 'left',
         title: {
           display: true,
           text: 'Duration (seconds)',
         },
         min: 0,
       },
-      memory: {
+      files: {
+        type: 'linear',
         position: 'right',
         title: {
           display: true,
-          text: 'Memory Usage %',
+          text: 'Files Count',
         },
         min: 0,
-        max: 100,
+        grid: {
+          drawOnChartArea: false,
+        },
       },
     },
     plugins: {
@@ -113,12 +113,74 @@ export class BuildMetricsChartComponent implements OnChanges {
           label: (context) => {
             const datasetLabel = context.dataset.label || '';
             const value = context.parsed.y;
-            if (datasetLabel.includes('Memory')) {
-              return `${datasetLabel}: ${value}%`;
+            if (datasetLabel.includes('Files')) {
+              return `${datasetLabel}: ${value.toFixed(0)}`;
             }
             return `${datasetLabel}: ${value.toFixed(2)}s`;
           },
         },
+      },
+    },
+  };
+
+  initialBuildChartData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Build Duration',
+        data: [],
+        borderColor: 'rgb(59, 130, 246)', // blue
+        tension: 0.1,
+        yAxisID: 'duration',
+      },
+      {
+        label: 'Files Count',
+        data: [],
+        borderColor: 'rgb(147, 51, 234)', // purple
+        tension: 0.1,
+        yAxisID: 'files',
+        borderDash: [5, 5],
+      },
+    ],
+  };
+
+  hotReloadChartData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Build Duration',
+        data: [],
+        borderColor: 'rgb(234, 88, 12)', // orange
+        tension: 0.1,
+        yAxisID: 'duration',
+      },
+      {
+        label: 'Files Count',
+        data: [],
+        borderColor: 'rgb(236, 72, 153)', // pink
+        tension: 0.1,
+        yAxisID: 'files',
+        borderDash: [5, 5],
+      },
+    ],
+  };
+
+  initialBuildChartOptions: ChartOptions = {
+    ...this.baseChartOptions,
+    plugins: {
+      ...this.baseChartOptions.plugins,
+      title: {
+        display: false,
+      },
+    },
+  };
+
+  hotReloadChartOptions: ChartOptions = {
+    ...this.baseChartOptions,
+    plugins: {
+      ...this.baseChartOptions.plugins,
+      title: {
+        display: false,
       },
     },
   };
@@ -131,34 +193,53 @@ export class BuildMetricsChartComponent implements OnChanges {
 
   private updateChartData(): void {
     const labels = this.metrics.map((m) => new Date(m.timestamp));
-    const initialBuildData = this.metrics.map((m) =>
+
+    // Initial Build Data
+    const initialBuildDuration = this.metrics.map((m) =>
       m.initial_builds.avg_duration_sec
         ? parseFloat(m.initial_builds.avg_duration_sec)
         : null,
     );
-    const hotReloadData = this.metrics.map((m) =>
+    const initialBuildFiles = this.metrics.map(
+      (m) => m.initial_builds.avg_files_count,
+    );
+
+    // Hot Reload Data
+    const hotReloadDuration = this.metrics.map((m) =>
       m.hot_reloads.avg_duration_sec
         ? parseFloat(m.hot_reloads.avg_duration_sec)
         : null,
     );
-    const memoryData = this.metrics.map((m) =>
-      parseFloat(m.system.memory_usage_percent),
+    const hotReloadFiles = this.metrics.map(
+      (m) => m.hot_reloads.avg_files_count,
     );
 
-    this.chartData = {
+    // Update Initial Build Chart
+    this.initialBuildChartData = {
       labels,
       datasets: [
         {
-          ...this.chartData.datasets[0],
-          data: initialBuildData,
+          ...this.initialBuildChartData.datasets[0],
+          data: initialBuildDuration,
         },
         {
-          ...this.chartData.datasets[1],
-          data: hotReloadData,
+          ...this.initialBuildChartData.datasets[1],
+          data: initialBuildFiles,
+        },
+      ],
+    };
+
+    // Update Hot Reload Chart
+    this.hotReloadChartData = {
+      labels,
+      datasets: [
+        {
+          ...this.hotReloadChartData.datasets[0],
+          data: hotReloadDuration,
         },
         {
-          ...this.chartData.datasets[2],
-          data: memoryData,
+          ...this.hotReloadChartData.datasets[1],
+          data: hotReloadFiles,
         },
       ],
     };

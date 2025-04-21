@@ -31,7 +31,7 @@ export class BuildMetricsComponent implements OnInit {
   private fetchMetrics() {
     this.http
       .get<BuildMetricsResponse>(
-        `http://localhost:3000/api/v1/build_metrics?interval=30m`,
+        `http://localhost:3000/api/v1/build_metrics?interval=5m`,
       )
       .subscribe({
         next: (response) => {

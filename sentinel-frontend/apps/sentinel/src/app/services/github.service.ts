@@ -17,7 +17,7 @@ export interface GitHubRepositoriesResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GitHubService {
   private accessToken = new BehaviorSubject<string | null>(null);
@@ -39,7 +39,9 @@ export class GitHubService {
   }
 
   handleAuthCallback(code: string): Observable<any> {
-    return this.http.post('http://localhost:3000/api/v1/auth/github/callback', { code });
+    return this.http.post('http://localhost:3000/api/v1/auth/github/callback', {
+      code,
+    });
   }
 
   setAccessToken(token: string): void {
@@ -49,10 +51,13 @@ export class GitHubService {
 
   getRepositories(): Observable<GitHubRepositoriesResponse> {
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.accessToken.value}`
+      Authorization: `Bearer ${this.accessToken.value}`,
     });
 
-    return this.http.get<GitHubRepositoriesResponse>('http://localhost:3000/api/v1/github/repositories', { headers });
+    return this.http.get<GitHubRepositoriesResponse>(
+      'http://localhost:3000/api/v1/github/repositories',
+      { headers },
+    );
   }
 
   isAuthenticated(): boolean {
@@ -63,4 +68,4 @@ export class GitHubService {
     localStorage.removeItem('github_token');
     this.accessToken.next(null);
   }
-} 
+}

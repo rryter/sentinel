@@ -28,6 +28,7 @@ module Api
         # Get metrics grouped by time interval (default 1 hour)
         interval = (params[:interval] || '1h').downcase
         interval_seconds = case interval
+                         when '1m' then 1.minute
                          when '5m' then 5.minutes
                          when '15m' then 15.minutes
                          when '30m' then 30.minutes
