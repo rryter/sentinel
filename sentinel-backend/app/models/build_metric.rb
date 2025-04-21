@@ -1,7 +1,7 @@
 class BuildMetric < ActiveRecord::Base
   # Validations
   validates :timestamp, presence: true
-  validates :duration, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :duration_ms, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :is_initial_build, inclusion: { in: [true, false] }
   
   # Machine metrics validations
@@ -35,7 +35,7 @@ class BuildMetric < ActiveRecord::Base
   
   # Methods
   def duration_in_seconds
-    duration / 1000.0
+    duration_ms / 1000.0
   end
 
   def memory_usage_percentage

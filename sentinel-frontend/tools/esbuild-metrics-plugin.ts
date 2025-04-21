@@ -7,7 +7,7 @@ import * as path from 'path';
 interface BuildMetrics {
   id?: string;
   timestamp: number;
-  duration: number;
+  duration_ms: number;
   is_initial_build: boolean;
 
   // Machine metrics
@@ -312,7 +312,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
 
     return {
       timestamp: Date.now(),
-      duration,
+      duration_ms: duration,
       is_initial_build: isFirstBuild,
       machine_hostname: os.hostname(),
       machine_platform: process.platform,

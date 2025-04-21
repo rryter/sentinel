@@ -15,7 +15,7 @@ module Api
             build_metric = BuildMetric.new(metric_params.permit(
               :id,
               :timestamp,
-              :duration,
+              :duration_ms,
               :is_initial_build,
               :machine_hostname,
               :machine_platform,
