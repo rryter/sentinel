@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start": "npx nx run sentinel:serve -- --disable-host-check",
+    "build:prod": "npx nx run sentinel:build:production",
     "generate:api": "openapi-generator-cli generate --generator-key sentinel-api"
   },
   "private": true,
