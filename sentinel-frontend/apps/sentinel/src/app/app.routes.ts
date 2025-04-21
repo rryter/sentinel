@@ -4,6 +4,8 @@ import { ProjectDetailComponent } from '../../../../libs/sentinel/projects/src/l
 import { ProjectCreateComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-create/project-create.component';
 import { BuildListComponent } from '../../../../libs/sentinel/build/src/lib/build/components/build-list/build-list.component';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
+import { BuildMetricsComponent } from '../../../../libs/sentinel/build/src/lib/containers/build-metrics/build-metrics.component';
+
 export const appRoutes: Route[] = [
   {
     path: 'auth/github/callback',
@@ -19,9 +21,8 @@ export const appRoutes: Route[] = [
     loadChildren: () =>
       import('@sentinel/projects').then((m) => m.projectsRoutes),
   },
-
   {
     path: 'builds',
-    component: BuildListComponent,
+    loadChildren: () => import('@sentinel/build').then((m) => m.buildRoutes),
   },
 ];
