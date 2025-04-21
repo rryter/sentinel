@@ -34,6 +34,7 @@ interface BuildMetrics {
   workspace_project: string;
   workspace_environment: string;
   workspace_user: string;
+  workspace_task: string;
 }
 
 interface PluginOptions {
@@ -310,6 +311,22 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       fileTypes[ext.replace(/'/g, '"')] = count;
     }
 
+    const extractBuildTarget = (
+      target: string,
+    ): { project: string; task: string; environment: string } => {
+      const [project, task, environment] = target.split(':');
+      return {
+        project: project || 'unknown',
+        task: task || 'unknown',
+        environment: environment || 'unknown',
+      };
+    };
+
+    const buildTarget =
+      process.env.NX_BUILD_TARGET || 'unknown:unknown:unknown';
+    const { project, task, environment } = extractBuildTarget(buildTarget);
+    console.log('env', process.env);
+
     return {
       timestamp: Date.now(),
       duration_ms: duration,
@@ -327,9 +344,10 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       build_error_count: buildResult.errors.length,
       build_warning_count: buildResult.warnings.length,
       build_file_types: fileTypes,
+      workspace_task: task,
       workspace_name: process.env.NX_WORKSPACE_NAME || 'sentinel',
-      workspace_project: process.env.NX_PROJECT_NAME || 'sentinel',
-      workspace_environment: process.env.NODE_ENV || 'development',
+      workspace_project: project,
+      workspace_environment: environment,
       workspace_user: process.env.USER || os.userInfo().username || 'unknown',
     };
   };

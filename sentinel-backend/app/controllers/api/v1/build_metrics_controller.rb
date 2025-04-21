@@ -140,7 +140,8 @@ module Api
               :workspace_name,
               :workspace_project,
               :workspace_environment,
-              :workspace_user
+              :workspace_user,
+              :workspace_task
             ))
 
             if build_metric.save

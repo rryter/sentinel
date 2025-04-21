@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_21_145956) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,6 +62,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "duration_ms", default: 0, null: false
+    t.string "workspace_task"
     t.index ["timestamp"], name: "index_build_metrics_on_timestamp"
     t.index ["workspace_environment"], name: "index_build_metrics_on_workspace_environment"
     t.index ["workspace_project"], name: "index_build_metrics_on_workspace_project"
