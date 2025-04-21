@@ -19,9 +19,9 @@
         "namedChunks": true,
         "plugins": [
           {
-            "path": "tools/hello-world.middleware.ts",
+            "path": "tools/esbuild-metrics-plugin.ts",
             "options": {
-              "backendUrl": "http://localhost:3000",
+              "backendUrl": "http://localhost:3000/api/v1/metrics",
               "logToConsole": false
             }
           }

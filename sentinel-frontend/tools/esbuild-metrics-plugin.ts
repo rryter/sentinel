@@ -79,6 +79,54 @@ function generateBuildId(): string {
 }
 
 /**
+ * Get workspace information from package.json and environment
+ */
+function getWorkspaceInfo(buildOptions: BuildOptions) {
+  try {
+    // Try to find package.json by walking up the directory tree
+    let currentDir = process.cwd();
+    let packageJsonPath = '';
+
+    while (currentDir !== path.parse(currentDir).root) {
+      const possiblePath = path.join(currentDir, 'package.json');
+      if (fs.existsSync(possiblePath)) {
+        packageJsonPath = possiblePath;
+        break;
+      }
+      currentDir = path.dirname(currentDir);
+    }
+
+    // Get workspace name from package.json
+    let workspaceName = 'unknown';
+    if (packageJsonPath) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      workspaceName = packageJson.name || 'unknown';
+    }
+
+    if (!process.env.NX_PROJECT_NAME) {
+      console.warn(
+        '[Build Metrics] NX_PROJECT_NAME environment variable is not set. Are you running through Nx?',
+      );
+    }
+
+    return {
+      name: process.env.NX_WORKSPACE_NAME || workspaceName,
+      project: process.env.NX_PROJECT_NAME || 'unknown',
+      environment: process.env.NODE_ENV || 'development',
+      user: process.env.USER || os.userInfo().username || 'unknown',
+    };
+  } catch (error) {
+    console.warn('[Build Metrics] Error getting workspace info:', error);
+    return {
+      name: process.env.NX_WORKSPACE_NAME || 'unknown',
+      project: process.env.NX_PROJECT_NAME || 'unknown',
+      environment: process.env.NODE_ENV || 'development',
+      user: process.env.USER || os.userInfo().username || 'unknown',
+    };
+  }
+}
+
+/**
  * Creates an esbuild plugin that collects build metrics and sends them to a Rails backend
  */
 export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
@@ -90,11 +138,6 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
     storeLocally = true,
     maxBuildsToStore = 100,
     localStorageDir = path.join(os.homedir(), '.nx-build-metrics'),
-    workspace = {
-      name: process.env.NX_WORKSPACE_NAME || 'unknown',
-      project: process.env.NX_PROJECT_NAME || 'unknown',
-      environment: process.env.NODE_ENV || 'development',
-    },
     sendInterval = 5000, // 5 seconds
   } = options;
 
@@ -267,9 +310,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         fileTypes: { ...fileTypes }, // Create a copy to avoid reference issues
       },
       workspace: {
-        name: workspace.name,
-        project: workspace.project,
-        environment: workspace.environment,
+        name: process.env.NX_WORKSPACE_NAME || 'sentinel',
+        project: process.env.NX_PROJECT_NAME || 'sentinel',
+        environment: process.env.NODE_ENV || 'development',
         user: process.env.USER || os.userInfo().username || 'unknown',
       },
     };
@@ -294,6 +337,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
   return {
     name: 'build-metrics-plugin',
     setup(build) {
+      // Get workspace info from build configuration
+      const workspace = getWorkspaceInfo(build.initialOptions);
+
       // Ensure we have metafile output for better metrics
       build.initialOptions.metafile = true;
 
@@ -319,6 +365,11 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         const buildEndTime = performance.now();
         const duration = buildEndTime - buildStartTime;
 
+        console.log('result');
+
+        console.log(result.metafile?.inputs);
+        console.log(result.metafile?.outputs);
+
         // Process files from metafile
         if (result.metafile?.inputs) {
           for (const [filePath, info] of Object.entries(
@@ -334,8 +385,11 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
           }
         }
 
-        // Create metrics object
-        const metrics = createBuildMetrics(result, duration);
+        // Create metrics object with workspace info
+        const metrics = {
+          ...createBuildMetrics(result, duration),
+          workspace,
+        };
 
         // Log metrics
         if (logToConsole) {
