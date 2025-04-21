@@ -42,7 +42,7 @@ Rails.application.routes.draw do
 
       resources :examples
 
-      resources :build_metrics, only: [:create]
+      resources :build_metrics, only: [:index, :create]
     end
   end
 end
