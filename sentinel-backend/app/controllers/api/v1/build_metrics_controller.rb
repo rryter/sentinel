@@ -2,7 +2,7 @@ module Api
   module V1
     class BuildMetricsController < ApplicationController
       def index
-        query = BuildMetric.all  # Changed from BuildMetric.recent to start with a clean query
+        query = BuildMetric.all
 
         # Filter by project if specified
         if params[:project].present?
@@ -44,18 +44,28 @@ module Api
         # Create the time bucket expression
         time_bucket = "(timestamp / #{interval_ms}) * #{interval_ms}"
 
-        # Build the query with proper grouping
+        # Build the query with proper grouping and separate initial/hot reload metrics
         metrics = query
           .select([
             time_bucket,
             'MIN(timestamp) as min_timestamp',
-            'AVG(duration_ms) as avg_duration_ms',
-            'MIN(duration_ms) as min_duration_ms',
-            'MAX(duration_ms) as max_duration_ms',
-            'COUNT(*) as build_count',
-            'SUM(build_error_count) as total_errors',
-            'SUM(build_warning_count) as total_warnings',
-            'AVG(build_files_count) as avg_files_count',
+            # Initial build metrics
+            'AVG(CASE WHEN is_initial_build THEN duration_ms END) as initial_avg_duration_ms',
+            'MIN(CASE WHEN is_initial_build THEN duration_ms END) as initial_min_duration_ms',
+            'MAX(CASE WHEN is_initial_build THEN duration_ms END) as initial_max_duration_ms',
+            'COUNT(CASE WHEN is_initial_build THEN 1 END) as initial_build_count',
+            'SUM(CASE WHEN is_initial_build THEN build_error_count END) as initial_total_errors',
+            'SUM(CASE WHEN is_initial_build THEN build_warning_count END) as initial_total_warnings',
+            'AVG(CASE WHEN is_initial_build THEN build_files_count END) as initial_avg_files_count',
+            # Hot reload metrics
+            'AVG(CASE WHEN NOT is_initial_build THEN duration_ms END) as hot_reload_avg_duration_ms',
+            'MIN(CASE WHEN NOT is_initial_build THEN duration_ms END) as hot_reload_min_duration_ms',
+            'MAX(CASE WHEN NOT is_initial_build THEN duration_ms END) as hot_reload_max_duration_ms',
+            'COUNT(CASE WHEN NOT is_initial_build THEN 1 END) as hot_reload_build_count',
+            'SUM(CASE WHEN NOT is_initial_build THEN build_error_count END) as hot_reload_total_errors',
+            'SUM(CASE WHEN NOT is_initial_build THEN build_warning_count END) as hot_reload_total_warnings',
+            'AVG(CASE WHEN NOT is_initial_build THEN build_files_count END) as hot_reload_avg_files_count',
+            # Overall system metrics
             'AVG(machine_memory_free) as avg_memory_free',
             'AVG(machine_memory_total) as avg_memory_total'
           ].join(', '))
@@ -70,15 +80,28 @@ module Api
 
         render json: {
           metrics: metrics.map { |m| {
-            timestamp: m.min_timestamp,  # Changed from m.timestamp to m.min_timestamp
-            avg_duration_sec: (m.avg_duration_ms / 1000.0).round(2),
-            min_duration_sec: (m.min_duration_ms / 1000.0).round(2),
-            max_duration_sec: (m.max_duration_ms / 1000.0).round(2),
-            build_count: m.build_count,
-            total_errors: m.total_errors,
-            total_warnings: m.total_warnings,
-            avg_files_count: m.avg_files_count.round,
-            memory_usage_percent: (((m.avg_memory_total - m.avg_memory_free) / m.avg_memory_total.to_f) * 100).round(2)
+            timestamp: m.min_timestamp,
+            initial_builds: {
+              avg_duration_sec: m.initial_avg_duration_ms ? (m.initial_avg_duration_ms / 1000.0).round(2) : nil,
+              min_duration_sec: m.initial_min_duration_ms ? (m.initial_min_duration_ms / 1000.0).round(2) : nil,
+              max_duration_sec: m.initial_max_duration_ms ? (m.initial_max_duration_ms / 1000.0).round(2) : nil,
+              build_count: m.initial_build_count || 0,
+              total_errors: m.initial_total_errors || 0,
+              total_warnings: m.initial_total_warnings || 0,
+              avg_files_count: m.initial_avg_files_count&.round
+            },
+            hot_reloads: {
+              avg_duration_sec: m.hot_reload_avg_duration_ms ? (m.hot_reload_avg_duration_ms / 1000.0).round(2) : nil,
+              min_duration_sec: m.hot_reload_min_duration_ms ? (m.hot_reload_min_duration_ms / 1000.0).round(2) : nil,
+              max_duration_sec: m.hot_reload_max_duration_ms ? (m.hot_reload_max_duration_ms / 1000.0).round(2) : nil,
+              build_count: m.hot_reload_build_count || 0,
+              total_errors: m.hot_reload_total_errors || 0,
+              total_warnings: m.hot_reload_total_warnings || 0,
+              avg_files_count: m.hot_reload_avg_files_count&.round
+            },
+            system: {
+              memory_usage_percent: (((m.avg_memory_total - m.avg_memory_free) / m.avg_memory_total.to_f) * 100).round(2)
+            }
           }},
           filters: available_filters
         }
