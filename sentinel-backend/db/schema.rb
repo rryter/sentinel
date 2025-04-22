@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_21_145956) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -34,7 +34,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_21_145956) do
     t.integer "parallel_cores_used", comment: "Number of CPU cores used in parallel processing"
     t.float "parallel_speedup_factor", comment: "Speedup factor from parallel processing"
     t.float "parallel_efficiency_percent", comment: "Efficiency of parallel processing in percent"
-    t.bigint "duration_ms", default: 0, null: false
+    t.bigint "duration", default: 0, null: false
     t.index ["project_id"], name: "index_analysis_jobs_on_project_id"
     t.index ["status"], name: "index_analysis_jobs_on_status"
   end

@@ -4,6 +4,7 @@ import { LintCreateComponent } from './components/lint-create/lint-create.compon
 import { RuleListComponent } from './components/rules/components/list/rule-list.component';
 import { RuleDetailsComponent } from './components/rules/components/details/details.component';
 import { UploaderComponent } from './components/rules/components';
+import { LintResultsComponent } from './components/lint-results/lint-results.component';
 
 export const lintingRoutes: Route[] = [
   {
@@ -16,7 +17,7 @@ export const lintingRoutes: Route[] = [
   },
   {
     path: ':jobId/results',
-    component: LintListComponent,
+    component: LintResultsComponent,
   },
   {
     path: 'rules',

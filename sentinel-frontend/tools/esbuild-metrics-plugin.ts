@@ -325,7 +325,6 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
     const buildTarget =
       process.env.NX_BUILD_TARGET || 'unknown:unknown:unknown';
     const { project, task, environment } = extractBuildTarget(buildTarget);
-    console.log('env', process.env);
 
     return {
       timestamp: Date.now(),
@@ -422,9 +421,6 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
           workspace_environment: workspace.environment,
           workspace_user: workspace.user,
         };
-
-        console.log('metrics');
-        console.log(metrics);
 
         // Log metrics
         if (logToConsole) {

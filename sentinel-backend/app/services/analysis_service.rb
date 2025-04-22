@@ -308,7 +308,7 @@ class AnalysisService
               # Map the severity name to our standard levels
               mapped_severity = Severity.map_legacy_severity(finding['severity'])
               severity = Severity.find_by_name_ignore_case(mapped_severity) || Severity.default
-              severity_id = severity.id
+              severity_id = Severity.default
             else
               severity_id = Severity.default.id
             end

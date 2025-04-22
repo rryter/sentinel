@@ -75,12 +75,14 @@ interface Lint {
           <p>{{ errorMessage() }}</p>
         </div>
       }
+
       @if (job()) {
         <sen-lint-status
           [job]="job()"
           [runningTimeSeconds]="runningTimeSeconds()"
         />
       }
+        
       @if (analysisResults()) {
         <sen-lint-results
           [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"

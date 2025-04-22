@@ -22,14 +22,16 @@ import { map, Observable } from 'rxjs';
   styles: [``],
 })
 export class BuildMetricsComponent {
-  metrics$: Observable<BuildMetricsResponse['metrics']> = this.fetchMetrics();
+  metrics$: Observable<BuildMetricsResponse['metrics']>;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.metrics$ = this.fetchMetrics();
+  }
 
   private fetchMetrics() {
     return this.http
       .get<BuildMetricsResponse>(
-        `http://localhost:3000/api/v1/build_metrics?interval=2h`,
+        `http://localhost:3000/api/v1/build_metrics?interval=12h`,
       )
       .pipe(map((response) => response.metrics));
   }

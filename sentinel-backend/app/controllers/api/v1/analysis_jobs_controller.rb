@@ -53,6 +53,14 @@ module Api
 
         @job = @project.analysis_jobs.new(status: "pending")
 
+        Rails.logger.debug("Project: #{@project.inspect}")
+        Rails.logger.debug("Job: #{@job.inspect}")
+        @job.save!
+        unless @job.persisted?
+          render json: { errors: @job.errors }, status: :unprocessable_entity
+          return
+        end
+
         if @job.save
           begin
             # Initialize the analysis service
