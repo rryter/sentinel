@@ -1,0 +1,19 @@
+<!-- Label -->
+<label [id]="label" class="block text-sm font-medium mb-2">{{ label }}</label>
+
+<!-- Select Trigger -->
+<hlm-select-trigger [class]="triggerClass" [disabled]="disabled">
+  <hlm-select
+    [ngModel]="selectedValue"
+    (ngModelChange)="selectionChange.emit($event)"
+  >
+    <hlm-select-value [placeholder]="placeholder"></hlm-select-value>
+    <hlm-select-content>
+      <hlm-select-group>
+        <hlm-select-item *ngFor="let option of options" [value]="option.value">
+          {{ option.label }}
+        </hlm-select-item>
+      </hlm-select-group>
+    </hlm-select-content>
+  </hlm-select>
+</hlm-select-trigger>

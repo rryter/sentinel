@@ -5,6 +5,7 @@ export { TileDetailComponent } from './lib/components/content-tile/tile-detail/t
 export { TileDividerComponent } from './lib/components/content-tile/tile-divider/tile-divider.component';
 export { PaginationComponent } from './lib/components/pagination/pagination.component';
 export { ProjectSelectorComponent } from './lib/components/project-selector/project-selector.component';
+export { BuildMetricsSelectorComponent } from './lib/components/build-metrics-selector/build-metrics-selector.component';
 
 // Markdown Renderer
 export { MarkdownRendererComponent } from './lib/components/markdown/markdown-renderer.component';
