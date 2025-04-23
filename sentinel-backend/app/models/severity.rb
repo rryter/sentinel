@@ -25,7 +25,7 @@ class Severity < ActiveRecord::Base
     return INFO unless severity_name.present?
     
     case severity_name.to_s.downcase
-    when 'critical', 'high'
+    when 'critical', 'high', 'error'
       ERROR
     when 'medium', 'low', 'warning', 'warn'
       WARNING

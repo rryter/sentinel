@@ -1,7 +1,0 @@
-analysis/
-patterns.json
-node_modules
-bin/
-bin/indexer
-results/
-results/ast-cache.json

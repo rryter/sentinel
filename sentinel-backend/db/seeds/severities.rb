@@ -1,16 +1,3 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
-
-# Create severities
-puts 'Seeding severities...'
-
 Severity.find_or_create_by!(name: 'error') do |severity|
   severity.level = 3
   severity.color_code = '#DC2626' # Tailwind red-600
@@ -27,6 +14,4 @@ Severity.find_or_create_by!(name: 'info') do |severity|
   severity.level = 1
   severity.color_code = '#3B82F6' # Tailwind blue-500
   severity.description = 'Informational messages for awareness'
-end
-
-puts 'Severities seeded successfully!'
+end 

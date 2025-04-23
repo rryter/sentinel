@@ -9,7 +9,7 @@
     </div>
 
     <div class="mt-4 sm:mt-0 sm:ml-16">
-      <button routerLink="/analysis/create" type="button" hlmBtn>
+      <button routerLink="/linting/create" type="button" hlmBtn>
         Start New Lint
       </button>
     </div>
@@ -47,7 +47,7 @@
 
   <!-- Empty State -->
   <button
-    routerLink="/analysis/create"
+    routerLink="/linting/create"
     type="button"
     class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
     *ngIf="!isLoading && !errorMessage && jobs.length === 0"

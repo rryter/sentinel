@@ -21,6 +21,7 @@ import { LintResultsComponent } from '../lint-results/lint-results.component';
 import { LintStatusComponent } from '../lint-status/lint-status.component';
 import { ProjectSelectorComponent } from '@shared/ui-custom';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { Router } from '@angular/router';
 
 enum LintStatus {
   PENDING = 'pending',
@@ -77,16 +78,7 @@ interface Lint {
       }
 
       @if (job()) {
-        <sen-lint-status
-          [job]="job()"
-          [runningTimeSeconds]="runningTimeSeconds()"
-        />
-      }
-        
-      @if (analysisResults()) {
-        <sen-lint-results
-          [totalExecutionTimeSeconds]="totalExecutionTimeSeconds()"
-        />
+        <sen-lint-status [job]="job()" />
       }
     </div>
   `,
@@ -95,7 +87,7 @@ export class LintCreateComponent implements OnInit {
   private analysisService = inject(AnalysisJobsService);
   private projectsService = inject(ProjectsService);
   private destroyRef = inject(DestroyRef);
-
+  private router = inject(Router);
   // Primary state signals
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -109,9 +101,6 @@ export class LintCreateComponent implements OnInit {
 
   // Internal state signals
   private currentJobId = signal<number | null>(null);
-  private timerStartTime = signal<number | null>(null);
-  private timerStopTime = signal<number | null>(null);
-  private isPolling = signal(false);
 
   // Computed signals
   readonly isJobRunning = computed(() => {
@@ -129,36 +118,6 @@ export class LintCreateComponent implements OnInit {
     return job !== null && job.status === LintStatus.FAILED;
   });
 
-  readonly shouldFetchResults = computed(() => {
-    return (
-      this.isJobCompleted() &&
-      this.currentJobId() !== null &&
-      !this.analysisResults()
-    );
-  });
-
-  readonly runningTimeSeconds = computed(() => {
-    const startTime = this.timerStartTime();
-    if (!startTime) return 0;
-
-    // If we have a stop time, use that for the final calculation
-    const stopTime = this.timerStopTime();
-    if (stopTime) {
-      return Math.floor((stopTime - startTime) / 1000);
-    }
-
-    // Otherwise return the current running time
-    return Math.floor((Date.now() - startTime) / 1000);
-  });
-
-  readonly totalExecutionTimeSeconds = computed(() => {
-    const startTime = this.timerStartTime();
-    const stopTime = this.timerStopTime();
-
-    if (!startTime || !stopTime) return 0;
-    return Math.floor((stopTime - startTime) / 1000);
-  });
-
   readonly canStartAnalysis = computed(() => {
     return (
       this.selectedProjectId() !== null &&
@@ -167,80 +126,7 @@ export class LintCreateComponent implements OnInit {
     );
   });
 
-  constructor() {
-    // Effect to handle job completion
-    effect(() => {
-      // React to job status completion
-      if (this.isJobCompleted() || this.isJobFailed()) {
-        this.stopTimer();
-        this.isPolling.set(false);
-      }
-
-      // Fetch results when needed
-      if (this.shouldFetchResults()) {
-        const jobId = this.currentJobId();
-        if (jobId) {
-          this.fetchAnalysisResults(jobId);
-        }
-      }
-    });
-
-    // Effect to handle polling
-    effect(() => {
-      if (!this.isPolling() || !this.currentJobId()) return;
-
-      // Start polling for job status
-      interval(2000)
-        .pipe(
-          switchMap(() => {
-            const jobId = this.currentJobId();
-            if (!jobId || !this.isPolling()) return EMPTY;
-            return this.analysisService
-              .apiV1AnalysisJobsIdGet({ id: jobId })
-              .pipe(
-                catchError((err) => {
-                  this.errorMessage.set(
-                    `Failed to check job status: ${
-                      err.message || 'Unknown error'
-                    }`,
-                  );
-                  this.isPolling.set(false);
-                  return EMPTY;
-                }),
-              );
-          }),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe({
-          next: (job) => this.job.set(this.mapToAnalysisJob(job)),
-          error: (err) => {
-            this.errorMessage.set(
-              `Failed to check job status: ${err.message || 'Unknown error'}`,
-            );
-            this.isPolling.set(false);
-          },
-        });
-    });
-
-    // Effect to update running time - this is still needed for live updates
-    effect(() => {
-      const startTime = this.timerStartTime();
-      const stopTime = this.timerStopTime();
-
-      // If timer is not running, no need for interval
-      if (!startTime || stopTime) return;
-
-      // Create interval to force updates to runningTimeSeconds computed signal
-      const tickInterval = setInterval(() => {
-        // Force re-computation - we don't actually need to set anything
-        // since the computed signal uses Date.now()
-        this.runningTimeSeconds();
-      }, 1000);
-
-      // Clean up interval when timer stops or component destroyed
-      return () => clearInterval(tickInterval);
-    });
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.loadProjects();
@@ -319,12 +205,7 @@ export class LintCreateComponent implements OnInit {
         next: (response) => {
           this.isLoading.set(false);
           this.currentJobId.set(response.data.id ?? null);
-          this.startTimer();
-          this.isPolling.set(true);
-
-          if (response.data) {
-            this.fetchInitialJobStatus(response.data.id);
-          }
+          this.router.navigate(['/linting', response.data.id, 'results']);
         },
         error: (err: Error) => {
           this.isLoading.set(false);
@@ -357,9 +238,6 @@ export class LintCreateComponent implements OnInit {
     this.job.set(null);
     this.analysisResults.set(null);
     this.currentJobId.set(null);
-    this.timerStartTime.set(null);
-    this.timerStopTime.set(null);
-    this.isPolling.set(false);
     // Note: We don't reset selectedProjectId to preserve the selection
   }
 
@@ -390,17 +268,6 @@ export class LintCreateComponent implements OnInit {
       });
   }
 
-  private startTimer(): void {
-    this.timerStartTime.set(Date.now());
-    this.timerStopTime.set(null);
-  }
-
-  private stopTimer(): void {
-    if (this.timerStartTime()) {
-      this.timerStopTime.set(Date.now());
-    }
-  }
-
   // Helper to map API response to our model
   private mapToAnalysisJob(apiJob: any): Lint | null {
     if (!apiJob.data) {
@@ -412,20 +279,5 @@ export class LintCreateComponent implements OnInit {
       created_at: apiJob.data.created_at,
       completed_at: apiJob.data.completed_at,
     };
-  }
-
-  private getProcessingStatusFromJobStatus(status: LintStatus): string {
-    switch (status) {
-      case LintStatus.PENDING:
-        return 'Waiting to start';
-      case LintStatus.RUNNING:
-        return 'Processing in progress';
-      case LintStatus.COMPLETED:
-        return 'Completed';
-      case LintStatus.FAILED:
-        return 'Failed';
-      default:
-        return 'Unknown';
-    }
   }
 }

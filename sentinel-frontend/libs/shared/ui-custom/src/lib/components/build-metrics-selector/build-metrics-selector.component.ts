@@ -53,7 +53,6 @@ export class BuildMetricsSelectorComponent {
   @Output() valueChange = new EventEmitter<string>();
 
   onValueChange(value: any): void {
-    console.log('onValueChange', value);
     this.selectedValue = value;
     this.valueChange.emit(value);
   }
