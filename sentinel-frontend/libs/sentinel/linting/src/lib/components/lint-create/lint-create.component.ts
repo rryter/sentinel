@@ -3,12 +3,11 @@ import {
   DestroyRef,
   OnInit,
   computed,
-  effect,
   inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EMPTY, catchError, interval, of, switchMap } from 'rxjs';
+import { EMPTY, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -17,7 +16,6 @@ import {
   ApiV1ProjectsGet200ResponseDataProjectsInner,
   ProjectsService,
 } from '@sentinel-api';
-import { LintResultsComponent } from '../lint-results/lint-results.component';
 import { LintStatusComponent } from '../lint-status/lint-status.component';
 import { ProjectSelectorComponent } from '@shared/ui-custom';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
