@@ -1,6 +1,7 @@
 class FileWithViolationsSerializer < ActiveModel::Serializer
   attributes :id, :file_path, :analysis_job_id, :display_path, :job_status
-  
+
+  # Include the association for API compatibility, but it will use the preloaded data
   belongs_to :analysis_job
   has_many :violations do
     if scope && scope[:rule_name].present?
@@ -10,10 +11,10 @@ class FileWithViolationsSerializer < ActiveModel::Serializer
       object.violations
     end
   end
-  
+
   # Cache the serializer
   cache key: 'file_with_violations', expires_in: 1.hour
-  
+
   # Format the file path for easier viewing
   def display_path
     path = object.file_path.to_s
@@ -23,9 +24,15 @@ class FileWithViolationsSerializer < ActiveModel::Serializer
       path
     end
   end
-  
+
   # Include job status from parent relationship
   def job_status
-    object.analysis_job&.status
+    # Access the association directly if it's already loaded
+    if object.association(:analysis_job).loaded?
+      object.analysis_job.status
+    else
+      # Fall back to a query if needed, but this should be avoided
+      object.analysis_job&.status
+    end
   end
-end 
+end

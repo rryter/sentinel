@@ -4,8 +4,12 @@ module Api
       before_action :set_analysis_job, only: [ :index, :time_series ], if: -> { params[:analysis_job_id].present? }
 
       def index
-        # Support filtering by various attributes
-        query = Violation.joins(file_with_violations: :analysis_job)
+        # Support filtering by various attributes - use a more efficient join
+        query = Violation.select("violations.*").joins(
+          "INNER JOIN files_with_violations ON files_with_violations.id = violations.file_with_violations_id"
+        ).joins(
+          "INNER JOIN analysis_jobs ON analysis_jobs.id = files_with_violations.analysis_job_id"
+        )
 
         # Filter by rule_name if provided
         if params[:rule_name].present?
@@ -19,15 +23,15 @@ module Api
 
         # Filter by analysis_job_id - either from nested route or from query param
         if @analysis_job
-          query = query.where(file_with_violations: { analysis_job_id: @analysis_job.id })
+          query = query.where("files_with_violations.analysis_job_id = ?", @analysis_job.id)
         elsif params[:analysis_job_id].present?
-          query = query.where(file_with_violations: { analysis_job_id: params[:analysis_job_id] })
+          query = query.where("files_with_violations.analysis_job_id = ?", params[:analysis_job_id])
         end
 
         # Filter by file path pattern if provided
         if params[:file_path].present?
           pattern = "%#{params[:file_path]}%"
-          query = query.where("file_with_violations.file_path LIKE ?", pattern)
+          query = query.where("files_with_violations.file_path LIKE ?", pattern)
         end
 
         # Handle sorting
@@ -37,7 +41,7 @@ module Api
         # Apply sorting based on the field
         case sort_field
         when "file_path"
-          query = query.order("file_with_violations.file_path #{sort_direction}")
+          query = query.order("files_with_violations.file_path #{sort_direction}")
         when "rule_name"
           query = query.order("violations.rule_name #{sort_direction}")
         when "rule_id"
@@ -51,7 +55,8 @@ module Api
         per_page = (params[:per_page] || 25).to_i
         per_page = [ per_page, 100 ].min # Limit to 100 per page max
 
-        @violations = query.page(page).per(per_page)
+        # Preload associations to avoid N+1 queries
+        @violations = query.includes(:file_with_violations => :analysis_job).page(page).per(per_page)
 
         meta = {
           total_count: @violations.total_count,
@@ -62,10 +67,14 @@ module Api
           direction: sort_direction
         }
 
-        # Using AMS with includes and attributes adapter to prevent root wrapping
-        serialized_data = ActiveModelSerializers::SerializableResource.new(@violations,
-                                                                           include: { file_with_violations: { only: [ :file_path ] } },
-                                                                           adapter: :attributes
+        # Using AMS with optimized serialization to prevent N+1 queries
+        # We need to include the file_with_violations association to maintain API compatibility
+        # But we're using the preloaded associations to avoid additional queries
+        serialized_data = ActiveModelSerializers::SerializableResource.new(
+          @violations,
+          each_serializer: ViolationSerializer,
+          include: { file_with_violations: { only: [:file_path, :id] } },
+          adapter: :attributes
         ).as_json
 
         render json: { data: serialized_data, meta: meta }
@@ -76,14 +85,14 @@ module Api
         start_date = params[:start_date] ? Date.parse(params[:start_date]) : 30.days.ago.to_date
         end_date = params[:end_date] ? Date.parse(params[:end_date]) : Date.today
 
-        # Get base query scope
-        scope = Violation.joins(file_with_violations: :analysis_job)
+        # Get base query scope - use a more efficient join
+        scope = Violation.select("violations.*").joins("INNER JOIN files_with_violations ON files_with_violations.id = violations.file_with_violations_id")
 
         # Filter by analysis_job_id if we're in the nested route or if explicitly provided
         if @analysis_job
-          scope = scope.where(file_with_violations: { analysis_job_id: @analysis_job.id })
+          scope = scope.where("files_with_violations.analysis_job_id = ?", @analysis_job.id)
         elsif params[:analysis_job_id].present?
-          scope = scope.where(file_with_violations: { analysis_job_id: params[:analysis_job_id] })
+          scope = scope.where("files_with_violations.analysis_job_id = ?", params[:analysis_job_id])
         end
 
         # Filter by rule_id if provided
