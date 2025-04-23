@@ -94,6 +94,13 @@ RSpec.describe 'Api::V1::Projects', type: :request do
             meta: { type: ['object', 'null'] }
           },
           required: ['data']
+          
+        before do
+          # Mock the GitService to avoid the actual repository cloning
+          git_service_instance = instance_double(GitService)
+          allow(GitService).to receive(:new).and_return(git_service_instance)
+          allow(git_service_instance).to receive(:clone_repository).and_return({ path: '/mock/path' })
+        end
 
         run_test! do |response|
           data = JSON.parse(response.body)
@@ -178,4 +185,4 @@ RSpec.describe 'Api::V1::Projects', type: :request do
       end
     end
   end
-end 
+end
