@@ -43,7 +43,6 @@ interface Lint {
     CommonModule,
     FormsModule,
     HlmButtonDirective,
-    LintResultsComponent,
     LintStatusComponent,
     ProjectSelectorComponent,
   ],
@@ -88,6 +87,7 @@ export class LintCreateComponent implements OnInit {
   private projectsService = inject(ProjectsService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+
   // Primary state signals
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -217,67 +217,11 @@ export class LintCreateComponent implements OnInit {
       });
   }
 
-  private fetchInitialJobStatus(jobId: number): void {
-    this.analysisService
-      .apiV1AnalysisJobsIdGet({ id: jobId })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        catchError((err) => {
-          console.error('Error fetching initial job status:', err);
-          return EMPTY;
-        }),
-      )
-      .subscribe((job: any) => {
-        this.job.set(this.mapToAnalysisJob(job));
-      });
-  }
-
   private resetState(): void {
     this.isLoading.set(false);
     this.errorMessage.set(null);
     this.job.set(null);
     this.analysisResults.set(null);
     this.currentJobId.set(null);
-    // Note: We don't reset selectedProjectId to preserve the selection
-  }
-
-  private fetchAnalysisResults(jobId: number): void {
-    if (this.analysisResults()) return; // Don't fetch if we already have results
-
-    this.isLoading.set(true);
-
-    this.analysisService
-      .apiV1AnalysisJobsIdGet({ id: jobId })
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        catchError((err) => {
-          this.errorMessage.set(
-            `Failed to fetch analysis results: ${
-              err.message || 'Unknown error'
-            }`,
-          );
-          this.isLoading.set(false);
-          return EMPTY;
-        }),
-      )
-      .subscribe({
-        next: (results: any) => {
-          this.analysisResults.set(results);
-          this.isLoading.set(false);
-        },
-      });
-  }
-
-  // Helper to map API response to our model
-  private mapToAnalysisJob(apiJob: any): Lint | null {
-    if (!apiJob.data) {
-      return null;
-    }
-    return {
-      id: apiJob.data.id,
-      status: apiJob.data.status,
-      created_at: apiJob.data.created_at,
-      completed_at: apiJob.data.completed_at,
-    };
   }
 }
