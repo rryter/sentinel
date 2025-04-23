@@ -12,13 +12,14 @@ import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 import { FormsModule } from '@angular/forms';
 
 const AVAILABLE_INTERVALS = [
+  '1m',
+  '5m',
+  '15m',
+  '30m',
   '1h',
-  '3h',
   '6h',
   '12h',
-  '24h',
-  '48h',
-  '7d',
+  '1d',
 ] as const;
 type Interval = (typeof AVAILABLE_INTERVALS)[number];
 
@@ -64,7 +65,7 @@ export class BuildMetricsComponent implements OnInit {
     value: interval,
     label: this.formatIntervalLabel(interval),
   }));
-  selectedInterval: Interval = '12h';
+  selectedInterval: Interval = '1h';
   interval$ = new BehaviorSubject<Interval>(this.selectedInterval);
   constructor(private http: HttpClient) {}
 
@@ -87,9 +88,9 @@ export class BuildMetricsComponent implements OnInit {
     const value = interval.slice(0, -1);
     const unit = interval.slice(-1);
     const units = {
-      h: 'hours',
-      m: 'minutes',
-      d: 'days',
+      h: value === '1' ? 'Hour' : 'Hours',
+      m: value === '1' ? 'Minute' : 'Minutes',
+      d: value === '1' ? 'Day' : 'Days',
     };
     return `${value} ${units[unit as keyof typeof units] || unit}`;
   }
