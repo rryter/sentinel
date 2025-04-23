@@ -8,7 +8,7 @@ FactoryBot.define do
     rules_matched { nil }
     completed_at { nil }
     go_job_id { nil }
-    duration { nil }
+    duration { 0 }
     files_per_second_wall_time { nil }
     cumulative_processing_time_ms { nil }
     avg_time_per_file_ms { nil }
@@ -67,4 +67,4 @@ FactoryBot.define do
       parallel_efficiency_percent { 75.0 }
     end
   end
-end 
+end
