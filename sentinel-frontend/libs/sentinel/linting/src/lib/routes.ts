@@ -5,6 +5,7 @@ import { RuleListComponent } from './components/rules/components/list/rule-list.
 import { RuleDetailsComponent } from './components/rules/components/details/details.component';
 import { UploaderComponent } from './components/rules/components';
 import { LintResultsComponent } from './components/lint-results/lint-results.component';
+import { LintDetailComponent } from './components/lint-detail/lint-detail.component';
 
 export const lintingRoutes: Route[] = [
   {
@@ -18,6 +19,10 @@ export const lintingRoutes: Route[] = [
   {
     path: ':jobId/results',
     component: LintResultsComponent,
+  },
+  {
+    path: ':jobId/results/:violationId',
+    component: LintDetailComponent,
   },
   {
     path: 'rules',

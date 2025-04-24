@@ -25,4 +25,14 @@ export const appRoutes: Route[] = [
     path: 'builds',
     loadChildren: () => import('@sentinel/build').then((m) => m.buildRoutes),
   },
+  {
+    path: 'settings',
+    loadChildren: () =>
+      import('@sentinel/settings').then((m) => m.settingsRoutes),
+  },
+  {
+    path: '',
+    redirectTo: '/linting',
+    pathMatch: 'full',
+  },
 ];

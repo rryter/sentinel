@@ -48,13 +48,13 @@
       <brn-table
         hlm
         stickyHeader
-        class="w-full flex-table"
+        class="w-full flex-table cursor-pointer"
         [dataSource]="_filteredItems()"
         [displayedColumns]="_allDisplayedColumns()"
       >
         <brn-column-def name="severity" class="w-15 sm:w-20">
           <hlm-th *brnHeaderDef>Severity</hlm-th>
-          <hlm-td *brnCellDef="let item">
+          <hlm-td *brnCellDef="let item" [routerLink]="['./detail']">
             <div class="flex items-center">
               <ng-icon 
                 name="lucideInfo"
