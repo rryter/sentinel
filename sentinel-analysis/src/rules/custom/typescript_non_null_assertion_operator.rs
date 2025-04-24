@@ -66,16 +66,20 @@ impl NonNullAssertionVisitor {
     }
 
     fn create_diagnostic(&self, span: Span) -> OxcDiagnostic {
-        OxcDiagnostic::error("Non-null assertion operator detected")
-            .with_help("Consider using optional chaining (?.) or providing a default value instead")
-            .with_label(span.label("Non-null assertion operator used here"))
+        OxcDiagnostic::error("TypeScript non-null assertion operator (!) usage detected")
+            .with_help("The non-null assertion operator tells TypeScript to ignore potential null/undefined values, which can lead to runtime errors if the value is actually null. Consider:\n1. Using optional chaining (?.) with nullish coalescing (??)\n2. Adding proper runtime checks\n3. Redesigning the code to handle null/undefined cases explicitly")
+            .with_label(span.label("This non-null assertion assumes the value cannot be null/undefined"))
     }
 
     fn is_test_file(&self) -> bool {
-        self.file_path.contains("test")
-            || self.file_path.contains("spec")
-            || self.file_path.ends_with(".test.ts")
-            || self.file_path.ends_with(".spec.ts")
+        let path = self.file_path.to_lowercase();
+        path.contains("test")
+            || path.contains("spec")
+            || path.contains("__tests__")
+            || path.ends_with(".test.ts")
+            || path.ends_with(".test.tsx")
+            || path.ends_with(".spec.ts")
+            || path.ends_with(".spec.tsx")
     }
 
     fn should_report(&self) -> bool {
@@ -110,7 +114,7 @@ impl Rule for TypeScriptNonNullAssertionRule {
         }
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: str) -> Vec<OxcDiagnostic> {
         let mut visitor = NonNullAssertionVisitor::new(self.skip_in_tests, file_path.to_string());
 
         match node {
