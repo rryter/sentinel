@@ -96,10 +96,10 @@ impl Rule for AngularObsoleteStandaloneTrueRule {
         "Alerts when standalone is set to true, because since v19 this is the default"
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, _node: &AstKind, _span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         let mut visitor = DecoratorPropertyVisitor::new();
 
-        match node {
+        match _node {
             AstKind::Class(class) => {
                 visitor.visit_class(class);
             }

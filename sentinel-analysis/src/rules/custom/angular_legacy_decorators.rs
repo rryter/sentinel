@@ -68,7 +68,7 @@ impl Rule for AngularLegacyDecoratorsRule {
         "Detects usage of legacy Angular decorators that should be replaced with signal-based alternatives"
     }
 
-    fn run_on_node(&self, node: &AstKind, span: Span) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, _span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         let mut diagnostics = Vec::new();
 
         if let AstKind::Decorator(decorator) = node {

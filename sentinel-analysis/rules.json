@@ -16,7 +16,7 @@
     ],
     "angular-obsolete-standalone-true": "error",
     "typescript-non-null-assertion": ["error", {
-      "skipInTests": true
+      "skipInTests": false
     }]
   }
 } 

@@ -34,14 +34,14 @@ use crate::rules::Rule;
 /// }
 /// ```
 pub struct TypeScriptNonNullAssertionRule {
-    /// Whether to allow non-null assertions in test files
-    allow_in_tests: bool,
+    /// Whether to skip checking non-null assertions in test files
+    skip_in_tests: bool,
 }
 
 impl TypeScriptNonNullAssertionRule {
     pub fn new() -> Self {
         Self {
-            allow_in_tests: false, // Default value
+            skip_in_tests: false, // Default value
         }
     }
 }
@@ -50,12 +50,18 @@ impl TypeScriptNonNullAssertionRule {
 struct NonNullAssertionVisitor {
     /// Collection of diagnostics found during AST traversal
     diagnostics: Vec<OxcDiagnostic>,
+    /// Whether to skip assertions in tests
+    skip_in_tests: bool,
+    /// Current file path being analyzed
+    file_path: String,
 }
 
 impl NonNullAssertionVisitor {
-    fn new() -> Self {
+    fn new(skip_in_tests: bool, file_path: String) -> Self {
         Self {
             diagnostics: Vec::new(),
+            skip_in_tests,
+            file_path,
         }
     }
 
@@ -64,11 +70,24 @@ impl NonNullAssertionVisitor {
             .with_help("Consider using optional chaining (?.) or providing a default value instead")
             .with_label(span.label("Non-null assertion operator used here"))
     }
+
+    fn is_test_file(&self) -> bool {
+        self.file_path.contains("test")
+            || self.file_path.contains("spec")
+            || self.file_path.ends_with(".test.ts")
+            || self.file_path.ends_with(".spec.ts")
+    }
+
+    fn should_report(&self) -> bool {
+        !(self.skip_in_tests && self.is_test_file())
+    }
 }
 
 impl<'a> Visit<'a> for NonNullAssertionVisitor {
     fn visit_ts_non_null_expression(&mut self, node: &TSNonNullExpression<'a>) {
-        self.diagnostics.push(self.create_diagnostic(node.span));
+        if self.should_report() {
+            self.diagnostics.push(self.create_diagnostic(node.span));
+        }
     }
 }
 
@@ -81,14 +100,23 @@ impl Rule for TypeScriptNonNullAssertionRule {
         "Disallows TypeScript's non-null assertion operator"
     }
 
-    fn run_on_node(&self, node: &AstKind, span: Span) -> Vec<OxcDiagnostic> {
-        let mut visitor = NonNullAssertionVisitor::new();
+    fn set_config(&mut self, config: Value) {
+        if let Some(obj) = config.as_object() {
+            if let Some(skip_in_tests) = obj.get("skipInTests") {
+                if let Some(skip) = skip_in_tests.as_bool() {
+                    self.skip_in_tests = skip;
+                }
+            }
+        }
+    }
+
+    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Vec<OxcDiagnostic> {
+        let mut visitor = NonNullAssertionVisitor::new(self.skip_in_tests, file_path.to_string());
 
         match node {
             AstKind::TSNonNullExpression(expression) => {
                 visitor.visit_ts_non_null_expression(expression);
             }
-
             _ => {}
         }
 

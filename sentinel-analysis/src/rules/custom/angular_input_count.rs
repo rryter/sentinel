@@ -134,11 +134,11 @@ impl Rule for AngularInputCountRule {
         }
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, _node: &AstKind, _span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         let mut visitor = InputCountVisitor::new(self.max_inputs);
 
         // Visit the entire node tree to count all inputs
-        match node {
+        match _node {
             AstKind::Class(class) => {
                 visitor.visit_class(class);
             }

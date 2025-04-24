@@ -151,7 +151,7 @@ impl RulesRegistry {
                             let rule_start = Instant::now();
 
                             // Run the rule
-                            let diagnostics_vec = rule.run_on_node(&node_kind, span);
+                            let diagnostics_vec = rule.run_on_node(&node_kind, span, &file_path);
 
                             // Record the time taken *only if* a diagnostic was produced
                             let duration = rule_start.elapsed();

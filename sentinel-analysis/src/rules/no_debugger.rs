@@ -16,7 +16,7 @@ impl Rule for NoDebuggerRule {
         "Disallow the use of debugger statements"
     }
 
-    fn run_on_node(&self, node: &AstKind, span: Span) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         match node {
             AstKind::DebuggerStatement(_) => {
                 vec![OxcDiagnostic::error("`debugger` statement is not allowed").with_label(span)]

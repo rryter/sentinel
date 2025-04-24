@@ -29,7 +29,7 @@ pub trait Rule: Send + Sync {
     /// Run the rule on a specific AST node (optional)
     /// Rules primarily using the visitor pattern might not implement this.
     /// Default implementation returns an empty Vec.
-    fn run_on_node(&self, _node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, _node: &AstKind, _span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         Vec::new()
     }
 

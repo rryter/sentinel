@@ -142,10 +142,10 @@ impl Rule for AngularComponentClassSuffixRule {
         }
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, _node: &AstKind, _span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         let mut visitor = ComponentClassVisitor::new(self.suffixes.clone());
 
-        match node {
+        match _node {
             AstKind::Class(class) => {
                 visitor.visit_class(class);
             }
