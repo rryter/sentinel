@@ -50,7 +50,6 @@ pub struct FindingsSummary {
 
 /// Extract position information from diagnostic when available
 
-
 /// Get total duration in ms
 fn get_total_duration_ms(metrics: &crate::Metrics) -> u64 {
     // Calculate total duration as sum of scan and analysis duration

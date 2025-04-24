@@ -1,10 +1,10 @@
+use oxc_diagnostics::Error;
+use oxc_diagnostics::reporter::Info;
 use oxc_semantic::SemanticBuilderReturn;
 use oxc_span::GetSpan;
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::time::Instant;
-use oxc_diagnostics::Error;
-use oxc_diagnostics::reporter::Info;
 // Import the Rule trait and rule implementations
 use crate::RuleDiagnostic;
 pub use crate::rules::Rule;
@@ -113,7 +113,7 @@ impl RulesRegistry {
                             diagnostic,
                             source_code: source_code.to_string(),
                             column_number: 0,
-                            line_number: 0
+                            line_number: 0,
                         });
                     }
 
@@ -162,7 +162,8 @@ impl RulesRegistry {
 
                                 // Add all diagnostics from the Vec to your collection
                                 for diagnostic in diagnostics_vec {
-                                    let error = diagnostic.clone()
+                                    let error = diagnostic
+                                        .clone()
                                         .with_source_code(source_code.to_string());
                                     let (line, column) = extract_position_info(&error);
                                     diagnostics.push(RuleDiagnostic {
@@ -170,7 +171,7 @@ impl RulesRegistry {
                                         diagnostic,
                                         source_code: source_code.to_string(),
                                         line_number: line,
-                                        column_number: column
+                                        column_number: column,
                                     });
                                 }
                             }
