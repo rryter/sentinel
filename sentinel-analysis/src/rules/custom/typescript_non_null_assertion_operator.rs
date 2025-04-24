@@ -114,7 +114,7 @@ impl Rule for TypeScriptNonNullAssertionRule {
         }
     }
 
-    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: str) -> Vec<OxcDiagnostic> {
+    fn run_on_node(&self, node: &AstKind, _span: Span, file_path: &str) -> Vec<OxcDiagnostic> {
         let mut visitor = NonNullAssertionVisitor::new(self.skip_in_tests, file_path.to_string());
 
         match node {

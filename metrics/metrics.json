@@ -1,0 +1,109 @@
+[
+  {
+    "timestamp": "2025-04-24T15:57:22.488428292+00:00",
+    "total_duration_ms": 2,
+    "scan_duration_ms": 8,
+    "analysis_duration_ms": 48,
+    "files_processed": 1394,
+    "files_per_second_wall_time": 28690.41411072775,
+    "cumulative_processing_time_ms": 494,
+    "avg_time_per_file_ms": 0.35504614705882354,
+    "files_per_second_cpu_time": 2816.535282199025,
+    "parallel_cores_used": 24,
+    "parallel_speedup_factor": 10.18642098753599,
+    "parallel_efficiency_percent": 42.44342078139996,
+    "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
+    "slowest_file_duration_ms": 7,
+    "total_parse_time_ms": 71,
+    "total_semantic_time_ms": 77,
+    "avg_parse_time_ms": 0.05144227546628408,
+    "avg_semantic_time_ms": 0.05588293830703013,
+    "rule_execution_metrics": [
+      {
+        "rule_name": "angular-obsolete-standalone-true",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.14203730272596843,
+        "percent_of_total_rule_time": 35.133245403550035
+      },
+      {
+        "rule_name": "angular-legacy-decorators",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.0824964131994261,
+        "percent_of_total_rule_time": 20.458153015479525
+      },
+      {
+        "rule_name": "angular-input-count",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.13199426111908177,
+        "percent_of_total_rule_time": 32.6042930215887
+      },
+      {
+        "rule_name": "angular-component-class-suffix",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.047345767575322814,
+        "percent_of_total_rule_time": 11.804308559381736
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-04-24T15:58:51.522633771+00:00",
+    "total_duration_ms": 2,
+    "scan_duration_ms": 8,
+    "analysis_duration_ms": 70,
+    "files_processed": 1394,
+    "files_per_second_wall_time": 19775.97789266981,
+    "cumulative_processing_time_ms": 570,
+    "avg_time_per_file_ms": 0.4094510143472023,
+    "files_per_second_cpu_time": 2442.294596813551,
+    "parallel_cores_used": 24,
+    "parallel_speedup_factor": 8.097294207861502,
+    "parallel_efficiency_percent": 33.738725866089595,
+    "slowest_file": "/home/rryter/projects/myCSS/packages/mycss-app/src/app/features/invoice/_shared/helpers/benefit-invoices.helpers.spec.ts",
+    "slowest_file_duration_ms": 9,
+    "total_parse_time_ms": 76,
+    "total_semantic_time_ms": 68,
+    "avg_parse_time_ms": 0.05476644835007174,
+    "avg_semantic_time_ms": 0.04928645193687231,
+    "rule_execution_metrics": [
+      {
+        "rule_name": "angular-legacy-decorators",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.07747489239598278,
+        "percent_of_total_rule_time": 21.596186387721218
+      },
+      {
+        "rule_name": "angular-input-count",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.05308464849354376,
+        "percent_of_total_rule_time": 14.682724677586695
+      },
+      {
+        "rule_name": "typescript-non-null-assertion",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.035868005738880916,
+        "percent_of_total_rule_time": 10.008351699799043
+      },
+      {
+        "rule_name": "angular-obsolete-standalone-true",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.1449067431850789,
+        "percent_of_total_rule_time": 40.13993560660915
+      },
+      {
+        "rule_name": "angular-component-class-suffix",
+        "total_time_ms": 0,
+        "execution_count": 1394,
+        "avg_time_per_execution_us": 0.04878048780487805,
+        "percent_of_total_rule_time": 13.572801628283893
+      }
+    ]
+  }
+]

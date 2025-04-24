@@ -39,11 +39,11 @@ impl FromStr for DebugLevel {
 pub fn log(level: DebugLevel, current_level: DebugLevel, message: &str) {
     if level as usize <= current_level as usize {
         match level {
-            DebugLevel::Error => eprintln!("ERROR: {}", message),
-            DebugLevel::Warn => eprintln!("WARN: {}", message),
-            DebugLevel::Info => println!("INFO: {}", message),
-            DebugLevel::Debug => println!("DEBUG: {}", message),
-            DebugLevel::Trace => println!("TRACE: {}", message),
+            DebugLevel::Error => eprintln!("\x1b[91mERROR:\x1b[0m {}", message),
+            DebugLevel::Warn => eprintln!("\x1b[93mWARN:\x1b[0m {}", message),
+            DebugLevel::Info => println!("\x1b[94mINFO:\x1b[0m {}", message),
+            DebugLevel::Debug => println!("\x1b[95mDEBUG:\x1b[0m {}", message),
+            DebugLevel::Trace => println!("\x1b[90mTRACE:\x1b[0m {}", message),
             DebugLevel::None => {}
         }
     }

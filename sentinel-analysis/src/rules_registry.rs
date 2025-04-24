@@ -344,7 +344,11 @@ pub fn apply_rules_from_config(
             log(
                 DebugLevel::Info,
                 debug_level,
-                &format!("Enabled rules: {:?}", registry.get_enabled_rules()),
+                &format!("\x1b[94mINFO:\x1b[0m Enabled rules:\n{}", registry.get_enabled_rules()
+                    .iter()
+                    .map(|rule| format!("\x1b[32m  - {}\x1b[0m", rule))
+                    .collect::<Vec<_>>()
+                    .join("\n")),
             );
         }
         Err(err) => {
