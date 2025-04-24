@@ -1,8 +1,6 @@
 use crate::FileAnalysisResult;
 use crate::utilities::{DebugLevel, log};
-use oxc_diagnostics::Error;
 use oxc_diagnostics::Severity;
-use oxc_diagnostics::reporter::Info;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tabled::{

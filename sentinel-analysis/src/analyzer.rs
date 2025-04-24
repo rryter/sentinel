@@ -4,7 +4,6 @@ use crate::rules_registry::RulesRegistry;
 use crate::utilities::{DebugLevel, log};
 
 use oxc_allocator::Allocator;
-use oxc_diagnostics::Error;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;

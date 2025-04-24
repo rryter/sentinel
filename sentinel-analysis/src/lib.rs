@@ -6,7 +6,7 @@ pub mod rules;
 pub mod rules_registry;
 pub mod utilities;
 
-use oxc_diagnostics::{Error, OxcDiagnostic};
+use oxc_diagnostics::OxcDiagnostic;
 use std::collections::HashMap;
 use std::time::Duration;
 
