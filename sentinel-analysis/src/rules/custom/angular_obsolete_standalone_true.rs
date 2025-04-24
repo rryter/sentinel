@@ -27,9 +27,7 @@ impl DecoratorPropertyVisitor {
     const STANDALONE: &'static str = "standalone";
 
     fn new() -> Self {
-        Self {
-            diagnostics: None,
-        }
+        Self { diagnostics: None }
     }
 
     #[inline]
@@ -77,12 +75,12 @@ impl DecoratorPropertyVisitor {
         }) {
             // Create diagnostic first to avoid multiple mutable borrows
             let diagnostic = self.create_diagnostic(loc_prop.span);
-            
+
             // Only allocate Vec when we find a violation
             if self.diagnostics.is_none() {
                 self.diagnostics = Some(Vec::with_capacity(1));
             }
-            
+
             // Now push the already created diagnostic
             self.diagnostics.as_mut().unwrap().push(diagnostic);
             false // Return false to indicate we found a violation

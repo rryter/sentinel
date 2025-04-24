@@ -134,16 +134,25 @@ impl Metrics {
         // Export metrics to JSON if configured
         if let Some(path) = json_path {
             println!();
-            println!("\x1b[94mINFO:\x1b[0m Exporting metrics to JSON: \x1b[96m{}\x1b[0m", path);
+            println!(
+                "\x1b[94mINFO:\x1b[0m Exporting metrics to JSON: \x1b[96m{}\x1b[0m",
+                path
+            );
             if let Err(err) = self.export_to_json(path) {
-                eprintln!("\x1b[91mERROR:\x1b[0m Error exporting metrics to JSON: {}", err);
+                eprintln!(
+                    "\x1b[91mERROR:\x1b[0m Error exporting metrics to JSON: {}",
+                    err
+                );
                 return Err(format!("Error exporting metrics to JSON: {}", err));
             }
         }
 
         // Export metrics to CSV if configured
         if let Some(path) = csv_path {
-            println!("\x1b[94mINFO:\x1b[0m Exporting metrics to CSV: \x1b[96m{}\x1b[0m", path);
+            println!(
+                "\x1b[94mINFO:\x1b[0m Exporting metrics to CSV: \x1b[96m{}\x1b[0m",
+                path
+            );
             if let Err(err) = self.export_to_csv(path) {
                 eprintln!("ERROR: Error exporting metrics to CSV: {}", err);
                 return Err(format!("Error exporting metrics to CSV: {}", err));

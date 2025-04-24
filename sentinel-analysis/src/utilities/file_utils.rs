@@ -23,7 +23,7 @@ pub fn find_files(dir_path: &str, debug_level: DebugLevel) -> (Vec<String>, Dura
     log(
         DebugLevel::Info,
         debug_level,
-        &format!("\x1b[94mINFO:\x1b[0m Scanning directory: \x1b[93m{}\x1b[0m", dir_path),
+        &format!("Scanning directory: \x1b[93m{}\x1b[0m", dir_path),
     );
 
     let scan_start = Instant::now();
