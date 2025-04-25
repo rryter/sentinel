@@ -1,6 +1,6 @@
-# TypeScript Analyzer
+# Scoper
 
-A high-performance, rule-based analyzer for TypeScript/JavaScript codebases that helps identify patterns, potential issues, and enforce coding standards.
+A high-performance, rule-based analyzer for TypeScript/JavaScript codebases that helps identify patterns, potential issues, and enforce coding standards. Scoper specializes in analyzing code structures and dependencies to help maintain clean and maintainable codebases.
 
 ## Overview
 
@@ -25,7 +25,7 @@ Key features:
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd typescript-analyzer
+cd scoper
 
 # Build the project
 cargo build --release
@@ -36,7 +36,7 @@ cargo build --release
 ### Basic Command
 
 ```bash
-./typescript-analyzer [OPTIONS] [PATH]
+scoper [OPTIONS] [PATH]
 ```
 
 ### Quick Start with Run Script
@@ -68,22 +68,22 @@ OPTIONS:
 
 ```bash
 # Analyze a specific directory with verbose output
-./typescript-analyzer /path/to/project -v
+./scoper /path/to/project -v
 
 # Only analyze JavaScript files
-./typescript-analyzer /path/to/project -e js
+./scoper /path/to/project -e js
 
 # Enable only specific rules
-./typescript-analyzer /path/to/project --enable-rule import-count --enable-rule typescript-assertion-detection
+./scoper /path/to/project --enable-rule import-count --enable-rule typescript-assertion-detection
 
 # Disable specific rules
-./typescript-analyzer /path/to/project --disable-rule import-rxjs
+./scoper /path/to/project --disable-rule import-rxjs
 
 # Enable rules by tag
-./typescript-analyzer /path/to/project --enable-tag angular
+./scoper /path/to/project --enable-tag angular
 
 # Export findings to JSON
-./typescript-analyzer /path/to/project --export-json ./findings.json
+./scoper /path/to/project --export-json ./findings.json
 ```
 
 ## Configuration
@@ -112,16 +112,16 @@ For simple use cases, you can enable rules from the command line:
 
 ```bash
 # Enable simple rules
-./typescript-analyzer --rules no-console-warn-visitor,angular-observable-inputs
+./scoper --rules no-console-warn-visitor,angular-observable-inputs
 
 # Enable a single rule
-./typescript-analyzer --enable-rule angular-input-count
+./scoper --enable-rule angular-input-count
 ```
 
 For more complex configuration including rule options and severity levels, use a rules.json file:
 
 ```bash
-./typescript-analyzer --rules-config rules.json
+./scoper --rules-config rules.json
 ```
 
 ### Rule Configuration Options

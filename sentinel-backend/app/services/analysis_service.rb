@@ -196,7 +196,7 @@ class AnalysisService
 
     def perform_analysis(project)
       # Path to the Rust binary
-      binary_path = Rails.root.join("../sentinel-analysis/target/release/typescript-analyzer")
+      binary_path = Rails.root.join("../sentinel-analysis/target/release/scoper")
 
       # Create a temporary directory for output
       output_dir = Rails.root.join("tmp", "analysis_job_#{@job_id}")

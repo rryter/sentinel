@@ -2,7 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
-use typescript_analyzer::rules::{
+use scoper::rules::{
     Rule, RuleMatch, custom::angular::decorator_detection_rule::AngularDecoratorDetectionRule,
 };
 

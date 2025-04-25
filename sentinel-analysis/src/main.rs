@@ -1,6 +1,6 @@
 use std::{env, sync::Arc};
 
-use typescript_analyzer::{
+use scoper::{
     analyzer::process_files,
     metrics::{aggregate_metrics, export_results},
     rules_registry::setup_rules_registry,

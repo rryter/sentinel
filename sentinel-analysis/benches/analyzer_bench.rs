@@ -1,7 +1,7 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use std::fs;
 use std::sync::Arc;
-use typescript_analyzer::{RulesRegistry, analyzer, utilities::DebugLevel};
+use scoper::{RulesRegistry, analyzer, utilities::DebugLevel};
 
 const SMALL_FILE: &str = r#"
 function test() {

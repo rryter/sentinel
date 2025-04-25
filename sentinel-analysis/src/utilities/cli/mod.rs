@@ -3,7 +3,7 @@ use clap::{Arg, ArgAction, Command};
 
 /// Parse command-line arguments using clap
 pub fn parse_args() -> Command {
-    Command::new("typescript-analyzer")
+    Command::new("scoper")
         .version("0.1.0")
         .author("TypeScript Analyzer Team")
         .about("A high-performance, rule-based analyzer for TypeScript/JavaScript codebases")

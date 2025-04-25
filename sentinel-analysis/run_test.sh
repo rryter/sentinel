@@ -7,9 +7,9 @@ cd "$(dirname "$0")"
 mise use rust@nightly
 
 # Build the project
-echo "Building typescript-analyzer..."
+echo "Building scoper..."
 cargo build || { echo "Build failed"; exit 1; }
 
 # Run the binary with path argument
-echo "Running typescript-analyzer..."
-./target/debug/typescript-analyzer "/home/rryter/projects/myCSS/packages/mycss-app/src/app" --rules
+echo "Running scoper..."
+./target/debug/scoper "/home/rryter/projects/myCSS/packages/mycss-app/src/app" --rules
