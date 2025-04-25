@@ -1,10 +1,5 @@
 import { Route } from '@angular/router';
-import { ProjectListComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-list/project-list.component';
-import { ProjectDetailComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-detail/project-detail.component';
-import { ProjectCreateComponent } from '../../../../libs/sentinel/projects/src/lib/components/project-create/project-create.component';
-import { BuildListComponent } from '../../../../libs/sentinel/build/src/lib/build/components/build-list/build-list.component';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
-import { BuildMetricsComponent } from '../../../../libs/sentinel/build/src/lib/containers/build-metrics/build-metrics.component';
 
 export const appRoutes: Route[] = [
   {
