@@ -1,11 +1,12 @@
 import { Route } from '@angular/router';
-import { LintListComponent } from './components/lint-list/lint-list.component';
 import { LintCreateComponent } from './components/lint-create/lint-create.component';
-import { RuleListComponent } from './components/rules/components/list/rule-list.component';
-import { RuleDetailsComponent } from './components/rules/components/details/details.component';
-import { UploaderComponent } from './components/rules/components';
-import { LintResultsComponent } from './components/lint-results/lint-results.component';
 import { LintDetailComponent } from './components/lint-detail/lint-detail.component';
+import { LintListComponent } from './components/lint-list/lint-list.component';
+import { LintMetricsComponent } from './components/lint-metrics/lint-metrics.component';
+import { LintResultsComponent } from './components/lint-results/lint-results.component';
+import { UploaderComponent } from './components/rules/components';
+import { RuleDetailsComponent } from './components/rules/components/details/details.component';
+import { RuleListComponent } from './components/rules/components/list/rule-list.component';
 
 export const lintingRoutes: Route[] = [
   {
@@ -35,5 +36,9 @@ export const lintingRoutes: Route[] = [
   {
     path: 'rules/:ruleId',
     component: RuleDetailsComponent,
+  },
+  {
+    path: 'metrics',
+    component: LintMetricsComponent,
   },
 ];
