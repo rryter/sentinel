@@ -168,7 +168,7 @@ impl AssertionVisitor {
                 let type_name = format!("{:?}", type_ref);
                 type_name.contains("any")
             }
-            _ => false
+            _ => false,
         }
     }
 
@@ -199,7 +199,7 @@ impl AssertionVisitor {
     fn is_test_file(&self) -> bool {
         // Avoid allocating a new string for lowercase comparison
         let path = self.file_path.as_str();
-        
+
         // Most files won't be test files, so check common non-test paths first
         if !path.contains("test") && !path.contains("spec") {
             return false;
@@ -207,14 +207,22 @@ impl AssertionVisitor {
 
         // Now check specific test patterns
         let path_lower = path.to_lowercase();
-        
+
         // Check suffixes first as they're more specific and usually faster
-        if self.test_patterns.test_suffixes.iter().any(|&suffix| path_lower.ends_with(suffix)) {
+        if self
+            .test_patterns
+            .test_suffixes
+            .iter()
+            .any(|&suffix| path_lower.ends_with(suffix))
+        {
             return true;
         }
 
         // Then check for test patterns in the path
-        self.test_patterns.test_patterns.iter().any(|&pattern| path_lower.contains(pattern))
+        self.test_patterns
+            .test_patterns
+            .iter()
+            .any(|&pattern| path_lower.contains(pattern))
     }
 
     #[inline]
@@ -243,13 +251,15 @@ impl AssertionVisitor {
 impl<'a> Visit<'a> for AssertionVisitor {
     fn visit_ts_non_null_expression(&mut self, node: &TSNonNullExpression<'a>) {
         if self.should_report() {
-            self.diagnostics.push(self.create_diagnostic(node.span, "non-null"));
+            self.diagnostics
+                .push(self.create_diagnostic(node.span, "non-null"));
         }
     }
 
     fn visit_ts_type_assertion(&mut self, node: &TSTypeAssertion<'a>) {
         if self.should_report() {
-            self.diagnostics.push(self.create_diagnostic(node.span, "type"));
+            self.diagnostics
+                .push(self.create_diagnostic(node.span, "type"));
         }
     }
 
@@ -265,15 +275,18 @@ impl<'a> Visit<'a> for AssertionVisitor {
 
         // Check for 'any' type assertions (simplified double assertion check)
         if self.check_double_assertion(node) {
-            self.diagnostics.push(self.create_diagnostic(node.span, "double-assertion"));
+            self.diagnostics
+                .push(self.create_diagnostic(node.span, "double-assertion"));
             return;
         }
 
         // Check if assertion involves 'any' type
         if self.is_any_type(&node.type_annotation) {
-            self.diagnostics.push(self.create_diagnostic(node.span, "any"));
+            self.diagnostics
+                .push(self.create_diagnostic(node.span, "any"));
         } else {
-            self.diagnostics.push(self.create_diagnostic(node.span, "type"));
+            self.diagnostics
+                .push(self.create_diagnostic(node.span, "type"));
         }
     }
 }

@@ -341,15 +341,16 @@ pub fn apply_rules_from_config(
     match load_rule_config(config_path) {
         Ok(enabled_rules) => {
             configure_registry(registry, &enabled_rules);
+            let mut rules = registry.get_enabled_rules();
+            rules.sort();
             log(
                 DebugLevel::Info,
                 debug_level,
                 &format!(
-                    "\x1b[94mINFO:\x1b[0m Enabled rules:\n{}",
-                    registry
-                        .get_enabled_rules()
+                    "INFO: Enabled rules:\n{}",
+                    rules
                         .iter()
-                        .map(|rule| format!("\x1b[32m  - {}\x1b[0m", rule))
+                        .map(|rule| format!("  - {}", rule))
                         .collect::<Vec<_>>()
                         .join("\n")
                 ),
