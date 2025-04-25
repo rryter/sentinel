@@ -1,6 +1,6 @@
 [package]
 name = "scoper"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A TypeScript code analyzer using the OXC parser"
 license = "MIT"
@@ -11,7 +11,7 @@ keywords = ["typescript", "analyzer", "static-analysis", "oxc"]
 categories = ["development-tools", "development-tools::testing"]
 
 [features]
-default = []
+default = ["custom_rules"]
 custom_rules = []
 
 [dependencies]

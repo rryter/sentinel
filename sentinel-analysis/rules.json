@@ -1,7 +1,7 @@
 {
   "rules": {
     "no-console-warn-visitor": "error",
-    "angular-legacy-decorators": "warn",
+    "angular-legacy-decorators": "error",
     "angular-input-count": ["error", { "maxInputs": 2 }],
     "angular-component-class-suffix": ["error", {
       "suffixes": ["Component", "Page", "View"] 
@@ -15,9 +15,9 @@
       }
     ],
     "angular-obsolete-standalone-true": "error",
-    "typescript-non-null-assertion": ["error", {
-      "skipInTests": true
+      "typescript-non-null-assertion": ["error", {
+      "skipInTests": false
     }],
-    "typescript-type-assertion": ["error"]
+     "typescript-type-assertion": ["error"]
   }
-} 
+}
