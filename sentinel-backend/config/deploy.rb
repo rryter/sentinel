@@ -11,6 +11,7 @@ set :repo_url, -> { "git@github.com:rryter/sentinel.git" }
 set :branch, ENV.fetch("CI_COMMIT_REF_NAME", "main")
 set :deploy_to, "/home/#{fetch :user}/#{fetch :application}"
 set :keep_releases, 5
+set :repo_tree, 'sentinel-backend'
 
 set :rbenv_type, :user
 set :rbenv_ruby, File.read(".ruby-version").strip
