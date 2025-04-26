@@ -21,6 +21,7 @@
       "typescript-non-null-assertion": ["error", {
       "skipInTests": false
     }],
-     "typescript-type-assertion": ["error"]
+    "typescript-type-assertion": ["error"],
+    "angular-output-event-collision": "error"
   }
 }
