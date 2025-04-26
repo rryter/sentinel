@@ -1,12 +1,42 @@
 require "securerandom"
 
 namespace :hosting do
+  desc "Generate .env file"
+  task :env_file do
+    on roles(:all) do
+      # Create an empty env file
+      execute :touch, "#{shared_path}/env"
+      execute :chmod, "600", "#{shared_path}/env"
+    end
+  end
+
+  desc "Upload credentials key file for the current environment"
+  task :upload_master_key do
+    on roles(:all) do
+      env = fetch(:rails_env)
+      key_path = File.expand_path("config/credentials/#{env}.key")
+      puts "\e[33mLooking for #{env}.key at: #{key_path}\e[0m"
+      
+      if File.exist?(key_path)
+        execute :mkdir, "-p", "#{shared_path}/config/credentials"
+        upload! key_path, "#{shared_path}/config/credentials/#{env}.key"
+        execute :chmod, "600", "#{shared_path}/config/credentials/#{env}.key"
+      else
+        puts "\e[31mError: config/credentials/#{env}.key not found locally. Please ensure it exists in your development environment.\e[0m"
+        puts "\e[31mYou can generate it by running: EDITOR=vim bin/rails credentials:edit --environment #{env}\e[0m"
+        exit 1
+      end
+    end
+  end
+
   desc "Setup the hosting-environment (virtual-host, database and basic-auth)"
   task setup: :init do
     invoke "hosting:virtual_host"
     invoke "hosting:create_database"
     invoke "hosting:database_yml"
     invoke "hosting:secrets_yml"
+    invoke "hosting:env_file"
+    invoke "hosting:upload_master_key"  # Add this line
     if fetch(:rails_env).to_s == "staging"
       invoke "hosting:adjust_rails_env"
     end

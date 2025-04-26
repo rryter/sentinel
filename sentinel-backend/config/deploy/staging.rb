@@ -14,4 +14,4 @@ set :application, "test.api.scoper.cloud"
 # Feel free to add new variables to customise your setup.
 set :rails_env, "staging"
 set :branch, proc { `git rev-parse --abbrev-ref staging`.chomp }
-set :linked_files, fetch(:linked_files, []).push("config/database.yml", "config/secrets.yml", "config/master.key")
+set :linked_files, fetch(:linked_files, []).push("config/database.yml", "config/secrets.yml", "config/master.key", "env")

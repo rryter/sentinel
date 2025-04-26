@@ -5,4 +5,4 @@
 server "twy04.nine.ch", user: "www-data", roles: %w[app db web]
 
 set :rails_env, "production"
-set :linked_files, fetch(:linked_files, []).push("config/database.yml", "config/secrets.yml", "config/master.key", "config/credentials/production.key")
+set :linked_files, fetch(:linked_files, []).push("config/database.yml", "config/secrets.yml", "config/credentials/production.key", "env")

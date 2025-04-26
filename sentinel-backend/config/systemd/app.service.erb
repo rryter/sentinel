@@ -1,0 +1,20 @@
+[Unit]
+Description=<%= fetch :application %> Rails Application
+
+[Service]
+Type=simple
+
+WorkingDirectory=<%= current_path %>
+Environment=RAILS_SERVE_STATIC_FILES=true
+EnvironmentFile=<%= shared_path %>/env
+
+ExecStart=/home/www-data/.rbenv/bin/rbenv exec bundle exec rails server -b localhost -e production --port 3001 --log-to-stdout
+
+TimeoutSec=15
+Restart=on-failure
+
+PrivateTmp=yes
+ProtectSystem=full
+
+[Install]
+WantedBy=default.target
