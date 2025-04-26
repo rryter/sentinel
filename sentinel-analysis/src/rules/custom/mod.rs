@@ -2,6 +2,7 @@ use oxc_ast::ast::PropertyKey;
 
 // Module declarations for custom rules
 pub mod angular_component_class_suffix;
+pub mod angular_directive_class_suffix;
 pub mod angular_input_count;
 pub mod angular_legacy_decorators;
 pub mod angular_obsolete_standalone_true;
@@ -10,6 +11,7 @@ pub mod typescript_type_assertion;
 
 // Re-export custom rules
 pub use angular_component_class_suffix::AngularComponentClassSuffixRule;
+pub use angular_directive_class_suffix::AngularDirectiveClassSuffixRule;
 pub use angular_input_count::AngularInputCountRule;
 pub use angular_legacy_decorators::AngularLegacyDecoratorsRule;
 pub use angular_obsolete_standalone_true::AngularObsoleteStandaloneTrueRule;
