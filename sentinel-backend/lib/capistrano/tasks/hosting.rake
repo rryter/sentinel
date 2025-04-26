@@ -1,14 +1,13 @@
-require 'securerandom'
+require "securerandom"
 
 namespace :hosting do
-
   desc "Setup the hosting-environment (virtual-host, database and basic-auth)"
   task setup: :init do
     invoke "hosting:virtual_host"
     invoke "hosting:create_database"
     invoke "hosting:database_yml"
     invoke "hosting:secrets_yml"
-    if fetch(:rails_env).to_s == 'staging'
+    if fetch(:rails_env).to_s == "staging"
       invoke "hosting:adjust_rails_env"
     end
     if agree("Add basic authentication to the website? (yN) ")
@@ -62,22 +61,22 @@ namespace :hosting do
         "database" => fetch(:db_name).to_s,
         "pool" => 5,
         "username" => fetch(:db_name).to_s,
-        "password" => fetch(:db_password).to_s,
+        "password" => fetch(:db_password).to_s
       }
     }
 
     on roles(:all) do
       put YAML.dump(yaml),
           "#{shared_path}/config/database.yml",
-          :mode => "600"
+          mode: "600"
     end
   end
 
   desc "Generate secrets.yml"
   task :secrets_yml do
-    require 'securerandom'
+    require "securerandom"
     key = SecureRandom.hex(64).to_s
-    key.force_encoding('UTF-8')
+    key.force_encoding("UTF-8")
 
     yaml = {
       fetch(:rails_env).to_s => {
@@ -88,21 +87,20 @@ namespace :hosting do
     on roles(:all) do
       put YAML.dump(yaml),
           "#{shared_path}/config/secrets.yml",
-          :mode => "600"
+          mode: "600"
     end
   end
 
   desc "Add basic auth"
   task basic_auth: :init do
-
     on roles(:all) do
       user = fetch(:basic_auth_user)
       pwd = fetch(:basic_auth_password)
 
       execute :htpasswd, "-b /home/www-data/.htpasswd #{user} '#{pwd.gsub("'") { "\\'" }}'"
 
-      ['AuthType Basic', 'AuthName "Restricted Access"',
-       'AuthUserFile /home/www-data/.htpasswd', "Require user #{user}"].each do |string|
+      [ "AuthType Basic", 'AuthName "Restricted Access"',
+       "AuthUserFile /home/www-data/.htpasswd", "Require user #{user}" ].each do |string|
         execute :echo, string, ">>", "#{fetch(:deploy_to)}/.htaccess"
       end
     end
@@ -112,7 +110,7 @@ namespace :hosting do
   task :remove_basic_auth do
     on roles(:all) do
       execute :rm, "#{fetch(:deploy_to)}/.htaccess"
-      if fetch(:rails_env).to_s == 'staging'
+      if fetch(:rails_env).to_s == "staging"
         invoke "hosting:adjust_rails_env"
       end
     end
@@ -134,7 +132,6 @@ namespace :hosting do
     puts fetch(:basic_auth_user)
     puts fetch(:basic_auth_password)
   end
-
 end
 
 # Uploads the given string or file-like object to the current host
@@ -142,9 +139,9 @@ end
 # Accepts :owner and :mode options that affect the permissions of the
 # remote file.
 #
-def put(string_or_io, remote_path, opts={})
+def put(string_or_io, remote_path, opts = {})
   sudo_exec = ->(*cmd) {
-    cmd = [:sudo] + cmd if opts[:sudo]
+    cmd = [ :sudo ] + cmd if opts[:sudo]
     execute *cmd
   }
 
@@ -155,9 +152,9 @@ def put(string_or_io, remote_path, opts={})
 
   source = if string_or_io.respond_to?(:read)
              string_or_io
-           else
+  else
              StringIO.new(string_or_io.to_s)
-           end
+  end
 
   sudo_exec.call :mkdir, "-p", File.dirname(remote_path)
 
