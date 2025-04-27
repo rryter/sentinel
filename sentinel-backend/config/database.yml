@@ -7,7 +7,6 @@ default: &default
   password: password
   host: "127.0.0.1"
   port: 3306
-  reconnect: true
   connect_timeout: 10
   read_timeout: 30
   write_timeout: 30

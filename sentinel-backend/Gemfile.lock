@@ -138,6 +138,8 @@ GEM
       logger
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
+    faraday-retry (2.3.1)
+      faraday (~> 2.0)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
     ffi (1.17.2-arm-linux-gnu)
@@ -452,6 +454,7 @@ DEPENDENCIES
   capistrano-systemd-multiservice
   debug
   factory_bot_rails
+  faraday-retry
   http
   kamal
   kaminari

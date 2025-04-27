@@ -49,6 +49,7 @@ gem "safe_yaml"
 
 # HTTP client
 gem "http"
+gem "faraday-retry"  # Add Faraday retry middleware
 
 # Pagination
 gem "kaminari"
