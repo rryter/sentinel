@@ -94,6 +94,11 @@ RUN gem install bundler && \
 # Copy the rest of the application
 COPY --chown=app:app . .
 
+# Set up credentials directory with proper permissions
+RUN mkdir -p /app/config/credentials && \
+    chown -R app:app /app/config/credentials && \
+    chmod 700 /app/config/credentials
+
 # Add a simple health check endpoint
 RUN echo "class ApplicationController < ActionController::Base; def health; render plain: 'OK'; end; end" > config/initializers/health_check.rb
 

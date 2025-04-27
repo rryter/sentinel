@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Write production key if provided
+if [ -n "$RAILS_PRODUCTION_KEY" ]; then
+  echo "$RAILS_PRODUCTION_KEY" > /app/config/credentials/production.key
+  chmod 600 /app/config/credentials/production.key
+fi
+
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
 echo "Database URL: $DATABASE_URL"
