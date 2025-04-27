@@ -80,8 +80,7 @@ RUN apt-get update -qq && \
 
 # Set environment variables
 ENV RAILS_ENV=production \
-    RAILS_LOG_TO_STDOUT=true \
-    RAILS_SERVE_STATIC_FILES=true
+    RAILS_LOG_TO_STDOUT=true
 
 # Set working directory
 WORKDIR /app
@@ -102,18 +101,15 @@ RUN echo "class ApplicationController < ActionController::Base; def health; rend
 COPY --chown=app:app docker-entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 
+# Add healthcheck to match k8s probe settings
+HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
 # Switch to non-root user
 USER app
 
 # Expose port
 EXPOSE 3000
 
-# Add a startup script to ensure database is ready
 ENTRYPOINT ["docker-entrypoint.sh"]
-
-# Start the server
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
