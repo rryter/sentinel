@@ -80,7 +80,7 @@ group :development, :test do
   # Factory Bot for test data
   gem "factory_bot_rails"
 
-  gem "capistrano", '3.16.0'
+  gem "capistrano", require: false
   gem "capistrano-rbenv", require: false
   gem "capistrano-rbenv-install", require: false
   gem "capistrano-rails", require: false

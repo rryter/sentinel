@@ -84,6 +84,7 @@ GEM
     ast (2.4.3)
     base64 (0.2.0)
     bcrypt_pbkdf (1.1.1)
+    bcrypt_pbkdf (1.1.1-arm64-darwin)
     benchmark (0.4.0)
     bigdecimal (3.1.9)
     bootsnap (1.18.4)
@@ -91,7 +92,7 @@ GEM
     brakeman (7.0.2)
       racc
     builder (3.3.0)
-    capistrano (3.16.0)
+    capistrano (3.19.2)
       airbrussh (>= 1.0.0)
       i18n
       rake (>= 10.0.0)
@@ -444,7 +445,7 @@ DEPENDENCIES
   active_model_serializers (~> 0.10.13)
   bootsnap
   brakeman
-  capistrano (= 3.16.0)
+  capistrano
   capistrano-rails
   capistrano-rbenv
   capistrano-rbenv-install

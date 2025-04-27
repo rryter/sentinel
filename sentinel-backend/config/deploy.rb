@@ -1,4 +1,4 @@
-lock "3.16.0"
+lock "3.19.0"
 Rake::Task["deploy:assets:precompile"].clear
 Rake::Task["deploy:assets:backup_manifest"].clear
 
