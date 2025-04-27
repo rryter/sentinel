@@ -108,15 +108,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
     t.jsonb "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "severity_id"
-    t.index ["file_with_violations_id"], name: "index_violations_on_file_with_violations_id"
-    t.index ["rule_id"], name: "index_violations_on_rule_id"
-    t.index ["rule_name"], name: "index_violations_on_rule_name"
-    t.index ["severity_id"], name: "index_violations_on_severity_id"
   end
-
-  add_foreign_key "analysis_jobs", "projects"
-  add_foreign_key "files_with_violations", "analysis_jobs"
-  add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
-  add_foreign_key "violations", "severities"
 end

@@ -2,10 +2,19 @@ default: &default
   adapter: mysql2
   encoding: utf8mb4
   collation: utf8mb4_unicode_ci
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 15 } %>
   username: root
+  password: password
   host: "127.0.0.1"
   port: 3306
+  reconnect: true
+  connect_timeout: 10
+  read_timeout: 30
+  write_timeout: 30
+  checkout_timeout: 5
+  variables:
+    wait_timeout: 600
+    interactive_timeout: 600
 
 development:
   <<: *default
@@ -18,5 +27,3 @@ test:
 production:
   <<: *default
   database: sentinel_backend_production
-  username: sentinel
-  password: <%= ENV['SENTINEL_DATABASE_PASSWORD'] %>
