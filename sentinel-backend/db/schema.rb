@@ -10,65 +10,55 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_catalog.plpgsql"
-
-  create_table "analysis_jobs", force: :cascade do |t|
+ActiveRecord::Schema[8.0].define(version: 2025_04_27_183500) do
+  create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
+    t.decimal "files_per_second_wall_time", precision: 10
+    t.decimal "files_per_second_cpu_time", precision: 10
+    t.decimal "avg_time_per_file_ms", precision: 10
+    t.integer "cumulative_processing_time_ms"
+    t.integer "parallel_cores_used"
+    t.decimal "parallel_speedup_factor", precision: 10
+    t.decimal "parallel_efficiency_percent", precision: 10
     t.integer "total_files"
-    t.integer "processed_files"
+    t.integer "total_matches"
+    t.integer "rules_matched"
+    t.integer "duration"
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "go_job_id"
-    t.text "error_message"
-    t.integer "total_matches"
-    t.integer "rules_matched"
-    t.integer "files_processed", comment: "Number of files processed during analysis"
-    t.float "files_per_second_wall_time", comment: "Files processed per second (wall time)"
-    t.integer "cumulative_processing_time_ms", comment: "Cumulative processing time in milliseconds"
-    t.float "avg_time_per_file_ms", comment: "Average time per file in milliseconds"
-    t.float "files_per_second_cpu_time", comment: "Files processed per second (CPU time)"
-    t.integer "parallel_cores_used", comment: "Number of CPU cores used in parallel processing"
-    t.float "parallel_speedup_factor", comment: "Speedup factor from parallel processing"
-    t.float "parallel_efficiency_percent", comment: "Efficiency of parallel processing in percent"
-    t.bigint "duration", default: 0, null: false
     t.index ["project_id"], name: "index_analysis_jobs_on_project_id"
     t.index ["status"], name: "index_analysis_jobs_on_status"
   end
 
-  create_table "build_metrics", force: :cascade do |t|
-    t.bigint "timestamp", null: false
-    t.boolean "is_initial_build", null: false
+  create_table "build_metrics", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.datetime "timestamp", null: false
+    t.integer "duration_ms", null: false
+    t.boolean "is_initial_build", default: false, null: false
     t.string "machine_hostname", null: false
     t.string "machine_platform", null: false
     t.integer "machine_cpu_count", null: false
-    t.bigint "machine_memory_total", null: false
-    t.bigint "machine_memory_free", null: false
+    t.integer "machine_memory_total", null: false
+    t.integer "machine_memory_free", null: false
     t.string "process_node_version", null: false
-    t.bigint "process_memory", null: false
+    t.integer "process_memory", null: false
     t.integer "build_files_count", null: false
     t.string "build_output_dir", null: false
-    t.integer "build_error_count", null: false
-    t.integer "build_warning_count", null: false
-    t.string "build_entry_points", default: [], array: true
-    t.jsonb "build_file_types", default: {}
+    t.integer "build_error_count", default: 0, null: false
+    t.integer "build_warning_count", default: 0, null: false
     t.string "workspace_name", null: false
     t.string "workspace_project", null: false
     t.string "workspace_environment", null: false
     t.string "workspace_user", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "duration_ms", default: 0, null: false
-    t.string "workspace_task"
     t.index ["timestamp"], name: "index_build_metrics_on_timestamp"
     t.index ["workspace_environment"], name: "index_build_metrics_on_workspace_environment"
     t.index ["workspace_project"], name: "index_build_metrics_on_workspace_project"
   end
 
-  create_table "files_with_violations", force: :cascade do |t|
+  create_table "files_with_violations", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "analysis_job_id", null: false
     t.string "file_path", null: false
     t.datetime "created_at", null: false
@@ -77,7 +67,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
     t.index ["analysis_job_id"], name: "index_files_with_violations_on_analysis_job_id"
   end
 
-  create_table "projects", force: :cascade do |t|
+  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "repository_url"
     t.datetime "created_at", null: false
@@ -85,7 +75,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
     t.index ["name"], name: "index_projects_on_name", unique: true
   end
 
-  create_table "severities", force: :cascade do |t|
+  create_table "severities", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.integer "level", null: false
     t.string "color_code"
@@ -96,8 +86,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
     t.index ["name"], name: "index_severities_on_name", unique: true
   end
 
-  create_table "violations", force: :cascade do |t|
+  create_table "violations", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "file_with_violations_id", null: false
+    t.bigint "severity_id"
     t.string "rule_id"
     t.string "rule_name", null: false
     t.text "description"
@@ -105,8 +96,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_22_120000) do
     t.integer "end_line", null: false
     t.integer "start_col"
     t.integer "end_col"
-    t.jsonb "metadata"
+    t.text "metadata_content"
+    t.text "code_snippet"
+    t.string "pattern_name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["file_with_violations_id", "rule_name", "start_line", "end_line"], name: "index_violations_on_file_rule_and_location", unique: true
+    t.index ["severity_id"], name: "fk_rails_69ee6022c5"
   end
+
+  add_foreign_key "analysis_jobs", "projects"
+  add_foreign_key "files_with_violations", "analysis_jobs"
+  add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
+  add_foreign_key "violations", "severities"
 end
