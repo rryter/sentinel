@@ -30,11 +30,7 @@ class PerformanceMetricsService
   
   # Helper method to extract duration from various places it might be found
   def self.extract_duration(results)
-    if results.has_key?('metadata') && results['metadata'].has_key?('duration_ms')
-      return results['metadata']['duration_ms'].to_i
-    elsif results.has_key?('metadata') && results['metadata'].has_key?('duration')
-      return results['metadata']['duration'].to_i
-    elsif results.has_key?('duration_ms')
+    if results.has_key?('duration_ms')
       return results['duration_ms'].to_i
     elsif results.has_key?('duration')
       return results['duration'].to_i

@@ -10,6 +10,5 @@ FactoryBot.define do
     end_col { 10 }
     severity { Severity.find_by(name: 'info') || Severity.create!(name: 'info', level: 1, color_code: '#00CCFF', description: 'Informational findings') }
     created_at { Time.current }
-    metadata { { "help" => "This is a test violation" } }
   end
 end 
