@@ -5,8 +5,6 @@ export function withBackendApiConfiguration(
   configurationParameters: ConfigurationParameters = {},
 ): Configuration {
   return new Configuration({
-    // any default parameters
-    basePath: 'my-default-api',
     // overrides
     ...configurationParameters,
   });
