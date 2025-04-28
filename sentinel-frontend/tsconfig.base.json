@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@sentinel-api": ["src/app/api/generated"],
+      "@sentinel/api": ["libs/shared/api"],
       "@sentinel/build": ["libs/sentinel/build/src/index.ts"],
       "@sentinel/linting": ["libs/sentinel/linting/src/index.ts"],
       "@sentinel/projects": ["libs/sentinel/projects/src/index.ts"],

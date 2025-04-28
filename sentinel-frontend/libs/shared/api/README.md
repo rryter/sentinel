@@ -49,7 +49,7 @@ In your project:
 npm link sentinel-api-client
 ```
 
-__Note for Windows users:__ The Angular CLI has troubles to use linked npm packages.
+**Note for Windows users:** The Angular CLI has troubles to use linked npm packages.
 Please refer to this issue <https://github.com/angular/angular-cli/issues/8284> for a solution / workaround.
 Published packages are not effected by this issue.
 
@@ -59,64 +59,63 @@ In your Angular project:
 
 ```typescript
 // without configuring providers
-import { ApiApiModule } from 'sentinel-api-client';
+import { ApiModule } from 'sentinel-api-client';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-    imports: [
-        ApiApiModule,
-        // make sure to import the HttpClientModule in the AppModule only,
-        // see https://github.com/angular/angular/issues/20575
-        HttpClientModule
-    ],
-    declarations: [ AppComponent ],
-    providers: [],
-    bootstrap: [ AppComponent ]
+  imports: [
+    ApiModule,
+    // make sure to import the HttpClientModule in the AppModule only,
+    // see https://github.com/angular/angular/issues/20575
+    HttpClientModule,
+  ],
+  declarations: [AppComponent],
+  providers: [],
+  bootstrap: [AppComponent],
 })
 export class AppModule {}
 ```
 
 ```typescript
 // configuring providers
-import { ApiApiModule, Configuration, ConfigurationParameters } from 'sentinel-api-client';
+import { ApiModule, Configuration, ConfigurationParameters } from 'sentinel-api-client';
 
-export function apiConfigFactory (): Configuration {
+export function apiConfigFactory(): Configuration {
   const params: ConfigurationParameters = {
     // set configuration parameters here.
-  }
+  };
   return new Configuration(params);
 }
 
 @NgModule({
-    imports: [ ApiApiModule.forRoot(apiConfigFactory) ],
-    declarations: [ AppComponent ],
-    providers: [],
-    bootstrap: [ AppComponent ]
+  imports: [ApiModule.forRoot(apiConfigFactory)],
+  declarations: [AppComponent],
+  providers: [],
+  bootstrap: [AppComponent],
 })
 export class AppModule {}
 ```
 
 ```typescript
 // configuring providers with an authentication service that manages your access tokens
-import { ApiApiModule, Configuration } from 'sentinel-api-client';
+import { ApiModule, Configuration } from 'sentinel-api-client';
 
 @NgModule({
-    imports: [ ApiApiModule ],
-    declarations: [ AppComponent ],
-    providers: [
-      {
-        provide: Configuration,
-        useFactory: (authService: AuthService) => new Configuration(
-          {
-            basePath: environment.apiUrl,
-            accessToken: authService.getAccessToken.bind(authService)
-          }
-        ),
-        deps: [AuthService],
-        multi: false
-      }
-    ],
-    bootstrap: [ AppComponent ]
+  imports: [ApiModule],
+  declarations: [AppComponent],
+  providers: [
+    {
+      provide: Configuration,
+      useFactory: (authService: AuthService) =>
+        new Configuration({
+          basePath: environment.apiUrl,
+          accessToken: authService.getAccessToken.bind(authService),
+        }),
+      deps: [AuthService],
+      multi: false,
+    },
+  ],
+  bootstrap: [AppComponent],
 })
 export class AppModule {}
 ```
@@ -125,36 +124,34 @@ export class AppModule {}
 import { DefaultApi } from 'sentinel-api-client';
 
 export class AppComponent {
-    constructor(private apiGateway: DefaultApi) { }
+  constructor(private apiGateway: DefaultApi) {}
 }
 ```
 
-Note: The ApiApiModule is restricted to being instantiated once app wide.
+Note: The ApiModule is restricted to being instantiated once app wide.
 This is to ensure that all services are treated as singletons.
 
-### Using multiple OpenAPI files / APIs / ApiApiModules
+### Using multiple OpenAPI files / APIs / ApiModules
 
-In order to use multiple `ApiApiModules` generated from different OpenAPI files,
+In order to use multiple `ApiModules` generated from different OpenAPI files,
 you can create an alias name when importing the modules
 in order to avoid naming conflicts:
 
 ```typescript
-import { ApiApiModule } from 'my-api-path';
-import { ApiApiModule as OtherApiModule } from 'my-other-api-path';
+import { ApiModule } from 'my-api-path';
+import { ApiModule as OtherApiModule } from 'my-other-api-path';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   imports: [
-    ApiApiModule,
+    ApiModule,
     OtherApiModule,
     // make sure to import the HttpClientModule in the AppModule only,
     // see https://github.com/angular/angular/issues/20575
-    HttpClientModule
-  ]
+    HttpClientModule,
+  ],
 })
-export class AppModule {
-
-}
+export class AppModule {}
 ```
 
 ### Set service base path
@@ -164,9 +161,7 @@ If different than the generated base path, during app bootstrap, you can provide
 ```typescript
 import { BASE_PATH } from 'sentinel-api-client';
 
-bootstrap(AppComponent, [
-    { provide: BASE_PATH, useValue: 'https://your-web-service.com' },
-]);
+bootstrap(AppComponent, [{ provide: BASE_PATH, useValue: 'https://your-web-service.com' }]);
 ```
 
 or
@@ -190,7 +185,7 @@ First extend your `src/environments/*.ts` files by adding the corresponding base
 ```typescript
 export const environment = {
   production: false,
-  API_BASE_PATH: 'http://127.0.0.1:8080'
+  API_BASE_PATH: 'http://127.0.0.1:8080',
 };
 ```
 
@@ -201,14 +196,12 @@ import { BASE_PATH } from 'sentinel-api-client';
 import { environment } from '../environments/environment';
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [ ],
+  declarations: [AppComponent],
+  imports: [],
   providers: [{ provide: BASE_PATH, useValue: environment.API_BASE_PATH }],
-  bootstrap: [ AppComponent ]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
 ```
 
 ### Customizing path parameter encoding
@@ -227,8 +220,8 @@ Example value for use in your Configuration-Provider:
 
 ```typescript
 new Configuration({
-    encodeParam: (param: Param) => myFancyParamEncoder(param),
-})
+  encodeParam: (param: Param) => myFancyParamEncoder(param),
+});
 ```
 
 [parameter-locations-url]: https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#parameter-locations

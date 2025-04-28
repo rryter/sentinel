@@ -1,18 +1,25 @@
+import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import {
   provideRouter,
   withComponentInputBinding,
   withViewTransitions,
 } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { appRoutes } from './app.routes';
-import { provideMarkdown } from 'ngx-markdown';
+import { provideApi, withBackendApiConfiguration } from '@sentinel/api';
 import { provideIcons } from '@shared/ui-custom';
-import { provideCharts } from 'ng2-charts';
 import { BarController, Colors, Legend } from 'chart.js';
+import { provideCharts } from 'ng2-charts';
+import { provideMarkdown } from 'ngx-markdown';
+import { environment } from '../environments/environment';
+import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideApi(
+      withBackendApiConfiguration({
+        basePath: environment.apiUrl,
+      }),
+    ),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       appRoutes,
