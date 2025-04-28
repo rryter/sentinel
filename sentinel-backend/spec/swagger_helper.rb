@@ -29,7 +29,7 @@ RSpec.configure do |config|
           description: 'Development server'
         },
         {
-          url: 'https://api.sentinel.example.com',
+          url: 'https://api.scoper.cloud',
           description: 'Production server'
         }
       ],
