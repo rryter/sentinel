@@ -1,7 +1,7 @@
 class AnalysisJobSummarySerializer < ActiveModel::Serializer
-  attributes :id, :project_id, :status, :error_message, :go_job_id, 
-             :total_files, :processed_files, :completed_at, :created_at, :updated_at,
-             :duration, :files_processed, :files_per_second_wall_time, 
+  attributes :id, :project_id, :status, :error_message, 
+             :total_files, :completed_at, :created_at, :updated_at,
+             :duration, :files_per_second_wall_time, 
              :cumulative_processing_time_ms, :avg_time_per_file_ms,
              :files_per_second_cpu_time, :parallel_cores_used,
              :parallel_speedup_factor, :parallel_efficiency_percent,

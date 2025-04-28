@@ -1,25 +1,19 @@
+import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   input,
   Input,
-  effect,
   signal,
-  computed,
-  ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
-import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
-import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
-import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
-import { firstValueFrom } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleSlash, lucideGitBranch } from '@ng-icons/lucide';
 import {
   ApiV1ViolationsGet200Response,
   ViolationsService,
 } from '@sentinel-api';
-import { RuleResultsComponent } from '../rules/components';
 import {
   ContentTileComponent,
   DetailsContainerComponent,
@@ -27,6 +21,12 @@ import {
   TileDetailComponent,
   TileDividerComponent,
 } from '@shared/ui-custom';
+import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
+import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
+import { firstValueFrom } from 'rxjs';
+import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
+import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
+import { RuleResultsComponent } from '../rules/components';
 
 @Component({
   selector: 'sen-lint-results',
@@ -189,7 +189,6 @@ export class LintResultsComponent {
       'created_at',
       'updated_at',
       'duration',
-      'files_processed',
       'files_per_second_wall_time',
       'cumulative_processing_time_ms',
       'avg_time_per_file_ms',

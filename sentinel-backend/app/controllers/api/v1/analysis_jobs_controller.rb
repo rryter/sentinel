@@ -76,7 +76,6 @@ module Api
                 rules_matched: 0,
                 completed_at: Time.current,
                 duration: 0,
-                files_processed: 0,
                 files_per_second_wall_time: 0.0,
                 cumulative_processing_time_ms: 0,
                 avg_time_per_file_ms: 0.0,
@@ -179,7 +178,6 @@ module Api
         job.rules_matched ||= 0
         job.completed_at ||= Time.current
         job.duration ||= 0
-        job.files_processed ||= 0
         job.files_per_second_wall_time ||= 0.0
         job.cumulative_processing_time_ms ||= 0
         job.avg_time_per_file_ms ||= 0.0

@@ -11,29 +11,6 @@ class AnalysisService
       @job_id = job_id
     end
 
-    # Check the status of a job from the Go service
-    def check_status
-      job = AnalysisJob.find(@job_id)
-
-      # We need the Go job ID to check status
-      if job.go_job_id.blank?
-        Rails.logger.error("Cannot check status for job #{@job_id} - missing Go job ID")
-        return nil
-      end
-      response = HTTP.get("#{analyzer_service_url}/api/analyze/status/#{job.go_job_id}")
-
-      if response.status.success?
-        JSON.parse(response.body.to_s)
-      else
-        Rails.logger.error("Failed to get job status from analyzer service: #{response.body}")
-        nil
-      end
-    rescue => e
-      Rails.logger.error("Error checking job status from Go service: #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-      nil
-    end
-
     # Start the analysis by calling the Go service
     def start_analysis(project_id)
       job = AnalysisJob.find(@job_id)
@@ -122,7 +99,6 @@ class AnalysisService
       # Update job with metadata
       analysis_job.update!(
         total_files: data["totalFiles"] || 0,
-        processed_files: data["totalFiles"] || 0, # Use totalFiles since processedFiles isn't available
         status: "completed",
         completed_at: Time.current
       )
