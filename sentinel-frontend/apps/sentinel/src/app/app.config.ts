@@ -10,16 +10,11 @@ import { provideIcons } from '@shared/ui-custom';
 import { BarController, Colors, Legend } from 'chart.js';
 import { provideCharts } from 'ng2-charts';
 import { provideMarkdown } from 'ngx-markdown';
-import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideApi(
-      withBackendApiConfiguration({
-        basePath: environment.apiUrl,
-      }),
-    ),
+    provideApi(withBackendApiConfiguration()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(
       appRoutes,
