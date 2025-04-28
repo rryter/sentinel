@@ -26,11 +26,11 @@ class AnalysisService
 
       if response.status.success?
         result = JSON.parse(response.body.to_s)
-        go_job_id = result["jobId"] || result["id"]
+        job_id = result["jobId"] || result["id"]
 
-        if go_job_id
+        if job_id
           # Save the Go service job ID
-          job.update!(go_job_id: go_job_id)
+          job.update!(job_id: job_id)
           Rails.logger.info("Analysis job #{@job_id} started successfully with Go job ID: #{go_job_id}")
         else
           Rails.logger.warn("Go service did not return a job ID for job #{@job_id}")
@@ -54,12 +54,6 @@ class AnalysisService
     def fetch_patterns
       job = AnalysisJob.find(@job_id)
 
-      # We need the Go job ID to fetch results
-      if job.go_job_id.blank?
-        Rails.logger.error("Cannot fetch patterns for job #{@job_id} - missing Go job ID")
-        return nil
-      end
-
       # Use the results endpoint, not the status endpoint
       Rails.logger.info("Fetching results from #{analyzer_service_url}/api/analyze/results/#{job.go_job_id}")
       response = HTTP.get("#{analyzer_service_url}/api/analyze/results/#{job.go_job_id}")
@@ -76,18 +70,6 @@ class AnalysisService
     end
 
     def process_results(analysis_job)
-      # If we don't have a Go job ID, check if we have already processed results
-      if analysis_job.go_job_id.blank?
-        # Check if we have processed findings already
-        if analysis_job.violations.exists?
-          Rails.logger.info("Job #{@job_id} has existing violations but no Go job ID, skipping external fetch")
-          return true
-        else
-          Rails.logger.error("Cannot process results for job #{@job_id} - missing Go job ID and no existing results")
-          return false
-        end
-      end
-
       # Fetch data from Go service
       data = fetch_patterns
       return false unless data
