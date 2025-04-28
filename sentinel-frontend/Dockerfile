@@ -17,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npm run build:prod
 
 # Development stage
 FROM node:20-slim AS development
@@ -50,7 +50,7 @@ CMD ["npx", "nx", "run", "sentinel:serve", "--", "--host", "0.0.0.0", "--port", 
 FROM nginx:alpine AS production
 
 # Copy built assets from builder stage
-COPY --from=builder /app/dist/sentinel-frontend /usr/share/nginx/html
+COPY --from=builder /app/dist/apps/sentinel /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf

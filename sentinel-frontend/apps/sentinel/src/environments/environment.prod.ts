@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  githubClientId: '', // This will be filled by the user with their GitHub OAuth App client ID
-  apiUrl: '/api/v1'
-}; 
+  githubClientId: 'Ov23liUyGOdM3pIx3Mm8',
+  apiUrl: '/api/v1',
+};
