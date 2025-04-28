@@ -1,7 +1,7 @@
 class ViolationSerializer < ActiveModel::Serializer
   attributes :id, :start_line, :end_line, :start_col, :end_col,
              :file_with_violations_id, :rule_id, :rule_name, :description,
-             :line_number, :pattern_name, :location, :metadata_content, :code_snippet
+             :line_number, :pattern_name, :location, :code_snippet
 
   # Include the association for API compatibility, but it will use the preloaded data
   belongs_to :file_with_violations, class_name: "FileWithViolations"
@@ -23,18 +23,5 @@ class ViolationSerializer < ActiveModel::Serializer
   def location
     object.location_range
   end
-
-  # Serialize metadata JSON
-  def metadata_content
-    object.metadata.presence || {}
-  end
-
-  # Get the source code snippet if available in metadata
-  def code_snippet
-    if object.metadata.present? && object.metadata["code_snippet"].present?
-      object.metadata["code_snippet"]
-    else
-      nil
-    end
-  end
+ 
 end

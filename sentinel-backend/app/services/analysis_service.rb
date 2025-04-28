@@ -110,7 +110,6 @@ class AnalysisService
                 "startCol" => location["column"],
                 "endCol" => location["column"]
               },
-              "metadata" => match["metadata"]
             }
 
             file_results[file_path]["patternMatches"] << match_data
@@ -142,7 +141,6 @@ class AnalysisService
                 end_line: match["location"]["endLine"],
                 start_col: match["location"]["startCol"],
                 end_col: match["location"]["endCol"],
-                metadata: match["metadata"]
               )
             end
           end
@@ -281,9 +279,6 @@ class AnalysisService
               start_col: finding["column"],
               end_col: finding["column"] + 1, # Estimate end column if not provided
               severity_id: severity_id,
-              metadata: {
-                help: finding["help"]
-              }.to_json,
               created_at: Time.current,
               updated_at: Time.current
             }
