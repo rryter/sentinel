@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -6,20 +7,19 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { EMPTY, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   AnalysisJobsService,
   ApiV1AnalysisJobsGet200ResponseDataInner,
   ApiV1ProjectsGet200ResponseDataProjectsInner,
   ProjectsService,
-} from '@sentinel-api';
-import { LintStatusComponent } from '../lint-status/lint-status.component';
+} from '@sentinel/api';
 import { ProjectSelectorComponent } from '@shared/ui-custom';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { Router } from '@angular/router';
+import { EMPTY, catchError, of } from 'rxjs';
+import { LintStatusComponent } from '../lint-status/lint-status.component';
 
 enum LintStatus {
   PENDING = 'pending',

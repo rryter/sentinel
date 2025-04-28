@@ -1,14 +1,13 @@
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { map, switchMap } from 'rxjs/operators';
-import { DatePipe } from '@angular/common';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
-  ProjectsService,
   AnalysisJobsService,
   ApiV1AnalysisJobsGet200ResponseDataInner,
-} from '@sentinel-api';
+  ProjectsService,
+} from '@sentinel/api';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { map, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'sen-lint-list',

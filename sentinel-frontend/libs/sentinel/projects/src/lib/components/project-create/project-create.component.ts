@@ -1,25 +1,17 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
-  FormControl,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { ProjectsService } from 'src/app/api/generated/api/projects.service';
-import {
-  GitHubService,
-  GitHubRepository,
-} from '../../../../../../../apps/sentinel/src/app/services/github.service';
-import { map } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
-import { HttpHeaders } from '@angular/common/http';
-import { ApiV1ProjectsPostRequest } from 'src/app/api/generated/model/api-v1-projects-post-request';
-import { ApiV1ProjectsPost201Response } from 'src/app/api/generated/model/api-v1-projects-post201-response';
-import { ProjectService } from '../../../../../../../apps/sentinel/src/app/services/project.service';
+import { GitHubRepository, GitHubService } from '../../services/github.service';
+import { ProjectService } from '../../services/project.service';
 
 interface GroupedRepositories {
   [owner: string]: GitHubRepository[];

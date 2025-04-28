@@ -1,31 +1,31 @@
-import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, Input, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import {
-  HlmTableDirective,
-  HlmThComponent,
-  HlmTdComponent,
-} from '@spartan-ng/ui-table-helm';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideArrowUpDown,
+  lucideChevronDown,
   lucideCircle,
+  lucideEllipsis,
   lucideFile,
   lucideInfo,
   lucideX,
-  lucideChevronDown,
-  lucideEllipsis,
-  lucideArrowUpDown,
 } from '@ng-icons/lucide';
 import {
   ApiV1ViolationsGet200Response,
   ApiV1ViolationsGet200ResponseDataInner,
-} from '@sentinel-api';
+} from '@sentinel/api';
 import { BrnMenuTriggerDirective } from '@spartan-ng/brain/menu';
-import { HlmMenuModule } from '@spartan-ng/ui-menu-helm';
 import { BrnTableModule, useBrnColumnManager } from '@spartan-ng/brain/table';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
+import { HlmMenuModule } from '@spartan-ng/ui-menu-helm';
+import {
+  HlmTableDirective,
+  HlmTdComponent,
+  HlmThComponent,
+} from '@spartan-ng/ui-table-helm';
 
 export interface RuleResultItem {
   id: string;

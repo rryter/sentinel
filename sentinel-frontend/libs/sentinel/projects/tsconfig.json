@@ -10,7 +10,7 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@sentinel-api": ["../../../src/app/api/generated"],
+      "@sentinel/api": ["../../../src/app/api/generated"],
       "@shared/ui-custom": ["../../../libs/shared/ui-custom/src/index.ts"]
     }
   },

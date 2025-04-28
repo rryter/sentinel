@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GitHubService } from '../../services/github.service';
+import { GitHubService } from '../../../../../../libs/sentinel/projects/src/lib/services/github.service';
 
 @Component({
   selector: 'app-github-callback',

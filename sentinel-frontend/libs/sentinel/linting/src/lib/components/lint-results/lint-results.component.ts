@@ -11,9 +11,11 @@ import {
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleSlash, lucideGitBranch } from '@ng-icons/lucide';
 import {
+  AnalysisJobsService,
+  ApiV1AnalysisJobsGet200ResponseDataInner,
   ApiV1ViolationsGet200Response,
   ViolationsService,
-} from '@sentinel-api';
+} from '@sentinel/api';
 import {
   ContentTileComponent,
   DetailsContainerComponent,
@@ -24,8 +26,6 @@ import {
 import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
 import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
 import { firstValueFrom } from 'rxjs';
-import { AnalysisJobsService } from 'src/app/api/generated/api/analysis-jobs.service';
-import { ApiV1AnalysisJobsGet200ResponseDataInner } from 'src/app/api/generated/model/api-v1-analysis-jobs-get200-response-data-inner';
 import { RuleResultsComponent } from '../rules/components';
 
 @Component({

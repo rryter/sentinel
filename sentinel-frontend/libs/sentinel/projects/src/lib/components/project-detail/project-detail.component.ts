@@ -1,12 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
-  ProjectsService,
-  Project,
   ApiV1ProjectsPost201Response,
-} from '@sentinel-api';
+  Project,
+  ProjectsService,
+} from '@sentinel/api';
+import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-project-detail',

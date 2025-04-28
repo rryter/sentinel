@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../../libs/sentinel/projects/src/lib/services/github.service.ts", "../../libs/sentinel/projects/src/lib/services/project.service.ts"],
   "compilerOptions": {},
   "exclude": [
     "jest.config.ts",
