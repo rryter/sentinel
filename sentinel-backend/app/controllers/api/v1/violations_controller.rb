@@ -108,8 +108,8 @@ module Api
         # Group by date and count violations
         # Using date_trunc to standardize how dates are formatted
         counts_by_date = scope
-          .select("DATE(violations.created_at) as violation_date, COUNT(violations.id) as violation_count")
-          .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+          .select("DATE(violations.created_at) as violation_date, COUNT(1) as violation_count")
+          .where("violations.created_at BETWEEN ? AND ?", start_date.beginning_of_day, end_date.end_of_day)
           .group("DATE(violations.created_at)")
           .order("violation_date")
           .map { |result| [ result.violation_date.to_s, result.violation_count.to_i ] }
