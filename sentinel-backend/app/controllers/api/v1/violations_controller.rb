@@ -86,7 +86,7 @@ module Api
         end_date = params[:end_date] ? Date.parse(params[:end_date]) : Date.today
 
         # Get base query scope - use a more efficient join
-        scope = Violation.select("violations.*").joins("INNER JOIN files_with_violations ON files_with_violations.id = violations.file_with_violations_id")
+        scope = Violation.joins("INNER JOIN files_with_violations ON files_with_violations.id = violations.file_with_violations_id")
 
         # Filter by analysis_job_id if we're in the nested route or if explicitly provided
         if @analysis_job
@@ -108,8 +108,8 @@ module Api
         # Group by date and count violations
         # Using date_trunc to standardize how dates are formatted
         counts_by_date = scope
-          .select("DATE(violations.created_at) as violation_date, COUNT(*) as violation_count")
-          .where(violations: { created_at: start_date.beginning_of_day..end_date.end_of_day })
+          .select("DATE(violations.created_at) as violation_date, COUNT(violations.id) as violation_count")
+          .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
           .group("DATE(violations.created_at)")
           .order("violation_date")
           .map { |result| [ result.violation_date.to_s, result.violation_count.to_i ] }
