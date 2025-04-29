@@ -12,7 +12,7 @@ export const projectsRoutes = [
     component: ProjectCreateComponent,
   },
   {
-    path: ':id',
+    path: 'detail',
     component: ProjectDetailComponent,
   },
 ];
