@@ -39,6 +39,6 @@ echo "Generating Angular API clients from OpenAPI spec..."
     -g typescript-angular \
     -o libs/shared/api \
     --skip-validate-spec \
-    --additional-properties=providedIn=root,ngVersion=19.0.0,supportsES6=true,nullSafeAdditionalProps=true,fileNaming=kebab-case,modelPropertyNaming=original,sortParamsByRequiredFlag=true,useSingleRequestParameter=true,withInterfaces=true,taggedUnions=true,enumPropertyNaming=UPPERCASE,stringEnums=true,snapshot=false,npmName=sentinel-api-client,apiModulePrefix=Api,modelModulePrefix=Model,legacyDiscriminatorBehavior=false)
+    --additional-properties=providedIn=root,ngVersion=19.0.0,supportsES6=true,nullSafeAdditionalProps=true,fileNaming=kebab-case,modelPropertyNaming=original,sortParamsByRequiredFlag=true,useSingleRequestParameter=true,withInterfaces=true,taggedUnions=true,enumPropertyNaming=UPPERCASE,stringEnums=true,snapshot=false,npmName=sentinel-api-client,modelModulePrefix=Model,legacyDiscriminatorBehavior=false)
 
 echo "API client generation completed. Generated TypeScript clients are in $FRONTEND_DIR/src/app/api/generated" 

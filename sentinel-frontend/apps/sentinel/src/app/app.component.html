@@ -6,7 +6,7 @@
   <body class="h-full">
   ```
 -->
-
+{{ projectId() }}
 <div>
   <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
   <div class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
@@ -96,50 +96,53 @@
                       Projects
                     </a>
                   </li>
-                  <li>
-                    <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
-                    <a
-                      routerLink="/linting/rules"
-                      routerLinkActive="bg-gray-800 text-white"
-                      href="#"
-                      class="group flex gap-x-3 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 p-2 text-sm/6 font-semibold text-white"
-                    >
-                      <ng-icon
-                        hlm
-                        class="size-6 shrink-0"
-                        name="lucideScroll"
-                      ></ng-icon>
-                      Rules
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      routerLink="/linting/create"
-                      routerLinkActive="bg-gray-800 text-white"
-                      class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
-                    >
-                      <ng-icon
-                        hlm
-                        class="size-6 shrink-0"
-                        name="lucideSearch"
-                      ></ng-icon>
-                      Create Analysis
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      routerLink="/linting"
-                      routerLinkActive="bg-gray-800 text-white"
-                      class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
-                    >
-                      <ng-icon
-                        hlm
-                        class="size-6 shrink-0"
-                        name="lucideCircleCheck"
-                      ></ng-icon>
-                      Linting
-                    </a>
-                  </li>
+                  @if (true) {
+                    <li>
+                      <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
+                      <a
+                        routerLink="/linting/rules"
+                        routerLinkActive="bg-gray-800 text-white"
+                        href="#"
+                        class="group flex gap-x-3 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 p-2 text-sm/6 font-semibold text-white"
+                      >
+                        <ng-icon
+                          hlm
+                          class="size-6 shrink-0"
+                          name="lucideScroll"
+                        ></ng-icon>
+                        Rules
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        routerLink="/linting/create"
+                        routerLinkActive="bg-gray-800 text-white"
+                        class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+                      >
+                        <ng-icon
+                          hlm
+                          class="size-6 shrink-0"
+                          name="lucideSearch"
+                        ></ng-icon>
+                        Create Analysis
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        routerLink="/linting"
+                        routerLinkActive="bg-gray-800 text-white"
+                        class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+                      >
+                        <ng-icon
+                          hlm
+                          class="size-6 shrink-0"
+                          name="lucideCircleCheck"
+                        ></ng-icon>
+                        Linting
+                      </a>
+                    </li>
+                  }
+
                   <li>
                     <a
                       routerLink="/builds/metrics"

@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ProjectsService } from '../../../../../../apps/sentinel/src/app/api/generated/api/projects.service';
-import { Project } from '../../../../../../apps/sentinel/src/app/api/generated/model/project';
-
+import { Project, ProjectsService } from '../services/project';
 @Injectable({
   providedIn: 'root',
 })

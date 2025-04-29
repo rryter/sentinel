@@ -7,11 +7,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { firstValueFrom } from 'rxjs';
 import { GitHubRepository, GitHubService } from '../../services/github.service';
-import { ProjectService } from '../../services/project.service';
 
 interface GroupedRepositories {
   [owner: string]: GitHubRepository[];
@@ -19,12 +16,7 @@ interface GroupedRepositories {
 
 @Component({
   selector: 'app-project-create',
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule,
-    HlmButtonDirective,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, HlmButtonDirective],
   template: `
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
@@ -258,8 +250,6 @@ export class ProjectCreateComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private projectService: ProjectService,
-    private router: Router,
     public githubService: GitHubService,
   ) {
     this.projectForm = this.fb.group({
@@ -318,27 +308,27 @@ export class ProjectCreateComponent implements OnInit {
       this.isLoading = true;
       this.errorMessage = '';
 
-      try {
-        const response = await firstValueFrom(
-          this.projectService.createProject(
-            this.projectForm.get('name')?.value,
-            this.projectForm.get('repository_url')?.value,
-          ),
-        );
+      // try {
+      //   const response = await firstValueFrom(
+      //     this.projectService.createProject(
+      //       this.projectForm.get('name')?.value,
+      //       this.projectForm.get('repository_url')?.value,
+      //     ),
+      //   );
 
-        if (response.data.project.id) {
-          await firstValueFrom(
-            this.projectService.cloneRepository(response.data.project.id),
-          );
-          this.router.navigate(['/projects']);
-        }
-      } catch (error: any) {
-        this.errorMessage =
-          error.error?.message ||
-          'An error occurred while creating the project';
-      } finally {
-        this.isLoading = false;
-      }
+      //   if (response.data.project.id) {
+      //     await firstValueFrom(
+      //       this.projectService.cloneRepository(response.data.project.id),
+      //     );
+      //     this.router.navigate(['/projects']);
+      //   }
+      // } catch (error: any) {
+      //   this.errorMessage =
+      //     error.error?.message ||
+      //     'An error occurred while creating the project';
+      // } finally {
+      //   this.isLoading = false;
+      // }
     }
   }
 }
