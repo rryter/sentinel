@@ -21,7 +21,7 @@
           {
             "path": "tools/esbuild-metrics-plugin.ts",
             "options": {
-              "backendUrl": "http://localhost:3000",
+              "backendUrl": "https://api.scoper.cloud",
               "logToConsole": false,
               "apiToken": "c212c0e86edeb6724f0762c60421d112da0567d439109c532e61a29b31e6dcb3"
             }

@@ -212,12 +212,12 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
 
       const result = await response.json();
 
-      if (logToConsole) {
-        console.log(
-          `[Build Metrics] Successfully sent ${metricsToSend.length} metrics`,
-          result,
-        );
-      }
+      console.log();
+      console.log(
+        `\x1b[32m[Build Metrics] Successfully sent to ${backendUrl}\x1b[0m`,
+        result,
+      );
+      console.log();
 
       // Handle any failed metrics
       const failedMetrics =
@@ -403,6 +403,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
           workspace_project: workspace.project,
           workspace_environment: workspace.environment,
           workspace_user: workspace.user,
+          workspace_target: 'build', // TODO: read poper target
         };
 
         // Log metrics
