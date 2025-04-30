@@ -1,5 +1,4 @@
 import { Route } from '@angular/router';
-import { ProjectListComponent } from 'libs/sentinel/projects/src/lib/components/project-list/project-list.component';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
 
 export const appRoutes: Route[] = [
@@ -9,7 +8,8 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'projects',
-    component: ProjectListComponent,
+    loadChildren: () =>
+      import('@sentinel/projects').then((m) => m.projectsRoutes),
   },
   {
     path: 'projects/:projectId',
