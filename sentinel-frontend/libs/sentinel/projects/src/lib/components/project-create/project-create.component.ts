@@ -7,7 +7,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { ProjectsService } from '@sentinel/api';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { firstValueFrom } from 'rxjs';
 import { GitHubRepository, GitHubService } from '../../services/github.service';
 
 interface GroupedRepositories {
@@ -16,7 +19,7 @@ interface GroupedRepositories {
 
 @Component({
   selector: 'app-project-create',
-  imports: [CommonModule, ReactiveFormsModule, HlmButtonDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HlmButtonDirective],
   template: `
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
@@ -29,7 +32,12 @@ interface GroupedRepositories {
           </p>
         </div>
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button routerLink="/projects" type="button" hlmBtn variant="outline">
+          <button
+            [routerLink]="'/projects'"
+            type="button"
+            hlmBtn
+            variant="outline"
+          >
             Back to Projects
           </button>
         </div>
@@ -251,6 +259,8 @@ export class ProjectCreateComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public githubService: GitHubService,
+    private projectsService: ProjectsService,
+    private router: Router,
   ) {
     this.projectForm = this.fb.group({
       name: ['', Validators.required],
@@ -308,27 +318,33 @@ export class ProjectCreateComponent implements OnInit {
       this.isLoading = true;
       this.errorMessage = '';
 
-      // try {
-      //   const response = await firstValueFrom(
-      //     this.projectService.createProject(
-      //       this.projectForm.get('name')?.value,
-      //       this.projectForm.get('repository_url')?.value,
-      //     ),
-      //   );
+      try {
+        const response = await firstValueFrom(
+          this.projectsService.apiV1ProjectsPost({
+            apiV1ProjectsPostRequest: {
+              project: {
+                name: this.projectForm.get('name')?.value,
+                repository_url: this.projectForm.get('repository_url')?.value,
+              },
+            },
+          }),
+        );
 
-      //   if (response.data.project.id) {
-      //     await firstValueFrom(
-      //       this.projectService.cloneRepository(response.data.project.id),
-      //     );
-      //     this.router.navigate(['/projects']);
-      //   }
-      // } catch (error: any) {
-      //   this.errorMessage =
-      //     error.error?.message ||
-      //     'An error occurred while creating the project';
-      // } finally {
-      //   this.isLoading = false;
-      // }
+        console.log(response);
+
+        // if (response.data.project.id) {
+        //   await firstValueFrom(
+        //     this.projectsService.cloneRepository(response.data.project.id),
+        //   );
+        //   this.router.navigate(['/projects']);
+        // }
+      } catch (error: any) {
+        this.errorMessage =
+          error.error?.message ||
+          'An error occurred while creating the project';
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 }
