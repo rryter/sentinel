@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ProjectsService } from '@sentinel/api';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { firstValueFrom } from 'rxjs';
@@ -260,7 +260,6 @@ export class ProjectCreateComponent implements OnInit {
     private fb: FormBuilder,
     public githubService: GitHubService,
     private projectsService: ProjectsService,
-    private router: Router,
   ) {
     this.projectForm = this.fb.group({
       name: ['', Validators.required],
@@ -318,8 +317,16 @@ export class ProjectCreateComponent implements OnInit {
       this.isLoading = true;
       this.errorMessage = '';
 
+      // Create a new instance of HttpHeaders by merging the new headers with the existing default headers
+      this.projectsService.defaultHeaders =
+        this.projectsService.defaultHeaders.append(
+          'Authorization',
+          `Bearer ${localStorage.getItem('github_token')}`,
+        );
+
       try {
         const response = await firstValueFrom(
+          // Set the Authorization header on the service's defaultHeaders
           this.projectsService.apiV1ProjectsPost({
             apiV1ProjectsPostRequest: {
               project: {

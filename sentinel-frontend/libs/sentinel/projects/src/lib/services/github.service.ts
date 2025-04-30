@@ -21,6 +21,7 @@ export interface GitHubRepositoriesResponse {
 })
 export class GitHubService {
   private accessToken = new BehaviorSubject<string | null>(null);
+  private readonly baseApiUrl = environment.apiBaseUrl;
   private readonly clientId = environment.githubClientId;
   private readonly redirectUri = `${window.location.origin}/auth/github/callback`;
 
@@ -39,7 +40,7 @@ export class GitHubService {
   }
 
   handleAuthCallback(code: string): Observable<any> {
-    return this.http.post('http://localhost:3000/api/v1/auth/github/callback', {
+    return this.http.post(this.baseApiUrl + `/api/v1/auth/github/callback`, {
       code,
     });
   }
@@ -55,7 +56,7 @@ export class GitHubService {
     });
 
     return this.http.get<GitHubRepositoriesResponse>(
-      'http://localhost:3000/api/v1/github/repositories',
+      this.baseApiUrl + '/api/v1/github/repositories',
       { headers },
     );
   }

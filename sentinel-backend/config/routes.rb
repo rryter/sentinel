@@ -10,9 +10,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :projects, only: [:index, :show, :create] do
-        member do
-          post :clone_repository
-        end
+
       end
       
       resources :analysis_jobs, only: [:index, :show, :create] do

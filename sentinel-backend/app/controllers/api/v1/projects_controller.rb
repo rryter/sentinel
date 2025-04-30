@@ -1,7 +1,7 @@
 module Api
   module V1
     class ProjectsController < ApplicationController
-      before_action :set_project, only: [:show, :clone_repository]
+      before_action :set_project, only: [:show]
 
       # GET /api/v1/projects
       def index
@@ -37,20 +37,6 @@ module Api
           end
         else
           render json: { errors: @project.errors }, status: :unprocessable_entity
-        end
-      end
-
-      # POST /api/v1/projects/:id/clone
-      def clone_repository
-        begin
-          Thread.current[:github_token] = request.headers['Authorization']&.split(' ')&.last
-          git_service = GitService.new(@project)
-          result = git_service.clone_repository
-          render json: { message: 'Repository cloned successfully', path: result[:path] }
-        rescue GitService::GitError => e
-          render json: { error: e.message }, status: :unprocessable_entity
-        ensure
-          Thread.current[:github_token] = nil
         end
       end
 
