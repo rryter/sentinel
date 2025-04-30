@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_30_132500) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_30_141501) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -39,10 +39,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_30_132500) do
     t.string "machine_hostname", null: false
     t.string "machine_platform", null: false
     t.integer "machine_cpu_count", null: false
-    t.integer "machine_memory_total", null: false
-    t.integer "machine_memory_free", null: false
+    t.bigint "machine_memory_total", null: false
+    t.bigint "machine_memory_free", null: false
     t.string "process_node_version", null: false
-    t.integer "process_memory", null: false
+    t.bigint "process_memory", null: false
     t.integer "build_files_count", null: false
     t.string "build_output_dir", null: false
     t.integer "build_error_count", default: 0, null: false
