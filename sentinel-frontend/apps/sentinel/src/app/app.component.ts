@@ -1,28 +1,14 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import {
   ActivatedRoute,
   NavigationEnd,
   Router,
-  RouterModule,
+  RouterOutlet,
 } from '@angular/router';
-import { NgIcon } from '@ng-icons/core';
-import { BrnSeparatorComponent } from '@spartan-ng/brain/separator';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
-import { HlmSeparatorDirective } from '@spartan-ng/ui-separator-helm';
 import { filter, map } from 'rxjs';
 
 @Component({
-  imports: [
-    RouterModule,
-    CommonModule,
-    HlmButtonDirective,
-    NgIcon,
-    HlmIconDirective,
-    BrnSeparatorComponent,
-    HlmSeparatorDirective,
-  ],
+  imports: [RouterOutlet],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

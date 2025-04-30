@@ -1,1 +1,66 @@
-<p>Login works!</p>
+<!-- Logo -->
+<div class="flex justify-center">
+  <div class="p-5 mb-10 flex items-center justify-center">
+    <img src="./scoper.png" width="200px" />
+  </div>
+</div>
+
+<!-- Auth Card -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+  <!-- Passkey Button -->
+  <button
+    class="w-full flex items-center justify-center gap-x-2 py-3 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+  >
+    <ng-icon hlm name="lucideFingerprint" class="h-6 w-6 text-gray-400" />
+    Sign in with passkey
+  </button>
+
+  <!-- Divider -->
+  <div class="relative">
+    <div class="absolute inset-0 flex items-center">
+      <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+    </div>
+    <div class="relative flex justify-center text-sm">
+      <span
+        class="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400"
+        >Or continue with</span
+      >
+    </div>
+  </div>
+
+  <!-- Email Button -->
+  <div class="space-y-3">
+    <button
+      class="w-full flex items-center justify-center gap-x-2 py-2.5 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+    >
+      <ng-icon
+        name="lucideMail"
+        class="h-6 w-6 text-gray-500 dark:text-gray-400"
+      ></ng-icon>
+      Sign in with email
+    </button>
+
+    <!-- GitHub Button -->
+    <button
+      class="w-full flex items-center justify-center gap-x-2 py-2.5 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+    >
+      <ng-icon
+        name="lucideGithub"
+        class="h-6 w-6 text-gray-900 dark:text-white"
+      ></ng-icon>
+      Sign in with GitHub
+    </button>
+  </div>
+</div>
+
+<!-- Create Account -->
+<div class="text-center py-6">
+  <p class="text-sm text-gray-600 dark:text-gray-400">
+    Don't have an account?
+    <a
+      href="#"
+      class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+      >Create one now</a
+    >
+  </p>
+</div>
