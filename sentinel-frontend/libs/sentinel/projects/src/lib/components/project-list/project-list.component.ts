@@ -6,10 +6,11 @@ import {
   ProjectsService,
 } from '@sentinel/api';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 @Component({
   selector: 'app-project-list',
-  imports: [CommonModule, RouterModule, HlmButtonDirective],
+  imports: [CommonModule, RouterModule, HlmButtonDirective, HlmIconDirective],
   providers: [ProjectsService],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.scss'],
