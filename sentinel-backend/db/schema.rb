@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_28_125848) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_30_132500) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -53,6 +53,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_28_125848) do
     t.string "workspace_user", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "build_entry_points"
+    t.json "build_file_types"
+    t.string "workspace_task"
     t.index ["timestamp"], name: "index_build_metrics_on_timestamp"
     t.index ["workspace_environment"], name: "index_build_metrics_on_workspace_environment"
     t.index ["workspace_project"], name: "index_build_metrics_on_workspace_project"

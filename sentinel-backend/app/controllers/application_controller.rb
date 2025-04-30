@@ -1,8 +1,16 @@
 class ApplicationController < ActionController::API
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
+  rescue_from ActionDispatch::Http::Parameters::ParseError, with: :bad_request
 
   private
+
+  # Handle JSON parse errors
+  def bad_request(exception)
+    Rails.logger.error("Parameter parsing error: #{exception.message}")
+    Rails.logger.error("Request body: #{request.body.read}")
+    render json: { error: 'Invalid JSON format in request body. Make sure all keys are quoted properly.' }, status: :bad_request
+  end
 
   # Helper method to render with serializer and include associations
   def render_serialized(resource, options = {})
@@ -51,4 +59,4 @@ class ApplicationController < ActionController::API
   def unprocessable_entity(exception)
     render json: { error: exception.message }, status: :unprocessable_entity
   end
-end 
+end

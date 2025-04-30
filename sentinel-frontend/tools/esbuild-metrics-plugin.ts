@@ -1,12 +1,11 @@
-import { Plugin, BuildOptions, BuildResult } from 'esbuild';
-import * as os from 'os';
-import * as crypto from 'crypto';
+import { BuildOptions, BuildResult, Plugin } from 'esbuild';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 interface BuildMetrics {
   id?: string;
-  timestamp: number;
+  timestamp: string;
   duration_ms: number;
   is_initial_build: boolean;
 
@@ -23,18 +22,15 @@ interface BuildMetrics {
 
   // Build metrics
   build_files_count: number;
-  build_entry_points: string[];
   build_output_dir: string;
   build_error_count: number;
   build_warning_count: number;
-  build_file_types: Record<string, number>;
 
   // Workspace info
   workspace_name: string;
   workspace_project: string;
   workspace_environment: string;
   workspace_user: string;
-  workspace_task: string;
 }
 
 interface PluginOptions {
@@ -71,16 +67,9 @@ interface PluginOptions {
 }
 
 /**
- * Generates a unique identifier for the build
- */
-function generateBuildId(): string {
-  return crypto.randomBytes(16).toString('hex');
-}
-
-/**
  * Get workspace information from package.json and environment
  */
-function getWorkspaceInfo(buildOptions: BuildOptions) {
+function getWorkspaceInfo(_buildOptions: BuildOptions) {
   try {
     // Try to find package.json by walking up the directory tree
     let currentDir = process.cwd();
@@ -197,6 +186,12 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         );
       }
 
+      // Validate that metrics can be properly stringified to JSON
+      const metricsJson = JSON.stringify({ metrics: metricsToSend });
+      if (logToConsole) {
+        console.log('[Build Metrics] Sending data:', JSON.parse(metricsJson));
+      }
+
       const response = await fetch(`${backendUrl}/api/v1/build_metrics`, {
         method: 'POST',
         headers: {
@@ -286,13 +281,6 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
     duration: number,
   ): Omit<BuildMetrics, 'id'> => {
     // Get entry points from metafile
-    const entryPoints = buildResult.metafile?.inputs
-      ? Object.entries(buildResult.metafile.inputs)
-          .filter(([_, input]) =>
-            input.imports.some((imp) => imp.kind === 'entry-point'),
-          )
-          .map(([path]) => path)
-      : [];
 
     // Get output directory from metafile or first output file
     let outputDir = 'unknown';
@@ -324,10 +312,10 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
 
     const buildTarget =
       process.env.NX_BUILD_TARGET || 'unknown:unknown:unknown';
-    const { project, task, environment } = extractBuildTarget(buildTarget);
+    const { project, environment } = extractBuildTarget(buildTarget);
 
     return {
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       duration_ms: duration,
       is_initial_build: isFirstBuild,
       machine_hostname: os.hostname(),
@@ -338,12 +326,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       process_node_version: process.version,
       process_memory: process.memoryUsage().heapUsed,
       build_files_count: fileCount,
-      build_entry_points: entryPoints,
       build_output_dir: outputDir.replace(/'/g, '"'),
       build_error_count: buildResult.errors.length,
       build_warning_count: buildResult.warnings.length,
-      build_file_types: fileTypes,
-      workspace_task: task,
       workspace_name: process.env.NX_WORKSPACE_NAME || 'sentinel',
       workspace_project: project,
       workspace_environment: environment,
@@ -400,9 +385,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
 
         // Process files from metafile
         if (result.metafile?.inputs) {
-          for (const [filePath, info] of Object.entries(
-            result.metafile.inputs,
-          )) {
+          for (const [filePath] of Object.entries(result.metafile.inputs)) {
             fileCount++;
             const ext = path.extname(filePath).toLowerCase();
             fileTypes[ext] = (fileTypes[ext] || 0) + 1;

@@ -33,6 +33,8 @@ class BuildMetric < ActiveRecord::Base
   scope :by_environment, ->(env_name) { where(workspace_environment: env_name) }
   scope :with_errors, -> { where('build_error_count > 0') }
   
+  # MySQL has native JSON type support for build_file_types
+
   # Methods
   def duration_in_seconds
     duration_ms / 1000.0
@@ -46,4 +48,4 @@ class BuildMetric < ActiveRecord::Base
   def successful?
     build_error_count.zero?
   end
-end 
+end

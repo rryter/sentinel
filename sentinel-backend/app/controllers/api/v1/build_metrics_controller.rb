@@ -119,7 +119,10 @@ module Api
         results = []
         ActiveRecord::Base.transaction do
           metrics.each do |metric_params|
-            build_metric = BuildMetric.new(metric_params.permit(
+            # Log incoming parameters for debugging
+            Rails.logger.info("Processing metric: #{metric_params.inspect}")
+            
+            permitted_params = metric_params.permit(
               :id,
               :timestamp,
               :duration_ms,
@@ -142,11 +145,14 @@ module Api
               :workspace_environment,
               :workspace_user,
               :workspace_task
-            ))
+            )
+            
+            build_metric = BuildMetric.new(permitted_params)
 
             if build_metric.save
               results << { id: build_metric.id, status: 'success' }
             else
+              Rails.logger.error("Failed to save build metric: #{build_metric.errors.full_messages}")
               results << { 
                 id: metric_params[:id], 
                 status: 'error', 

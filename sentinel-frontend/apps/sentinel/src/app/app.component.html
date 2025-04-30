@@ -95,9 +95,10 @@
                       Projects
                     </a>
                   </li>
-                  @if (true) {
+                  @if (projectId) {
+                    <brn-separator hlmSeparator />
+
                     <li>
-                      <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                       <a
                         routerLink="./linting/rules"
                         routerLinkActive="bg-gray-800 text-white"
@@ -139,22 +140,21 @@
                         Linting
                       </a>
                     </li>
+                    <li>
+                      <a
+                        routerLink="/builds/metrics"
+                        routerLinkActive="bg-gray-800 text-white"
+                        class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+                      >
+                        <ng-icon
+                          hlm
+                          class="size-6 shrink-0"
+                          name="lucideHammer"
+                        ></ng-icon>
+                        Build Metrics
+                      </a>
+                    </li>
                   }
-
-                  <li>
-                    <a
-                      routerLink="/builds/metrics"
-                      routerLinkActive="bg-gray-800 text-white"
-                      class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
-                    >
-                      <ng-icon
-                        hlm
-                        class="size-6 shrink-0"
-                        name="lucideHammer"
-                      ></ng-icon>
-                      Build Metrics
-                    </a>
-                  </li>
                   <li>
                     <a
                       href="#"
@@ -296,6 +296,8 @@
                 </a>
               </li>
               @if (projectId) {
+                <brn-separator hlmSeparator />
+
                 <li>
                   <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                   <a
@@ -309,22 +311,7 @@
                       class="size-6 shrink-0"
                       name="lucideScroll"
                     ></ng-icon>
-                    Rules 2
-                  </a>
-                </li>
-                <li>
-                  <a
-                    [routerLink]="['/projects', projectId, 'linting', 'create']"
-                    routerLinkActive="bg-gray-800 text-white"
-                    [routerLinkActiveOptions]="{ exact: true }"
-                    class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
-                  >
-                    <ng-icon
-                      hlm
-                      class="size-6 shrink-0"
-                      name="lucideSearch"
-                    ></ng-icon>
-                    Create Analysis
+                    Rules
                   </a>
                 </li>
                 <li>
@@ -342,21 +329,21 @@
                     Linting
                   </a>
                 </li>
+                <li>
+                  <a
+                    [routerLink]="['/projects', projectId, 'builds', 'metrics']"
+                    routerLinkActive="bg-gray-800 text-white"
+                    class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+                  >
+                    <ng-icon
+                      hlm
+                      class="size-6 shrink-0"
+                      name="lucideHammer"
+                    ></ng-icon>
+                    Build Metrics
+                  </a>
+                </li>
               }
-              <li>
-                <a
-                  [routerLink]="['/projects', projectId, 'builds', 'metrics']"
-                  routerLinkActive="bg-gray-800 text-white"
-                  class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
-                >
-                  <ng-icon
-                    hlm
-                    class="size-6 shrink-0"
-                    name="lucideHammer"
-                  ></ng-icon>
-                  Build Metrics
-                </a>
-              </li>
             </ul>
           </li>
 
