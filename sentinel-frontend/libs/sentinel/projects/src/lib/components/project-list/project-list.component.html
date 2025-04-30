@@ -14,137 +14,130 @@
   </div>
   <div class="mt-8 flow-root">
     @if (isLoading) {
-    <div class="flex justify-center py-8">
-      <div
-        class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"
-      ></div>
-    </div>
+      <div class="flex justify-center py-8">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"
+        ></div>
+      </div>
     } @else if (errorMessage) {
-    <div class="bg-red-50 p-4 rounded-md">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg
-            class="h-5 w-5 text-red-400"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">{{ errorMessage }}</h3>
+      <div class="bg-red-50 p-4 rounded-md">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">{{ errorMessage }}</h3>
+          </div>
         </div>
       </div>
-    </div>
     } @else if (projects.length === 0) {
-    <div class="text-center py-8">
-      <button
-        type="button"
-        routerLink="/projects/create"
-        class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      >
-        <svg
-          class="mx-auto size-12 text-gray-400"
-          stroke="currentColor"
-          fill="none"
-          viewBox="0 0 48 48"
-          aria-hidden="true"
+      <div class="text-center py-8">
+        <button
+          type="button"
+          routerLink="/projects/create"
+          class="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
+          <ng-icon
+            hlm
+            name="lucideDatabase"
+            size="xl"
+            class="mx-auto text-gray-400"
           />
-        </svg>
-        <span class="mt-2 block text-sm font-semibold text-gray-900"
-          >Create a new project</span
-        >
-        <span class="mt-1 block text-sm text-gray-500"
-          >Get started by adding your first code repository for analysis.</span
-        >
-      </button>
-    </div>
+          <span class="mt-2 block text-sm font-semibold text-gray-900"
+            >Create a new project</span
+          >
+          <span class="mt-1 block text-sm text-gray-500"
+            >Get started by adding your first code repository for
+            analysis.</span
+          >
+        </button>
+      </div>
     } @else {
-    <div class="inline-block min-w-full py-2 align-middle">
-      <div class="overflow-hidden shadow ring-1 ring-black/5 sm:rounded-lg">
-        <table class="min-w-full divide-y divide-gray-300">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                scope="col"
-                class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
-              >
-                Name
-              </th>
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Repository
-              </th>
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Status
-              </th>
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
-                Last Updated
-              </th>
-              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
-                <span class="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 bg-white">
-            @for (project of projects; track project.id) {
-            <tr class="even:bg-gray-50">
-              <td
-                class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-              >
-                <a [routerLink]="['/projects', project.id]">
-                  {{ project.name }}
-                </a>
-              </td>
-              <td class="px-3 py-4 text-sm text-gray-500 max-w-md truncate">
-                {{ project.repository_url }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-4 text-sm">
-                <!-- <span
+      <div class="inline-block min-w-full py-2 align-middle">
+        <div class="overflow-hidden shadow ring-1 ring-black/5 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                >
+                  Name
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Repository
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >
+                  Last Updated
+                </th>
+                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              @for (project of projects; track project.id) {
+                <tr class="even:bg-gray-50">
+                  <td
+                    class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
+                  >
+                    <a [routerLink]="['/projects', project.id]">
+                      {{ project.name }}
+                    </a>
+                  </td>
+                  <td class="px-3 py-4 text-sm text-gray-500 max-w-md truncate">
+                    {{ project.repository_url }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm">
+                    <!-- <span
                   class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
                   [ngClass]="getStatusClass(project.status)"
                 >
                   {{ project.status || 'Unknown' }}
                 </span> -->
-              </td>
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {{ project.updated_at | date : 'medium' }}
-              </td>
-              <td
-                class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
-              >
-                <a
-                  [routerLink]="['/projects', project.id, 'edit']"
-                  class="text-indigo-600 hover:text-indigo-900"
-                >
-                  Edit<span class="sr-only">, {{ project.name }}</span>
-                </a>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {{ project.updated_at | date: 'medium' }}
+                  </td>
+                  <td
+                    class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+                  >
+                    <a
+                      [routerLink]="['/projects', project.id, 'edit']"
+                      class="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Edit<span class="sr-only">, {{ project.name }}</span>
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     }
   </div>
 </div>

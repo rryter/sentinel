@@ -36,4 +36,9 @@ export const appRoutes: Route[] = [
     redirectTo: '/projects',
     pathMatch: 'full',
   },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('@shared/ui-custom').then((m) => m.NotFound404Component),
+  },
 ];
