@@ -18,9 +18,9 @@
       "@sentinel/api": ["libs/shared/api"],
       "@sentinel/build": ["libs/sentinel/build/src/index.ts"],
       "@sentinel/linting": ["libs/sentinel/linting/src/index.ts"],
+      "@shared/login": ["libs/shared/login/src/index.ts"],
       "@sentinel/projects": ["libs/sentinel/projects/src/index.ts"],
       "@sentinel/settings": ["libs/sentinel/settings/src/index.ts"],
-      "@shared/*": ["src/app/shared/*"],
       "@shared/ui-custom": ["libs/shared/ui-custom/src/index.ts"],
       "@spartan-ng/ui-accordion-helm": [
         "libs/ui/ui-accordion-helm/src/index.ts"

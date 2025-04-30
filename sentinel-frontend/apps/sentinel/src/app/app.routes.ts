@@ -7,6 +7,10 @@ export const appRoutes: Route[] = [
     component: GitHubCallbackComponent,
   },
   {
+    path: 'auth',
+    loadChildren: () => import('@shared/login').then((m) => m.loginRoutes),
+  },
+  {
     path: 'projects',
     loadChildren: () =>
       import('@sentinel/projects').then((m) => m.projectsRoutes),
