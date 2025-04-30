@@ -27,28 +27,31 @@ module Api
 
         # Get metrics grouped by time interval (default 1 hour)
         interval = (params[:interval] || '1h').downcase
-        interval_seconds = case interval
-                         when '1m' then 1.minute
-                         when '5m' then 5.minutes
-                         when '15m' then 15.minutes
-                         when '30m' then 30.minutes
-                         when '1h' then 1.hour
-                         when '6h' then 6.hours
-                         when '12h' then 12.hours
-                         when '1d' then 1.day
-                         else 1.hour
-                         end
+        time_bucket =
+          case interval
+          when '1m'
+            "DATE_FORMAT(timestamp, '%Y-%m-%d %H:%i:00')"
+          when '5m'
+            "CONCAT(DATE_FORMAT(timestamp, '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(timestamp)/5)*5, 2, '0'), ':00')"
+          when '15m'
+            "CONCAT(DATE_FORMAT(timestamp, '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(timestamp)/15)*15, 2, '0'), ':00')"
+          when '30m'
+            "CONCAT(DATE_FORMAT(timestamp, '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(timestamp)/30)*30, 2, '0'), ':00')"
+          when '1h'
+            "DATE_FORMAT(timestamp, '%Y-%m-%d %H:00:00')"
+          when '6h'
+            "CONCAT(DATE_FORMAT(timestamp, '%Y-%m-%d '), LPAD(FLOOR(HOUR(timestamp)/6)*6, 2, '0'), ':00:00')"
+          when '12h'
+            "CONCAT(DATE_FORMAT(timestamp, '%Y-%m-%d '), LPAD(FLOOR(HOUR(timestamp)/12)*12, 2, '0'), ':00:00')"
+          when '1d'
+            "DATE_FORMAT(timestamp, '%Y-%m-%d 00:00:00')"
+          else
+            "DATE_FORMAT(timestamp, '%Y-%m-%d %H:00:00')"
+          end
 
-        # Convert interval to milliseconds for timestamp grouping
-        interval_ms = interval_seconds * 1000
-        
-        # Create the time bucket expression
-        time_bucket = "(timestamp / #{interval_ms}) * #{interval_ms}"
-
-        # Build the query with proper grouping and separate initial/hot reload metrics
         metrics = query
           .select([
-            time_bucket,
+            "#{time_bucket} as time_bucket",
             'MIN(timestamp) as min_timestamp',
             # Initial build metrics
             'AVG(CASE WHEN is_initial_build THEN duration_ms END) as initial_avg_duration_ms',
@@ -70,8 +73,8 @@ module Api
             'AVG(machine_memory_free) as avg_memory_free',
             'AVG(machine_memory_total) as avg_memory_total'
           ].join(', '))
-          .group(time_bucket)
-          .order(Arel.sql(time_bucket))
+          .group('time_bucket')
+          .order(Arel.sql('time_bucket'))
 
         # Get unique projects and environments for filters
         available_filters = {
@@ -166,4 +169,4 @@ module Api
       end
     end
   end
-end 
+end
