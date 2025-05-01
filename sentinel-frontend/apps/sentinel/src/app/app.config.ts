@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import {
   provideRouter,
   withComponentInputBinding,
@@ -25,5 +26,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideMarkdown(),
     provideIcons(),
+    provideAnimations(),
   ],
 };
