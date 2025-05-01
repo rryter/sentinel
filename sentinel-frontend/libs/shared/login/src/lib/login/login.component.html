@@ -1,5 +1,5 @@
 <!-- Logo -->
-<div class="flex justify-center" @fadeInUp>
+<div class="flex justify-center">
   <div class="p-5 mb-10 flex items-center justify-center">
     <img src="./scoper.png" width="200px" />
   </div>
@@ -62,7 +62,7 @@
   <p class="text-sm text-gray-600 dark:text-gray-400">
     Don't have an account?
     <a
-      href="#"
+      [routerLink]="['../registration']"
       class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all duration-300"
       >Create one now</a
     >

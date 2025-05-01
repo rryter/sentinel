@@ -8,12 +8,13 @@ import {
 } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFingerprint, lucideGithub, lucideMail } from '@ng-icons/lucide';
 
 @Component({
   selector: 'lib-login',
-  imports: [CommonModule, NgIcon],
+  imports: [CommonModule, NgIcon, RouterLink],
   providers: [provideIcons({ lucideFingerprint, lucideMail, lucideGithub })],
   templateUrl: './login.component.html',
   animations: [

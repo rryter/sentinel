@@ -6,11 +6,11 @@ export const loginRoutes: Route[] = [
     loadComponent: () =>
       import('./login/login.component').then((m) => m.LoginComponent),
   },
-  //   {
-  //     path: 'register',
-  //     loadComponent: () =>
-  //       import('./pages/register/register.component').then(
-  //         (m) => m.RegisterComponent,
-  //       ),
-  //   },
+  {
+    path: 'registration',
+    loadComponent: () =>
+      import('./registration/registration.component').then(
+        (m) => m.RegistrationComponent,
+      ),
+  },
 ];
