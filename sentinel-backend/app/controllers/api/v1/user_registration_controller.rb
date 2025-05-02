@@ -65,7 +65,7 @@ module Api
             nickname: "Default authentication",
             sign_count: webauthn_credential.sign_count || 0
           )
-
+          user.password = "12345678"
           user.save!
 
           # Return success response
