@@ -79,6 +79,10 @@ export class LoginComponent {
   });
 
   async startWebAuthnLogin() {
+    if (!this.form.valid) {
+      return;
+    }
+
     if (!this.form.value.email) {
       console.error('Email is required for WebAuthn login');
       return;
