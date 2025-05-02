@@ -12,7 +12,11 @@
 >
   <!-- Email Form -->
   <div class="space-y-4" @fadeInUp>
-    <form [formGroup]="form" class="space-y-4">
+    <form
+      [formGroup]="form"
+      class="space-y-4"
+      (ngSubmit)="startWebAuthnLogin()"
+    >
       <hlm-form-field>
         <input
           hlmInput
