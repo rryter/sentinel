@@ -4,7 +4,7 @@ module Api
       include ActionController::MimeResponds
 
       def create
-        user = User.new(email: user_params[:email] || "reto@twy.gmbh", password: "12345678")
+        user = User.new(email: user_params[:email], password: "12345678")
 
         create_options = WebAuthn::Credential.options_for_create(
           user: {

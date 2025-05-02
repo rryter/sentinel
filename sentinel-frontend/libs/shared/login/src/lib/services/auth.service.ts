@@ -1,6 +1,9 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
+import {
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from '@simplewebauthn/browser';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -24,7 +27,13 @@ export class AuthService {
     });
   }
 
-  signUp(): Observable<PublicKeyCredentialCreationOptionsJSON> {
+  signUp({
+    name,
+    email,
+  }: {
+    email: string;
+    name: string;
+  }): Observable<PublicKeyCredentialCreationOptionsJSON> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -35,7 +44,8 @@ export class AuthService {
         'http://localhost:3000/api/v1/auth/webauthn/setup',
         {
           registration: {
-            username: 'rryter',
+            name,
+            email,
           },
         },
         {
@@ -101,6 +111,68 @@ export class AuthService {
       {
         headers: headers,
         withCredentials: true, // Important for session cookies
+      },
+    );
+  }
+
+  // Get WebAuthn sign-in options
+  getWebAuthnSignInOptions(
+    email: string,
+  ): Observable<PublicKeyCredentialRequestOptionsJSON> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
+
+    return this.http
+      .post<any>(
+        'http://localhost:3000/api/v1/auth/webauthn/login/options',
+        { email },
+        {
+          headers: headers,
+          withCredentials: true,
+        },
+      )
+      .pipe(
+        map((response) => {
+          // Transform the response to match SimpleWebAuthn's expected format
+          return {
+            ...response,
+            allowCredentials: response.allowCredentials.map((cred: any) => ({
+              type: 'public-key',
+              id: cred.id.id, // The base64URL ID string with proper padding
+              transports: cred.transports || [],
+            })),
+          };
+        }),
+      );
+  }
+
+  // Verify WebAuthn sign-in
+  verifyWebAuthnSignIn(assertion: any) {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
+
+    // Ensure the credential ID is properly formatted
+    // SimpleWebAuthn might have converted / to _ for URL safety
+    const formattedAssertion = {
+      ...assertion,
+      id:
+        assertion.id.replace(/_/g, '/') +
+        (assertion.id.endsWith('==') ? '' : '=='),
+      rawId:
+        assertion.rawId.replace(/_/g, '/') +
+        (assertion.rawId.endsWith('==') ? '' : '=='),
+    };
+
+    return this.http.post(
+      'http://localhost:3000/api/v1/auth/webauthn/login/authenticate',
+      formattedAssertion,
+      {
+        headers: headers,
+        withCredentials: true,
       },
     );
   }

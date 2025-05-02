@@ -43,7 +43,9 @@ Rails.application.routes.draw do
       # Webauthn
       post 'auth/webauthn/setup', to: 'user_registration#create'
       post 'auth/webauthn/register', to: 'user_registration#register'
-
+      post 'auth/webauthn/login/options', to: 'authentication#webauthn_options'
+      post 'auth/webauthn/login/authenticate', to: 'authentication#webauthn_authenticate'
+          
       resources :examples
 
       resources :build_metrics, only: [:index, :create]

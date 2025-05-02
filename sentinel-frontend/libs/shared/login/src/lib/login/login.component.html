@@ -7,16 +7,33 @@
 
 <!-- Auth Card -->
 <div
-  class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6"
+  class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6 max-w-sm mx-auto"
   @fadeInUp
 >
+  <!-- Email Form -->
+  <div *ngIf="showEmailLogin" class="space-y-4" @fadeInUp>
+    <form [formGroup]="form" class="space-y-4">
+      <hlm-form-field>
+        <input
+          hlmInput
+          type="email"
+          placeholder="Enter your email"
+          formControlName="email"
+          class="w-full"
+        />
+      </hlm-form-field>
+    </form>
+  </div>
+
   <!-- Passkey Button -->
   <button
     class="w-full flex items-center justify-center gap-x-2 py-3 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-transform duration-200 hover:scale-[1.02]"
+    (click)="showEmailLogin ? startWebAuthnLogin() : toggleEmailLogin()"
+    [disabled]="showEmailLogin && form.invalid"
     @fadeInUp
   >
-    <ng-icon hlm name="lucideFingerprint" class="h-6 w-6 text-gray-400" />
-    Sign in with passkey
+    <ng-icon name="lucideFingerprint" class="h-6 w-6" />
+    {{ showEmailLogin ? 'Continue with passkey' : 'Sign in with passkey' }}
   </button>
 
   <!-- Divider -->
@@ -32,7 +49,7 @@
     </div>
   </div>
 
-  <!-- Email Button -->
+  <!-- Other Sign-in Options -->
   <div class="space-y-3" @staggerFade>
     <button
       class="w-full flex items-center justify-center gap-x-2 py-2.5 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-transform duration-200 hover:scale-[1.02]"
