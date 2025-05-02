@@ -1,4 +1,8 @@
 class ApplicationController < ActionController::API
+  # Include necessary modules for sessions and cookies
+  include ActionController::Cookies
+  include ActionController::RequestForgeryProtection
+  
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
   rescue_from ActionDispatch::Http::Parameters::ParseError, with: :bad_request

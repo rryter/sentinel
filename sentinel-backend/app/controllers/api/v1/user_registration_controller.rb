@@ -2,9 +2,9 @@ module Api
   module V1
     class UserRegistrationController < ApplicationController
       include ActionController::MimeResponds
-      
+
       def create
-        user = User.new(email: user_params[:email] || "reto@twy.gmbh", password: '12345678')
+        user = User.new(email: user_params[:email] || "reto@twy.gmbh", password: "12345678")
 
         create_options = WebAuthn::Credential.options_for_create(
           user: {
@@ -14,17 +14,17 @@ module Api
           },
           rp: {
             name: "Sentinel App",
-            id: request.host
+            id: "localhost"  # Match the RP ID in WebAuthn configuration
           },
-          authenticator_selection: { 
+          authenticator_selection: {
             user_verification: "required"
           }
         )
 
         if user.valid?
-          session[:current_registration] = { 
-            challenge: create_options.challenge, 
-            user_attributes: user.attributes 
+          session[:current_registration] = {
+            challenge: create_options.challenge,
+            user_attributes: user.attributes
           }
 
           respond_to do |format|
@@ -40,33 +40,36 @@ module Api
       def register
         # Retrieve the challenge from session
         registration_data = session.delete(:current_registration)
-        
+
         unless registration_data
           return render json: { error: "Registration session expired" }, status: :unprocessable_entity
         end
-        
+
         # Create the user based on stored attributes
         user = User.new(registration_data["user_attributes"])
-        
+
         begin
           # Verify the WebAuthn credential
           webauthn_credential = WebAuthn::Credential.from_create(params)
-          
-          # Verify that the challenge matches
-          webauthn_credential.verify(registration_data["challenge"])
-          
+
+          # Call verify with just the challenge and optional user verification
+          webauthn_credential.verify(
+            registration_data["challenge"],
+            user_verification: true
+          )
+
           # Save the credential to the database
           credential = user.credentials.build(
             external_id: Base64.strict_encode64(webauthn_credential.raw_id),
             public_key: webauthn_credential.public_key,
-            nickname: "Default authentication"
+            nickname: "Default authentication",
+            sign_count: webauthn_credential.sign_count || 0
           )
-          
+
           user.save!
-          
-          # Set up a session or generate a JWT token
-          # For now, we'll just return success
-          render json: { 
+
+          # Return success response
+          render json: {
             status: "success",
             user: {
               id: user.id,

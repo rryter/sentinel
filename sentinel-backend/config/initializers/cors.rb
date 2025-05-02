@@ -7,11 +7,15 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "*"  # In production, you should specify your actual frontend domain
+    # When using credentials:true, origins cannot be '*'
+    # Instead specify the exact origin
+    origins "http://localhost:4200"  # Your Angular development server
 
     resource "*",
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: false
+      credentials: true,
+      expose: ['Authorization', 'Content-Type', 'Accept'],
+      max_age: 600
   end
 end

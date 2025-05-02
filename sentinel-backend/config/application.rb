@@ -18,10 +18,24 @@ module SentinelBackend
 
     # Add serializers directory to autoload paths
     config.autoload_paths += %W[#{config.root}/app/serializers]
-
-    # Enable sessions for the API
+    
+    # API mode configuration
+    config.api_only = true
+    
+    # Configure cookies and session directly as this is an API-only app
+    config.session_store :cookie_store, key: '_sentinel_session'
     config.middleware.use ActionDispatch::Cookies
-    config.middleware.use ActionDispatch::Session::CookieStore, key: '_your_app_name_session'
+    config.middleware.use config.session_store
+    
+    # Set SameSite=None for cross-origin cookies, but only in production
+    # In development, we need to use Lax to avoid issues with http://localhost
+    if Rails.env.production?
+      config.action_dispatch.cookies_same_site_protection = :none
+      config.action_dispatch.cookies_secure = true
+    else
+      config.action_dispatch.cookies_same_site_protection = :lax
+      config.action_dispatch.cookies_secure = false
+    end
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
@@ -29,10 +43,5 @@ module SentinelBackend
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
-
-    # Only loads a smaller set of middleware suitable for API only apps.
-    # Middleware like session, flash, cookies can be added back manually.
-    # Skip views, helpers and assets when generating a new resource.
-    config.api_only = true
   end
 end

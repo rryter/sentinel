@@ -40,6 +40,7 @@ export class AuthService {
         },
         {
           headers: headers,
+          withCredentials: true, // Include credentials (cookies)
         },
       )
       .pipe(

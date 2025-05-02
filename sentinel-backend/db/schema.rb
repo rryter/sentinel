@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_02_114949) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_02_145808) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -68,6 +68,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_02_114949) do
     t.string "nickname"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sign_count"
     t.index ["user_id"], name: "index_credentials_on_user_id"
   end
 
