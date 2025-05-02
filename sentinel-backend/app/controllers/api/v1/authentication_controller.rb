@@ -35,18 +35,33 @@ module Api
 
         user = User.find(auth_data["user_id"])
 
-        # Convert URL-safe base64 back to standard base64
-        safe_id = params[:id].tr("-_", "+/").sub(/=+$/, "")  # Remove any trailing =
-        credential_id = safe_id + ("=" * (4 - (safe_id.length % 4))) # Add padding back
-
-        credential = user.credentials.find_by(external_id: credential_id)
+        # Use the authentication params instead of root level params
+        webauthn_params = params[:authentication].presence || params
+        
+        # Convert the received ID to URL-safe base64 with standard padding for comparison
+        normalized_id = Base64.urlsafe_encode64(
+          Base64.urlsafe_decode64(webauthn_params[:id].to_s.tr('=', ''))
+        )
+        credential = user.credentials.find_by(external_id: normalized_id)
 
         unless credential
           return render json: { error: "Credential not found" }, status: :not_found
         end
 
         begin
-          webauthn_credential = WebAuthn::Credential.from_get(params)
+          # Create a clean params hash with properly encoded values
+          formatted_params = {
+            id: webauthn_params[:id],  # Ensure URL-safe base64 without padding
+            raw_id: Base64.urlsafe_decode64(webauthn_params[:rawId].to_s),
+            type: webauthn_params[:type],
+            response: {
+              authenticator_data: webauthn_params[:response][:authenticatorData],
+              client_data_json: webauthn_params[:response][:clientDataJSON],
+              signature: webauthn_params[:response][:signature]
+            }
+          }
+
+          webauthn_credential = WebAuthn::Credential.from_get(formatted_params)
 
           webauthn_credential.verify(
             auth_data["challenge"],
