@@ -7,7 +7,15 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideFingerprint, lucideGithub, lucideMail } from '@ng-icons/lucide';
+import {
+  lucideArrowRight,
+  lucideEye,
+  lucideFingerprint,
+  lucideGithub,
+  lucideLock,
+  lucideMail,
+  lucideUser,
+} from '@ng-icons/lucide';
 import { HlmButtonModule } from '@spartan-ng/ui-button-helm';
 import { HlmFormFieldModule } from '@spartan-ng/ui-formfield-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
@@ -23,7 +31,17 @@ import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
     HlmButtonModule,
   ],
   templateUrl: './registration.component.html',
-  providers: [provideIcons({ lucideFingerprint, lucideMail, lucideGithub })],
+  providers: [
+    provideIcons({
+      lucideFingerprint,
+      lucideMail,
+      lucideGithub,
+      lucideUser,
+      lucideLock,
+      lucideEye,
+      lucideArrowRight,
+    }),
+  ],
   styleUrl: './registration.component.scss',
 })
 export class RegistrationComponent {

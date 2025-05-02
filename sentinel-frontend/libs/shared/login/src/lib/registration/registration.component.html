@@ -9,33 +9,46 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
   <div>
     <form [formGroup]="form" class="space-y-6">
+      <!-- Full name field -->
       <hlm-form-field class="w-full">
-        <label hlmLabel class="w-full text-white"
-          >Full Name
+        <label class="block text-sm font-medium text-gray-400">Full name</label>
+        <div class="relative rounded-md">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <ng-icon name="lucideUser" class="h-5 w-5 text-gray-500"></ng-icon>
+          </div>
           <input
+            hlmInput
             aria-label="Full Name"
             formControlName="name"
-            hlmInput
             type="text"
-            class="w-full"
+            class="block w-full pl-10 pr-3 py-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-white"
           />
-        </label>
-
+        </div>
         <hlm-error>Your name is required</hlm-error>
       </hlm-form-field>
 
+      <!-- Email field -->
       <hlm-form-field class="w-full">
-        <label hlmLabel class="w-full text-white">
-          E-Mail
+        <label class="block text-sm font-medium text-gray-400"
+          >Email address</label
+        >
+        <div class="relative rounded-md">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <ng-icon name="lucideMail" class="h-5 w-5 text-gray-500"></ng-icon>
+          </div>
           <input
+            hlmInput
             aria-label="E-Mail"
             formControlName="email"
-            hlmInput
-            type="text"
-            class="w-full"
+            type="email"
+            class="block w-full pl-10 pr-3 py-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-white"
           />
-        </label>
-        <hlm-error>Your name is required</hlm-error>
+        </div>
+        <hlm-error>Your E-Mail is required</hlm-error>
       </hlm-form-field>
 
       <button type="submit" hlmBtn class="w-full">

@@ -1,0 +1,17 @@
+:host {
+  display: block;
+  background-color: #0f172a; /* dark blue/slate background */
+  padding: 1.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Optional: Add custom styling for the form fields if needed */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #1f2937 inset;
+}
