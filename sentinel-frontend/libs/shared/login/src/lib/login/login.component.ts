@@ -122,8 +122,4 @@ export class LoginComponent {
       console.error('WebAuthn authentication error:', error);
     }
   }
-
-  toggleEmailLogin() {
-    this.showEmailLogin = !this.showEmailLogin;
-  }
 }

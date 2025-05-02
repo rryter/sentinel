@@ -34,7 +34,12 @@ module Api
         end
 
         user = User.find(auth_data["user_id"])
-        credential = user.credentials.find_by(external_id: params[:id])
+        
+        # Convert URL-safe base64 back to standard base64
+        safe_id = params[:id].tr('-_', '+/').sub(/=+$/, '')  # Remove any trailing =
+        credential_id = safe_id + ('=' * (4 - (safe_id.length % 4))) # Add padding back
+        
+        credential = user.credentials.find_by(external_id: credential_id)
 
         unless credential
           return render json: { error: "Credential not found" }, status: :not_found

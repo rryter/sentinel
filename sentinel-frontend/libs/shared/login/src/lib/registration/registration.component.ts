@@ -123,6 +123,12 @@ export class RegistrationComponent {
   }
 
   private async verifyRegistrationWithServer(attResp: any) {
+    // Ensure the rawId is properly encoded for transmission
+    if (attResp.id) {
+      // Convert any + to - and / to _ for URL-safe base64
+      attResp.id = attResp.id.replace(/\+/g, '-').replace(/\//g, '_');
+    }
+
     return new Promise((resolve, reject) => {
       this.authService.verifyRegistration(attResp).subscribe({
         next: (response) => {
