@@ -8,7 +8,7 @@
 <!-- Auth Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
   <div>
-    <form [formGroup]="form" class="space-y-6">
+    <form [formGroup]="form" (submit)="register()" class="space-y-6">
       <!-- Full name field -->
       <hlm-form-field class="w-full">
         <label class="block text-sm font-medium text-gray-400">Full name</label>

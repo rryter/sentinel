@@ -19,6 +19,9 @@ module SentinelBackend
     # Add serializers directory to autoload paths
     config.autoload_paths += %W[#{config.root}/app/serializers]
 
+    # Enable sessions for the API
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore, key: '_your_app_name_session'
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

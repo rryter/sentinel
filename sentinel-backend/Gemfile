@@ -37,6 +37,11 @@ gem "thruster", require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
+# Authentication
+gem "devise", "~> 4.9.3"
+gem "devise-jwt", "~> 0.11.0"
+gem "webauthn"
+
 # Background job processing
 gem "sidekiq"
 gem "redis"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_30_141501) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_02_114949) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -61,6 +61,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_30_141501) do
     t.index ["workspace_project"], name: "index_build_metrics_on_workspace_project"
   end
 
+  create_table "credentials", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "external_id"
+    t.text "public_key"
+    t.string "nickname"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_credentials_on_user_id"
+  end
+
   create_table "files_with_violations", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "analysis_job_id", null: false
     t.string "file_path", null: false
@@ -89,6 +99,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_30_141501) do
     t.index ["name"], name: "index_severities_on_name", unique: true
   end
 
+  create_table "users", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.string "name"
+    t.string "webauthn_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
   create_table "violations", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "file_with_violations_id", null: false
     t.bigint "severity_id"
@@ -109,6 +133,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_30_141501) do
   end
 
   add_foreign_key "analysis_jobs", "projects"
+  add_foreign_key "credentials", "users"
   add_foreign_key "files_with_violations", "analysis_jobs"
   add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
   add_foreign_key "violations", "severities"

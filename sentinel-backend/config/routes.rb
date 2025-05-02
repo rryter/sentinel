@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  devise_for :users
+
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -37,6 +39,10 @@ Rails.application.routes.draw do
       # GitHub integration routes
       post 'auth/github/callback', to: 'github#callback'
       get 'github/repositories', to: 'github#repositories'
+
+      # Webauthn
+      post 'auth/webauthn/setup', to: 'user_registration#create'
+      post 'auth/webauthn/register', to: 'user_registration#register'
 
       resources :examples
 
