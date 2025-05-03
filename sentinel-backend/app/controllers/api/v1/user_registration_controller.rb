@@ -13,8 +13,8 @@ module Api
             display_name: user.email
           },
           rp: {
-            name: "Sentinel App",
-            id: "localhost"  # Match the RP ID in WebAuthn configuration
+            name: "Scoper",
+            id: "app.scoper.cloud"  # Match the RP ID in WebAuthn configuration
           },
           authenticator_selection: {
             user_verification: "required"

@@ -13,7 +13,7 @@ module Api
         options = WebAuthn::Credential.options_for_get(
           allow: user.credentials.map(&:webauthn_credential),
           user_verification: "required",
-          rp_id: "localhost"
+          rp_id: "app.scoper.cloud"
         )
 
         session[:authentication_challenge] = {

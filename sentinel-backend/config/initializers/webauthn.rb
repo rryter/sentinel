@@ -4,10 +4,10 @@ WebAuthn.configure do |config|
   config.allowed_origins = ["http://localhost:3000", "http://localhost:4200"]
 
   # Relying Party name for display purposes
-  config.rp_name = "Sentinel App"
+  config.rp_name = "Scoper - Observability"
 
   # Set explicit RP ID for all origins
-  config.rp_id = "localhost"
+  config.rp_id = "app.scoper.cloud"
 
   # Optionally configure a client timeout hint, in milliseconds.
   # This hint specifies how long the browser should wait for any
