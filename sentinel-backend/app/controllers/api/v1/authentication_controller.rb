@@ -30,7 +30,7 @@ module Api
         auth_data = session.delete(:authentication_challenge)
 
         unless auth_data
-          return render json: { error: "Authentication challenge expired" }, status: :unprocessable_entity
+          return render json: { error: "Authentication challenge expired or invalid" }, status: :unprocessable_entity
         end
 
         user = User.find(auth_data["user_id"])
