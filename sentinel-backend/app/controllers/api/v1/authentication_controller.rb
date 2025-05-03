@@ -37,12 +37,32 @@ module Api
 
         # Use the authentication params instead of root level params
         webauthn_params = params[:authentication].presence || params
+
+        # Validate required parameters
+        required_params = [:id, :rawId, :type, :response]
+        missing_params = required_params.select { |param| webauthn_params[param].blank? }
         
-        # Convert the received ID to URL-safe base64 with standard padding for comparison
-        normalized_id = Base64.urlsafe_encode64(
-          Base64.urlsafe_decode64(webauthn_params[:id].to_s.tr('=', ''))
-        )
-        credential = user.credentials.find_by(external_id: normalized_id)
+        if missing_params.any?
+          return render json: { 
+            error: "Missing required parameters: #{missing_params.join(', ')}"
+          }, status: :unprocessable_entity
+        end
+
+        # Validate response parameters
+        required_response_params = [:authenticatorData, :clientDataJSON, :signature]
+        missing_response_params = required_response_params.select { |param| 
+          webauthn_params[:response][param].blank? 
+        }
+
+        if missing_response_params.any?
+          return render json: { 
+            error: "Missing required response parameters: #{missing_response_params.join(', ')}"
+          }, status: :unprocessable_entity
+        end
+
+        # Find the credential using the URL-safe base64 ID - this matches how we store it during registration
+        credential_id = webauthn_params[:id].to_s.sub(/={1,1}$/, '')
+        credential = user.credentials.find_by(external_id: credential_id)
 
         unless credential
           return render json: { error: "Credential not found" }, status: :not_found
@@ -50,9 +70,11 @@ module Api
 
         begin
           # Create a clean params hash with properly encoded values
+          raw_id = webauthn_params[:rawId].to_s.sub(/={1,1}$/, '')
+          
           formatted_params = {
-            id: webauthn_params[:id],  # Ensure URL-safe base64 without padding
-            raw_id: Base64.urlsafe_decode64(webauthn_params[:rawId].to_s),
+            id: credential_id,
+            raw_id: Base64.urlsafe_decode64(raw_id),  # Convert to raw bytes
             type: webauthn_params[:type],
             response: {
               authenticator_data: webauthn_params[:response][:authenticatorData],
