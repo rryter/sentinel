@@ -9,7 +9,6 @@ import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFingerprint, lucideGithub, lucideMail } from '@ng-icons/lucide';
 import { startAuthentication } from '@simplewebauthn/browser';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import { HlmFormFieldModule } from '@spartan-ng/ui-formfield-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
 import { firstValueFrom } from 'rxjs';
@@ -25,7 +24,6 @@ import { AuthService } from '../services/auth.service';
     ReactiveFormsModule,
     HlmFormFieldModule,
     HlmInputDirective,
-    HlmButtonDirective,
   ],
   providers: [provideIcons({ lucideFingerprint, lucideMail, lucideGithub })],
   templateUrl: './login.component.html',
