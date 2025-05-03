@@ -23,6 +23,7 @@ import {
 import { HlmButtonModule } from '@spartan-ng/ui-button-helm';
 import { HlmFormFieldModule } from '@spartan-ng/ui-formfield-helm';
 import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 @Component({
   selector: 'lib-registration',
@@ -80,16 +81,16 @@ export class RegistrationComponent {
       return;
     }
 
-    this.authService.signUp({ email, name }).subscribe({
-      next: (optionsJSON) => {
-        this.handleRegistration(optionsJSON);
-      },
-      error: (err) => {
-        console.error('Registration failed:', err);
-        // Here you might want to show a user-friendly error message
-        // You could inject a notification service or use your preferred UI feedback mechanism
-      },
-    });
+    try {
+      const optionsJSON = await firstValueFrom(
+        this.authService.signUp({ email, name }),
+      );
+      await this.handleRegistration(optionsJSON);
+    } catch (err) {
+      console.error('Registration failed:', err);
+      // Here you might want to show a user-friendly error message
+      // You could inject a notification service or use your preferred UI feedback mechanism
+    }
   }
 
   private async handleRegistration(
@@ -101,7 +102,6 @@ export class RegistrationComponent {
       }
 
       const attResp = await startRegistration({ optionsJSON });
-
       await this.verifyRegistrationWithServer(attResp);
     } catch (error: unknown) {
       this.handleRegistrationError(error);
@@ -129,19 +129,16 @@ export class RegistrationComponent {
       attResp.id = attResp.id.replace(/\+/g, '-').replace(/\//g, '_');
     }
 
-    return new Promise((resolve, reject) => {
-      this.authService.verifyRegistration(attResp).subscribe({
-        next: (response) => {
-          console.log('Registration verified successfully');
-          // Here you could navigate to the next step or show success message
-          resolve(response);
-        },
-        error: (err) => {
-          console.error('Registration verification failed:', err);
-          reject(err);
-        },
-      });
-    });
+    try {
+      const response = await firstValueFrom(
+        this.authService.verifyRegistration(attResp),
+      );
+      console.log('Registration verified successfully');
+      return response;
+    } catch (err) {
+      console.error('Registration verification failed:', err);
+      throw err;
+    }
   }
 
   private handleRegistrationError(error: unknown): void {
