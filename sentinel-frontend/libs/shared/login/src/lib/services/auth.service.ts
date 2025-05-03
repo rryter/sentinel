@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import {
+  AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser';
@@ -149,27 +150,15 @@ export class AuthService {
   }
 
   // Verify WebAuthn sign-in
-  verifyWebAuthnSignIn(assertion: any) {
+  verifyWebAuthnSignIn(assertion: AuthenticationResponseJSON) {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
     });
 
-    // Ensure the credential ID is properly formatted
-    // SimpleWebAuthn might have converted / to _ for URL safety
-    const formattedAssertion = {
-      ...assertion,
-      id:
-        assertion.id.replace(/_/g, '/') +
-        (assertion.id.endsWith('==') ? '' : '=='),
-      rawId:
-        assertion.rawId.replace(/_/g, '/') +
-        (assertion.rawId.endsWith('==') ? '' : '=='),
-    };
-
     return this.http.post(
       'http://localhost:3000/api/v1/auth/webauthn/login/authenticate',
-      formattedAssertion,
+      assertion,
       {
         headers: headers,
         withCredentials: true,

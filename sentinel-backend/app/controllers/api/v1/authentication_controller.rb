@@ -61,7 +61,7 @@ module Api
         end
 
         # Find the credential using the URL-safe base64 ID - this matches how we store it during registration
-        credential_id = webauthn_params[:id].to_s.sub(/={1,1}$/, '')
+        credential_id = webauthn_params[:id] + "="
         credential = user.credentials.find_by(external_id: credential_id)
 
         unless credential
@@ -69,21 +69,7 @@ module Api
         end
 
         begin
-          # Create a clean params hash with properly encoded values
-          raw_id = webauthn_params[:rawId].to_s.sub(/={1,1}$/, '')
-          
-          formatted_params = {
-            id: credential_id,
-            raw_id: Base64.urlsafe_decode64(raw_id),  # Convert to raw bytes
-            type: webauthn_params[:type],
-            response: {
-              authenticator_data: webauthn_params[:response][:authenticatorData],
-              client_data_json: webauthn_params[:response][:clientDataJSON],
-              signature: webauthn_params[:response][:signature]
-            }
-          }
-
-          webauthn_credential = WebAuthn::Credential.from_get(formatted_params)
+          webauthn_credential = WebAuthn::Credential.from_get(webauthn_params)
 
           webauthn_credential.verify(
             auth_data["challenge"],
