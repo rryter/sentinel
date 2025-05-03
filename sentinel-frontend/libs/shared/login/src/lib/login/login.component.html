@@ -8,10 +8,9 @@
 <!-- Auth Card -->
 <div
   class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6 max-w-sm mx-auto"
-  @fadeInUp
 >
-  <!-- Email Form -->
-  <div class="space-y-4" @fadeInUp>
+  <!-- Form -->
+  <div class="space-y-4">
     <form [formGroup]="form" class="space-y-4" (submit)="startWebAuthnLogin()">
       <hlm-form-field class="relative block">
         <label class="block text-sm font-medium text-gray-400">Full name</label>
@@ -41,40 +40,14 @@
   <button
     class="w-full flex items-center justify-center gap-x-2 py-3 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-transform duration-200 hover:scale-[1.02]"
     (click)="startWebAuthnLogin()"
-    @fadeInUp
   >
     <ng-icon name="lucideFingerprint" class="h-6 w-6" />
     {{ 'Sign in with passkey' }}
   </button>
-
-  <!-- Divider -->
-  <!-- <div class="relative">
-    <div class="absolute inset-0 flex items-center">
-      <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
-    </div>
-    <div class="relative flex justify-center text-sm">
-      <span
-        class="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400"
-        >Or continue with</span
-      >
-    </div>
-  </div> -->
-
-  <!-- <div class="space-y-3" @staggerFade>
-    <button
-      class="w-full flex items-center justify-center gap-x-2 py-2.5 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-transform duration-200 hover:scale-[1.02]"
-    >
-      <ng-icon
-        name="lucideGithub"
-        class="h-6 w-6 text-gray-900 dark:text-white"
-      ></ng-icon>
-      Sign in with GitHub
-    </button>
-  </div> -->
 </div>
 
-<!-- Create Account -->
-<div class="text-center py-3" @fadeInUp>
+<!-- Create Account Link -->
+<div class="text-center py-3">
   <p class="text-sm text-gray-600 dark:text-gray-400">
     Don't have an account?
     <a
