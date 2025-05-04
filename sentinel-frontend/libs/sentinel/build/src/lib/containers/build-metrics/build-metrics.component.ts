@@ -1,15 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BuildMetricsChartComponent } from '../../components/build-metrics-chart/build-metrics-chart.component';
-import { BuildMetricsResponse } from '../../interfaces/build-metrics.interface';
-import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
-import { BuildMetricsSelectorComponent } from '@shared/ui-custom';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import { lucideChevronDown } from '@ng-icons/lucide';
+import { BuildMetricsSelectorComponent } from '@shared/ui-custom';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
-import { FormsModule } from '@angular/forms';
+import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
+import { environment } from '../../../../../../../apps/sentinel/src/environments/environment';
+import { BuildMetricsChartComponent } from '../../components/build-metrics-chart/build-metrics-chart.component';
+import { BuildMetricsResponse } from '../../interfaces/build-metrics.interface';
 
 const AVAILABLE_INTERVALS = [
   '1m',
@@ -67,6 +68,8 @@ export class BuildMetricsComponent implements OnInit {
   }));
   selectedInterval: Interval = '1h';
   interval$ = new BehaviorSubject<Interval>(this.selectedInterval);
+  private readonly baseApiUrl = environment.apiBaseUrl;
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -79,7 +82,7 @@ export class BuildMetricsComponent implements OnInit {
     console.log('fetching metrics for interval', interval);
     return this.http
       .get<BuildMetricsResponse>(
-        `http://localhost:3000/api/v1/build_metrics?interval=${interval}`,
+        this.baseApiUrl + `/api/v1/build_metrics?interval=${interval}`,
       )
       .pipe(map((response) => response.metrics));
   }

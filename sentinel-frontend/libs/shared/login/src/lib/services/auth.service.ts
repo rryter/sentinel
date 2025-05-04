@@ -7,11 +7,14 @@ import {
 } from '@simplewebauthn/browser';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../../../../../../apps/sentinel/src/environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private readonly baseApiUrl = environment.apiBaseUrl;
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
@@ -41,7 +44,7 @@ export class AuthService {
 
     return this.http
       .post<any>(
-        'http://localhost:3000/api/v1/auth/webauthn/setup',
+        this.baseApiUrl + '/api/v1/auth/webauthn/setup',
         {
           registration: {
             name,
@@ -106,7 +109,7 @@ export class AuthService {
     });
 
     return this.http.post(
-      'http://localhost:3000/api/v1/auth/webauthn/register',
+      this.baseApiUrl + '/api/v1/auth/webauthn/register',
       attestation,
       {
         headers: headers,
@@ -126,7 +129,7 @@ export class AuthService {
 
     return this.http
       .post<any>(
-        'http://localhost:3000/api/v1/auth/webauthn/login/options',
+        this.baseApiUrl + '/api/v1/auth/webauthn/login/options',
         { email },
         {
           headers: headers,
@@ -156,7 +159,7 @@ export class AuthService {
     });
 
     return this.http.post(
-      'http://localhost:3000/api/v1/auth/webauthn/login/authenticate',
+      this.baseApiUrl + '/api/v1/auth/webauthn/login/authenticate',
       assertion,
       {
         headers: headers,
