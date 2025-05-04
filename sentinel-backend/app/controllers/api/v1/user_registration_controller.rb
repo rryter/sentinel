@@ -14,7 +14,7 @@ module Api
           },
           rp: {
             name: "Scoper",
-            id: = case Rails.env
+            id: case Rails.env
               when "production"
                 "app.scoper.cloud"
               when "staging"
