@@ -14,7 +14,14 @@ module Api
           },
           rp: {
             name: "Scoper",
-            id: "localhost"  # Match the RP ID in WebAuthn configuration
+            id: = case Rails.env
+              when "production"
+                "app.scoper.cloud"
+              when "staging"
+                "test.scoper.cloud"
+              else
+                "localhost"
+            end
           },
           authenticator_selection: {
             user_verification: "required"
