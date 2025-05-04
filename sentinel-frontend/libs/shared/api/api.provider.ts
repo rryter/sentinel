@@ -1,4 +1,5 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
+import { environment } from '../../../apps/sentinel/src/environments/environment';
 import { Configuration, ConfigurationParameters } from './configuration';
 
 export function withBackendApiConfiguration(
@@ -6,6 +7,7 @@ export function withBackendApiConfiguration(
 ): Configuration {
   return new Configuration({
     // overrides
+    basePath: environment.apiBaseUrl,
     ...configurationParameters,
   });
 }

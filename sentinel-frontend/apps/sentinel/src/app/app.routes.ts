@@ -44,6 +44,11 @@ export const appRoutes: Route[] = [
     pathMatch: 'full',
   },
   {
+    path: 'dev',
+    loadComponent: () =>
+      import('@shared/ui-custom').then((m) => m.DevelopmentComponent),
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('@shared/ui-custom').then((m) => m.NotFound404Component),

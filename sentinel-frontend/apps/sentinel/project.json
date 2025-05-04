@@ -57,7 +57,13 @@
             }
           ],
           "outputHashing": "all",
-          "namedChunks": true
+          "namedChunks": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/sentinel/src/environments/environment.ts",
+              "with": "apps/sentinel/src/environments/environment.prod.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
