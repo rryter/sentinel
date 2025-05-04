@@ -14,7 +14,7 @@ module Api
           },
           rp: {
             name: "Scoper",
-            id: "app.scoper.cloud"  # Match the RP ID in WebAuthn configuration
+            id: "localhost"  # Match the RP ID in WebAuthn configuration
           },
           authenticator_selection: {
             user_verification: "required"

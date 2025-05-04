@@ -1,13 +1,27 @@
 WebAuthn.configure do |config|
   # This value needs to match `window.location.origin` evaluated by
   # the User Agent during registration and authentication ceremonies.
-  config.allowed_origins = ["http://localhost:3000", "http://localhost:4200"]
+  config.allowed_origins = case Rails.env
+    when "production"
+      ["https://app.scoper.cloud"]
+    when "staging"
+      ["https://test.scoper.cloud"]
+    else
+      ["http://localhost:3000", "http://localhost:4200"]
+  end
 
   # Relying Party name for display purposes
   config.rp_name = "Scoper - Observability"
 
-  # Set explicit RP ID for all origins
-  config.rp_id = "app.scoper.cloud"
+  # Set environment-specific RP ID
+  config.rp_id = case Rails.env
+    when "production"
+      "scoper.cloud"
+    when "staging"
+      "test.scoper.cloud"
+    else
+      "localhost"
+  end
 
   # Optionally configure a client timeout hint, in milliseconds.
   # This hint specifies how long the browser should wait for any
@@ -35,4 +49,9 @@ WebAuthn.configure do |config|
   # Default: ["ES256", "PS256", "RS256"]
   #
   # config.algorithms << "ES384"
+
+  # You can also use an environment variable to override the RP ID if needed
+  if ENV["WEBAUTHN_RP_ID"].present?
+    config.rp_id = ENV["WEBAUTHN_RP_ID"]
+  end
 end
