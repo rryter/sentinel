@@ -16,7 +16,7 @@ WebAuthn.configure do |config|
   # Set environment-specific RP ID
   config.rp_id = case Rails.env
     when "production"
-      "scoper.cloud"
+      "app.scoper.cloud"
     when "staging"
       "test.scoper.cloud"
     else
