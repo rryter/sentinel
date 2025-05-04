@@ -9,7 +9,11 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     # When using credentials:true, origins cannot be '*'
     # Instead specify the exact origin
-    origins "http://localhost:4200"  # Your Angular development server
+    if Rails.env.production?
+      origins "https://app.scoper.cloud"
+    else
+      origins "http://localhost:4200"  # Your Angular development server
+    end
 
     resource "*",
       headers: :any,
