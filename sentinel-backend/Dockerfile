@@ -44,9 +44,6 @@ RUN gem install bundler && \
 # Copy the rest of the application
 COPY . .
 
-# Add a simple health check endpoint
-RUN echo "class ApplicationController < ActionController::Base; def health; render plain: 'OK'; end; end" > config/initializers/health_check.rb
-
 # Install debug gem
 RUN bundle add debug --group "development, test"
 
@@ -98,9 +95,6 @@ COPY --chown=app:app . .
 RUN mkdir -p /app/config/credentials && \
     chown -R app:app /app/config/credentials && \
     chmod 700 /app/config/credentials
-
-# Add a simple health check endpoint
-RUN echo "class ApplicationController < ActionController::Base; def health; render plain: 'OK'; end; end" > config/initializers/health_check.rb
 
 # Add a startup script to ensure database is ready
 COPY --chown=app:app docker-entrypoint.sh /usr/bin/
