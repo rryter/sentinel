@@ -120,6 +120,8 @@ module Api
         end
 
         results = []
+        any_errors = false
+        
         ActiveRecord::Base.transaction do
           metrics.each do |metric_params|
             # Log incoming parameters for debugging
@@ -155,6 +157,7 @@ module Api
             if build_metric.save
               results << { id: build_metric.id, status: 'success' }
             else
+              any_errors = true
               Rails.logger.error("Failed to save build metric: #{build_metric.errors.full_messages}")
               results << { 
                 id: metric_params[:id], 
@@ -165,7 +168,8 @@ module Api
           end
         end
 
-        render json: { results: results }, status: :created
+        status = any_errors ? :unprocessable_entity : :created
+        render json: { results: results }, status: status
       end
     end
   end

@@ -13,7 +13,7 @@ module Api
         options = WebAuthn::Credential.options_for_get(
           allow: user.credentials.map(&:webauthn_credential),
           user_verification: "required",
-          rp_id: "localhost"
+          rp_id: WebAuthn.configuration.rp_id
         )
 
         session[:authentication_challenge] = {
