@@ -36,4 +36,4 @@ runs:
 
     - name: Run scoper on repository code
       shell: bash
-      run: ${{ github.action_path }}/scoper ${{ inputs.args }}
+      run: ${{ github.action_path }}/scoper --rules-config ${{ github.action_path }}/rules.json
