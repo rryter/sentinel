@@ -5,6 +5,9 @@ on:
     tags:
       - "v*" # This will trigger the workflow when you push a tag starting with 'v'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     name: Build and Release Scoper
