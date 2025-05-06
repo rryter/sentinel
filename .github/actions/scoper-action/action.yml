@@ -14,8 +14,8 @@ runs:
       id: cache-scoper
       uses: actions/cache@v4
       with:
-        path: ${{ github.action_path }}/scoper # Path to cache
-        key: ${{ runner.os }}-scoper-v0.1.4 # Cache key
+        path: ${{ github.action_path }}/scoper
+        key: ${{ runner.os }}-scoper-v0.1.4
 
     - name: Download scoper binary if not cached
       if: steps.cache-scoper.outputs.cache-hit != 'true'
