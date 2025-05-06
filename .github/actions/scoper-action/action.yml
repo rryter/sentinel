@@ -30,4 +30,4 @@ runs:
 
     - name: Run scoper on repository code
       shell: bash
-      run: scoper ${{ inputs.args }}
+      run: ${{ github.action_path }}/scoper ${{ inputs.args }}
