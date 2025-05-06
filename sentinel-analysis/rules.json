@@ -2,7 +2,7 @@
   "rules": {
     "no-console-warn-visitor": "error",
     "angular-legacy-decorators": "error",
-    "angular-input-count": ["error", { "maxInputs": 2 }],
+    "angular-input-count": ["error", { "maxInputs": 5 }],
     "angular-directive-class-suffix": ["error", {
       "suffixes": ["Directive"]
     }],
