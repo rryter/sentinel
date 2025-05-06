@@ -47,7 +47,7 @@ impl OutputEventVisitor {
 impl<'a> Visit<'a> for OutputEventVisitor {
     fn visit_class(&mut self, node: &Class<'a>) {
         // Iterate through class elements to find property definitions
-        for element in &node.body.elements {
+       /*  for element in &node.body.elements {
             if let ClassElement::PropertyDefinition(prop) = element {
                 // Get the property name
                 if let Some(Expression::Identifier(key)) = &prop.key {
@@ -63,7 +63,7 @@ impl<'a> Visit<'a> for OutputEventVisitor {
                     }
                 }
             }
-        }
+        } */
     }
 }
 
