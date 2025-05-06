@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*" # This will trigger the workflow when you push a tag starting with 'v'
+
+jobs:
+  build-and-release:
+    name: Build and Release Scoper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build Release Binary
+        run: cargo build --release
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            target/release/scoper
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
