@@ -130,7 +130,7 @@
         <tr
           class="even:bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors duration-150"
           *ngFor="let job of jobs; trackBy: trackById"
-          [routerLink]="['/linting', job.id, 'results']"
+          [routerLink]="['./', job.id, 'results']"
         >
           <td
             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
