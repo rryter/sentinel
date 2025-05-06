@@ -24,6 +24,12 @@ runs:
         echo "Downloading scoper v0.1.2..."
         curl -L -o ${{ github.action_path }}/scoper https://github.com/rryter/sentinel/releases/download/v0.1.2/scoper
 
+    - name: Download rules.json
+      shell: bash
+      run: |
+        echo "Downloading rules.json..."
+        curl -fSL -o ${{ github.action_path }}/rules.json https://raw.githubusercontent.com/rryter/sentinel/main/sentinel-analysis/rules.json
+
     - name: Make scoper binary executable
       shell: bash
       run: chmod +x ${{ github.action_path }}/scoper
