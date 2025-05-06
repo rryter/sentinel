@@ -4,7 +4,6 @@ import type { ClassValue } from 'clsx';
 
 @Component({
   selector: 'hlm-dialog-footer',
-  ,
   template: ` <ng-content /> `,
   host: {
     '[class]': '_computedClass()',

@@ -32,7 +32,6 @@ export type AvatarVariants = VariantProps<typeof avatarVariants>;
   selector: 'hlm-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  ,
   host: {
     '[class]': '_computedClass()',
   },

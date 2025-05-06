@@ -13,7 +13,6 @@ export type CardDescriptionVariants = VariantProps<
 
 @Directive({
   selector: '[hlmCardDescription]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

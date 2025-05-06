@@ -7,7 +7,6 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: 'ng-icon[hlmAccordionIcon], ng-icon[hlmAccIcon]',
-  ,
   providers: [
     provideIcons({ lucideChevronDown }),
     provideHlmIconConfig({ size: 'sm' }),

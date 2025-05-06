@@ -18,7 +18,6 @@ import { HlmAvatarComponent } from './hlm-avatar.component';
       <span brnAvatarFallback>fallback</span>
     </hlm-avatar>
   `,
-  ,
 })
 class MockComponent {
   @Input() public class = '';

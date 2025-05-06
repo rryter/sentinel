@@ -13,7 +13,6 @@ export type AlertTitleVariants = VariantProps<typeof alertTitleVariants>;
 
 @Directive({
   selector: '[hlmAlertTitle]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

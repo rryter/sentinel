@@ -6,7 +6,6 @@ export const hlmLarge = 'text-lg font-semibold';
 
 @Directive({
   selector: '[hlmLarge]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

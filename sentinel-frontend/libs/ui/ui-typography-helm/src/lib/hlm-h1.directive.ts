@@ -7,7 +7,6 @@ export const hlmH1 =
 
 @Directive({
   selector: '[hlmH1]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

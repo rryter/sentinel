@@ -5,7 +5,6 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: 'img[hlmAvatarImage]',
-  ,
   exportAs: 'avatarImage',
   hostDirectives: [BrnAvatarImageDirective],
   host: {

@@ -6,7 +6,6 @@ export const hlmSmall = 'text-sm font-medium leading-none';
 
 @Directive({
   selector: '[hlmSmall]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

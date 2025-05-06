@@ -8,7 +8,6 @@ import { hlm } from '@spartan-ng/brain/core';
 
 @Directive({
   selector: '[hlmAvatarFallback]',
-  ,
   exportAs: 'avatarFallback',
   hostDirectives: [
     {

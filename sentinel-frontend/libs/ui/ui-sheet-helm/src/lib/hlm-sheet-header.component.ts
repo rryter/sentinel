@@ -4,7 +4,6 @@ import type { ClassValue } from 'clsx';
 
 @Component({
   selector: 'hlm-sheet-header',
-  ,
   template: ` <ng-content /> `,
   host: {
     '[class]': '_computedClass()',

@@ -10,7 +10,6 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: '[hlmCommandDialogCloseBtn]',
-  ,
   hostDirectives: [HlmButtonDirective, BrnDialogCloseDirective],
   providers: [
     provideBrnButtonConfig({ variant: 'ghost' }),

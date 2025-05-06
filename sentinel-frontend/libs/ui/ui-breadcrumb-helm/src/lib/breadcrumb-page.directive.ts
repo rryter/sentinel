@@ -4,7 +4,6 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: '[hlmBreadcrumbPage]',
-  ,
   host: {
     role: 'link',
     '[class]': '_computedClass()',

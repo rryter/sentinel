@@ -12,7 +12,6 @@ export type AlertDescriptionVariants = VariantProps<
 
 @Directive({
   selector: '[hlmAlertDesc],[hlmAlertDescription]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

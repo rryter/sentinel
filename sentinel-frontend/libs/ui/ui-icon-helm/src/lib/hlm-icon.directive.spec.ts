@@ -7,7 +7,6 @@ import { HlmIconDirective } from './hlm-icon.directive';
 
 @Component({
   selector: 'hlm-mock',
-  ,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HlmIconDirective, NgIcon],
   providers: [provideIcons({ lucideCheck })],

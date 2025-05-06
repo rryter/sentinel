@@ -13,7 +13,6 @@ const DEFAULT_TOOLTIP_CONTENT_CLASSES =
 
 @Directive({
   selector: '[hlmTooltipTrigger]',
-  ,
   providers: [
     provideBrnTooltipDefaultOptions({
       showDelay: 150,

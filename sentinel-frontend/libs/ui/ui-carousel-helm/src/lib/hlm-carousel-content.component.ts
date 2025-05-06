@@ -12,7 +12,6 @@ import { HlmCarouselComponent } from './hlm-carousel.component';
 
 @Component({
   selector: 'hlm-carousel-content',
-  ,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {

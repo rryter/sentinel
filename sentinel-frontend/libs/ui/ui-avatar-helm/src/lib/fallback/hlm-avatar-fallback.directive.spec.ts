@@ -9,7 +9,6 @@ import { HlmAvatarFallbackDirective } from './hlm-avatar-fallback.directive';
 
 @Component({
   selector: 'hlm-mock',
-  ,
   imports: [HlmAvatarFallbackDirective],
   template: `
     <span hlmAvatarFallback [class]="userCls" [autoColor]="autoColor"

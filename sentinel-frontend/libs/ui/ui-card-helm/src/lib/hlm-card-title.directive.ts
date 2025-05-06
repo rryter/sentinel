@@ -14,7 +14,6 @@ export type CardTitleVariants = VariantProps<typeof cardTitleVariants>;
 
 @Directive({
   selector: '[hlmCardTitle]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },

@@ -5,7 +5,6 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: '[hlmAccordionTrigger]',
-  ,
   host: {
     '[style.--tw-ring-offset-shadow]': '"0 0 #000"',
     '[class]': '_computedClass()',

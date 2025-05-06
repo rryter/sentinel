@@ -4,7 +4,6 @@ import { HlmAvatarImageDirective } from './hlm-avatar-image.directive';
 
 @Component({
   selector: 'hlm-mock',
-  ,
   imports: [HlmAvatarImageDirective],
   template: ` <img hlmAvatarImage alt="Avatar image" [class]="userCls" /> `,
 })

@@ -4,7 +4,6 @@ import type { ClassValue } from 'clsx';
 
 @Directive({
   selector: '[hlmCommandEmpty]',
-  ,
   host: {
     '[class]': '_computedClass()',
   },
