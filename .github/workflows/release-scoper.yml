@@ -21,6 +21,7 @@ jobs:
 
       - name: Build Release Binary
         run: cargo build --release
+        working-directory: ./sentinel-analysis # Add this line
 
       - name: Create Release
         id: create_release
