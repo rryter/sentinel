@@ -3,19 +3,30 @@ description: Run scoper v0.1.2 on repository code
 
 inputs:
   args:
-    description: 'Arguments to pass to scoper when executing'
+    description: "Arguments to pass to scoper when executing"
     required: false
-    default: ''
+    default: ""
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: Install scoper using actions-rs/install
-      uses: actions-rs/install@v0.1
+    - name: Cache scoper binary
+      id: cache-scoper
+      uses: actions/cache@v4
       with:
-        crate: scoper
-        version: 0.1.2
-        use-tool-cache: true
+        path: ${{ github.action_path }}/scoper # Path to cache
+        key: ${{ runner.os }}-scoper-v0.1.2 # Cache key
+
+    - name: Download scoper binary if not cached
+      if: steps.cache-scoper.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "Downloading scoper v0.1.2..."
+        curl -L -o ${{ github.action_path }}/scoper https://github.com/rryter/sentinel/releases/download/v0.1.2/scoper
+
+    - name: Make scoper binary executable
+      shell: bash
+      run: chmod +x ${{ github.action_path }}/scoper
 
     - name: Run scoper on repository code
       shell: bash
