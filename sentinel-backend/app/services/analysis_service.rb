@@ -206,6 +206,14 @@ class AnalysisService
       FileUtils.rm_rf(output_dir) if output_dir && !Rails.env.development?
     end
 
+    # New method to process findings submitted via API
+    def process_submitted_findings(findings_data)
+      analysis_job = AnalysisJob.find(@job_id) # @job_id is set in initialize
+      # The core logic is the same as process_findings, so we can call it.
+      # process_findings expects an AnalysisJob object as its first argument.
+      process_findings(analysis_job, findings_data)
+    end
+
     def process_findings(analysis_job, findings_data)
       # Validate input
       unless findings_data.is_a?(Hash) && findings_data["findings"].is_a?(Array)
@@ -241,11 +249,15 @@ class AnalysisService
 
           # Bulk insert new files if any remain
           if files_to_create.any?
-            result = FileWithViolations.insert_all(files_to_create, returning: [ :id, :file_path ])
+            # ActiveRecord::ConnectionAdapters::Mysql2Adapter does not support :returning
+            # So we insert without it and then fetch the records.
+            FileWithViolations.insert_all(files_to_create)
 
-            # Map each file path to its ID
-            result.rows.each do |id, file_path|
-              file_path_to_id[file_path] = id
+            # Fetch the newly created records to get their IDs
+            # Assuming file_path is unique per analysis_job_id for these new records
+            newly_created_paths = files_to_create.map { |f| f[:file_path] }
+            analysis_job.files_with_violations.where(file_path: newly_created_paths).each do |fwv|
+              file_path_to_id[fwv.file_path] = fwv.id
             end
           end
         end
@@ -259,14 +271,25 @@ class AnalysisService
 
           findings.each do |finding|
             # Find or use default severity
-            severity_id = nil
+            severity_object = nil
             if finding["severity"].present?
-              # Map the severity name to our standard levels
-              mapped_severity = Severity.map_legacy_severity(finding["severity"])
-              severity = Severity.find_by_name_ignore_case(mapped_severity) || Severity.default
-              severity_id = severity.id
+              mapped_severity_name = Severity.map_legacy_severity(finding["severity"])
+              severity_object = Severity.find_by_name_ignore_case(mapped_severity_name)
+            end
+
+            # If not found by name or if finding["severity"] was blank, try to use the default
+            if severity_object.nil?
+              severity_object = Severity.default
+            end
+
+            severity_id = nil
+            if severity_object
+              severity_id = severity_object.id
             else
-              severity_id = Severity.default.id
+              # This is a fallback if Severity.default also returns nil
+              Rails.logger.warn("Could not determine severity for finding: #{finding.inspect}. Neither specific nor default severity found. Consider configuring a default severity.")
+              # Depending on requirements, you might want to assign a predefined fallback ID
+              # or ensure the 'severity_id' column in 'violations' can be NULL.
             end
 
             violations_to_create << {
