@@ -5,7 +5,7 @@ set -e
 REGISTRY="europe-west6-docker.pkg.dev"
 PROJECT="twy-website-analytics"
 REPOSITORY="docker-repo"
-IMAGE_NAME="cv-reto"
+IMAGE_NAME="sentinel-backend"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 TAG="latest"
 

@@ -17,6 +17,8 @@ pub struct Config {
     pub debug_level: Option<DebugLevel>,
     /// Directory to store findings.json and other output files
     pub output_dir: Option<String>,
+    /// API URL for submitting analysis results
+    pub api_url: Option<String>,
 }
 
 impl Config {

@@ -44,6 +44,12 @@ rayon = "1.8"
 num_cpus = "1.16"
 tabled = "0.18.0"
 
+# For making HTTP requests
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+
+# For Gzip compression
+flate2 = "1.0"
+
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
 walkdir = "2.4"
