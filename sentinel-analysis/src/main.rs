@@ -27,6 +27,37 @@ fn main() {
         println!("DEBUG: Output directory set to: {}", output_dir);
     }
 
+    // Get rules config path from command-line arguments
+    if let Some(rules_config_path) = matches.get_one::<String>("rules-config") {
+        config.rules_config = Some(rules_config_path.clone());
+        // Optional: Add a debug print to confirm the path is being set
+        if debug_level >= scoper::utilities::DebugLevel::Debug {
+            println!("DEBUG: Rules config path set from command line: {}", rules_config_path);
+        }
+    }
+
+    // Fallback: If rules_config is not set by CLI or sentinel.json (via Config::load),
+    // try to find rules.json next to the executable.
+    if config.rules_config.is_none() {
+        if let Ok(exe_path) = env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                let rules_path_beside_exe = exe_dir.join("rules.json");
+                if rules_path_beside_exe.exists() {
+                    if let Some(path_str) = rules_path_beside_exe.to_str() {
+                        config.rules_config = Some(path_str.to_string());
+                        if debug_level >= scoper::utilities::DebugLevel::Debug {
+                            println!("DEBUG: Rules config path set from rules.json next to executable: {}", path_str);
+                        }
+                    } else {
+                        if debug_level >= scoper::utilities::DebugLevel::Warn {
+                            eprintln!("WARNING: Found rules.json next to executable, but its path is not valid UTF-8.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Check if --help was provided
     if matches.contains_id("help") {
         // clap has already displayed the help message
