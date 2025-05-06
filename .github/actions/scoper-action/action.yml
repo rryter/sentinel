@@ -1,5 +1,5 @@
 name: Scoper Action
-description: Install and run scoper v0.1.2 on repository code
+description: Run scoper v0.1.2 on repository code
 
 inputs:
   args:
@@ -10,16 +10,12 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
+    - name: Install scoper using actions-rs/install
+      uses: actions-rs/install@v0.1
       with:
-        profile: minimal
-        toolchain: stable
-        override: true
-
-    - name: Install scoper v0.1.2
-      shell: bash
-      run: cargo install scoper --version 0.1.2
+        crate: scoper
+        version: 0.1.2
+        use-tool-cache: true
 
     - name: Run scoper on repository code
       shell: bash

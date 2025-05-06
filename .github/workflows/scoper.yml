@@ -15,4 +15,4 @@ jobs:
       - name: Run scoper
         uses: ./.github/actions/scoper-action  # Path to your action
         with:
-          args: '' 
+          args: ''
