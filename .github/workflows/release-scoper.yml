@@ -26,6 +26,7 @@ jobs:
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
+        working-directory: ./sentinel-analysis # Add this line
         with:
           name: Release ${{ github.ref_name }}
           draft: false
