@@ -3,7 +3,6 @@ import { BrnCommandDirective } from '@spartan-ng/brain/command';
 import { hlm } from '@spartan-ng/brain/core';
 
 @Component({
-  ,
   selector: 'hlm-command',
   template: ` <ng-content /> `,
   hostDirectives: [

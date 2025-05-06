@@ -3,7 +3,6 @@ import { BrnCommandSearchInputDirective } from '@spartan-ng/brain/command';
 import { hlm } from '@spartan-ng/brain/core';
 
 @Component({
-  ,
   selector: 'input[hlm-command-search-input]',
   template: '',
   hostDirectives: [

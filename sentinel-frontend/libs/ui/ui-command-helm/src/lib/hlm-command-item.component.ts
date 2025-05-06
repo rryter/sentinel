@@ -10,7 +10,6 @@ import { BrnCommandItemDirective } from '@spartan-ng/brain/command';
 import { hlm } from '@spartan-ng/brain/core';
 
 @Component({
-  ,
   selector: 'button[hlm-command-item]',
   template: ` <ng-content /> `,
   hostDirectives: [
