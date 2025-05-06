@@ -1,5 +1,5 @@
 name: Scoper Action
-description: Run scoper v0.1.2 on repository code
+description: Run scoper v0.1.4 on repository code
 
 inputs:
   args:
@@ -15,14 +15,14 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ github.action_path }}/scoper # Path to cache
-        key: ${{ runner.os }}-scoper-v0.1.3 # Cache key
+        key: ${{ runner.os }}-scoper-v0.1.4 # Cache key
 
     - name: Download scoper binary if not cached
       if: steps.cache-scoper.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        echo "Downloading scoper v0.1.3..."
-        curl -L -o ${{ github.action_path }}/scoper https://github.com/rryter/sentinel/releases/download/v0.1.3/scoper
+        echo "Downloading scoper v0.1.4..."
+        curl -L -o ${{ github.action_path }}/scoper https://github.com/rryter/sentinel/releases/download/v0.1.4/scoper
 
     - name: Download rules.json
       shell: bash
