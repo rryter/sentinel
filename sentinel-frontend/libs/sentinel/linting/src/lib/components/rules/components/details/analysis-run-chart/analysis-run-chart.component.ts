@@ -128,7 +128,6 @@ export class AnalysisRunChartComponent implements OnChanges {
           display: true,
           text: 'Duration (ms)',
         },
-        min: 0,
       },
       files: {
         type: 'linear',
@@ -137,7 +136,6 @@ export class AnalysisRunChartComponent implements OnChanges {
           display: true,
           text: 'Total Files',
         },
-        min: 0,
         grid: {
           drawOnChartArea: false,
         },
@@ -150,7 +148,6 @@ export class AnalysisRunChartComponent implements OnChanges {
           display: true,
           text: 'Files Per Second',
         },
-        min: 0,
         grid: {
           drawOnChartArea: false, // To avoid clutter, only one Y-axis grid is usually shown
         },
