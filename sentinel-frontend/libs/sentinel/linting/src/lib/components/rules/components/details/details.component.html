@@ -1,1 +1,10 @@
-<sen-markdown-renderer [src]="ruleId()"></sen-markdown-renderer>
+<div hlmCard>
+  <div hlmCardContent class="space-y-4">
+    <sen-performance-metrics
+      [analysisRuns]="analysisRunsData"
+    ></sen-performance-metrics>
+    <sen-analysis-run-chart
+      [analysisRuns]="analysisRunsData"
+    ></sen-analysis-run-chart>
+  </div>
+</div>
