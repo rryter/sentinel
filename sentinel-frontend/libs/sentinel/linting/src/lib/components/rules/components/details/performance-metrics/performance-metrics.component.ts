@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ApiV1AnalysisJobsGet200ResponseDataInner } from '@sentinel/api';
 import {
   CategoryScale,
   Chart,
@@ -15,7 +16,6 @@ import {
   TooltipItem, // Added TooltipItem for typing
 } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { AnalysisRun } from '../analysis-run-chart/analysis-run-chart.component';
 
 // Register the required components for Chart.js
 Chart.register(
@@ -36,7 +36,7 @@ Chart.register(
   templateUrl: './performance-metrics.component.html',
 })
 export class PerformanceMetricsComponent implements OnChanges {
-  @Input() analysisRuns: AnalysisRun[] = [];
+  @Input() analysisRuns: ApiV1AnalysisJobsGet200ResponseDataInner[] = [];
 
   chartData: ChartConfiguration<'line'>['data'] = {
     // Reverted to <'line'>
