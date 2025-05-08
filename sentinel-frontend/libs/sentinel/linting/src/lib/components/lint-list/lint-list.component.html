@@ -177,8 +177,7 @@
                 getChangeColorClass(getPercentChange(job, 'duration', i), false)
               "
             >
-              {{ getPercentChange(job, 'duration', i) > 0 ? '' : '-'
-              }}{{ Math.abs(getPercentChange(job, 'duration', i)) }}%
+              {{ getPercentChange(job, 'duration', i) }}%
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -187,9 +186,16 @@
             </div>
             <div
               *ngIf="getPercentChange(job, 'total_files', i) !== 0"
-              class="text-xs text-gray-500"
+              class="text-xs"
+              [ngClass]="
+                getChangeColorClass(getPercentChange(job, 'total_files', i))
+              "
             >
-              ({{ getPercentChange(job, 'total_files', i) }}%)
+              {{
+                getPercentChange(job, 'total_files', i) > 0
+                  ? '+' + getPercentChange(job, 'total_files', i)
+                  : getPercentChange(job, 'total_files', i)
+              }}%
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -198,9 +204,16 @@
             </div>
             <div
               *ngIf="getPercentChange(job, 'total_matches', i) !== 0"
-              class="text-xs text-gray-500"
+              class="text-xs"
+              [ngClass]="
+                getChangeColorClass(getPercentChange(job, 'total_matches', i))
+              "
             >
-              ({{ getPercentChange(job, 'total_matches', i) }}%)
+              {{
+                getPercentChange(job, 'total_matches', i) > 0
+                  ? '+' + getPercentChange(job, 'total_matches', i)
+                  : getPercentChange(job, 'total_matches', i)
+              }}%
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -209,9 +222,16 @@
             </div>
             <div
               *ngIf="getPercentChange(job, 'rules_matched', i) !== 0"
-              class="text-xs text-gray-500"
+              class="text-xs"
+              [ngClass]="
+                getChangeColorClass(getPercentChange(job, 'rules_matched', i))
+              "
             >
-              ({{ getPercentChange(job, 'rules_matched', i) }}%)
+              {{
+                getPercentChange(job, 'rules_matched', i) > 0
+                  ? '+' + getPercentChange(job, 'rules_matched', i)
+                  : getPercentChange(job, 'rules_matched', i)
+              }}%
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -231,9 +251,9 @@
             >
               {{
                 getPercentChange(job, 'files_per_second_wall_time', i) > 0
-                  ? '+'
-                  : ''
-              }}{{ getPercentChange(job, 'files_per_second_wall_time', i) }}%
+                  ? '+' + getPercentChange(job, 'files_per_second_wall_time', i)
+                  : getPercentChange(job, 'files_per_second_wall_time', i)
+              }}%
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
@@ -262,9 +282,10 @@
             >
               {{
                 getPercentChange(job, 'parallel_efficiency_percent', i) > 0
-                  ? '+'
-                  : ''
-              }}{{ getPercentChange(job, 'parallel_efficiency_percent', i) }}%
+                  ? '+' +
+                    getPercentChange(job, 'parallel_efficiency_percent', i)
+                  : getPercentChange(job, 'parallel_efficiency_percent', i)
+              }}%
             </div>
           </td>
         </tr>
