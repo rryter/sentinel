@@ -20,7 +20,10 @@ export class LintListComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
   jobs: ApiV1AnalysisJobsGet200ResponseDataInner[] = [];
+  sortedJobs: ApiV1AnalysisJobsGet200ResponseDataInner[] = [];
   projectMap = new Map<number, string>();
+  currentProjectName = 'sentinel';
+  Math = Math;
 
   constructor(
     private analysisService: AnalysisJobsService,
@@ -56,6 +59,19 @@ export class LintListComponent implements OnInit {
       .subscribe({
         next: (jobs) => {
           this.jobs = jobs;
+          // Sort jobs by creation date (newest first)
+          this.sortedJobs = [...jobs].sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          );
+
+          // Set current project name from the newest job
+          if (this.sortedJobs.length > 0 && this.sortedJobs[0].project) {
+            this.currentProjectName =
+              this.sortedJobs[0].project.name || 'sentinel';
+          }
+
           this.isLoading = false;
         },
         error: (error) => {
@@ -75,6 +91,16 @@ export class LintListComponent implements OnInit {
     return this.datePipe.transform(date, 'MMM d, y, h:mm a') || 'Invalid date';
   }
 
+  formatShortDate(date: string | null | undefined): string {
+    if (!date) return 'N/A';
+    return this.datePipe.transform(date, 'MMM d') || 'Invalid date';
+  }
+
+  formatNumber(num: number | null | undefined): string {
+    if (num === null || num === undefined) return '0';
+    return num.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+
   getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
       case 'completed':
@@ -88,6 +114,48 @@ export class LintListComponent implements OnInit {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  }
+
+  getEfficiencyColorClass(efficiency: number): string {
+    if (efficiency >= 80) {
+      return 'bg-green-500';
+    } else if (efficiency >= 70) {
+      return 'bg-yellow-500';
+    } else {
+      return 'bg-red-500';
+    }
+  }
+
+  getPercentChange(
+    currentJob: ApiV1AnalysisJobsGet200ResponseDataInner,
+    field: keyof ApiV1AnalysisJobsGet200ResponseDataInner,
+    index: number,
+  ): number {
+    if (index >= this.sortedJobs.length - 1) return 0; // No previous job to compare
+
+    const prevJob = this.sortedJobs[index + 1];
+    const currentValue = currentJob[field] as number;
+    const prevValue = prevJob[field] as number;
+
+    if (!prevValue) return 0;
+
+    const percentChange = ((currentValue - prevValue) / prevValue) * 100;
+    return Math.round(percentChange * 10) / 10; // Round to 1 decimal place
+  }
+
+  getChangeColorClass(percentChange: number, positiveIsGood = true): string {
+    if (percentChange === 0) return '';
+
+    if (positiveIsGood) {
+      return percentChange > 0 ? 'text-green-600' : 'text-red-600';
+    } else {
+      return percentChange < 0 ? 'text-green-600' : 'text-red-600';
+    }
+  }
+
+  formatPercentChange(percentChange: number): string {
+    if (percentChange === 0) return '(0%)';
+    return percentChange > 0 ? `+${percentChange}%` : `${percentChange}%`;
   }
 
   trackById(

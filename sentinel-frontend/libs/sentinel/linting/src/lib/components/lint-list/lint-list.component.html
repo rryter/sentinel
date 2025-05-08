@@ -2,16 +2,27 @@
   <!-- Header Section -->
   <header class="sm:flex sm:items-center mb-8">
     <div class="sm:flex-auto">
-      <h1 class="text-base font-semibold text-gray-900">Linting Jobs</h1>
+      <h1 class="text-xl font-semibold text-gray-900">
+        Scan Performance Analysis
+      </h1>
       <p class="mt-2 text-sm text-gray-700">
-        A list of all linting jobs across projects.
+        Project: {{ currentProjectName }}
       </p>
     </div>
 
     <div class="mt-4 sm:mt-0 sm:ml-16">
-      <button routerLink="/linting/create" type="button" hlmBtn>
-        Start New Lint
-      </button>
+      <div
+        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+      >
+        <svg class="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        All scans completed
+      </div>
     </div>
   </header>
 
@@ -74,32 +85,26 @@
     </p>
   </button>
 
-  <!-- Jobs Table -->
+  <!-- Performance Analysis Table -->
   <div
-    class="overflow-hidden shadow ring-1 ring-black/5 rounded-lg"
+    class="overflow-hidden rounded-lg border border-gray-200"
     *ngIf="!isLoading && !errorMessage && jobs.length > 0"
   >
-    <table class="min-w-full divide-y divide-gray-300">
+    <table class="min-w-full divide-y divide-gray-200">
       <!-- Table Header -->
       <thead class="bg-gray-50">
         <tr>
           <th
             scope="col"
-            class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+            class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
           >
-            Id
+            Scan
           </th>
           <th
             scope="col"
             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Project
-          </th>
-          <th
-            scope="col"
-            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-          >
-            Files
+            Date
           </th>
           <th
             scope="col"
@@ -111,16 +116,31 @@
             scope="col"
             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Status
+            Files
           </th>
           <th
             scope="col"
             class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
           >
-            Created At
+            Matches
           </th>
-          <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
-            <span class="sr-only">Actions</span>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Rules
+          </th>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Files/sec
+          </th>
+          <th
+            scope="col"
+            class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+          >
+            Efficiency
           </th>
         </tr>
       </thead>
@@ -128,39 +148,124 @@
       <!-- Table Body -->
       <tbody class="divide-y divide-gray-200 bg-white">
         <tr
-          class="even:bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors duration-150"
-          *ngFor="let job of jobs; trackBy: trackById"
+          class="cursor-pointer transition-colors duration-150 hover:bg-gray-50"
+          *ngFor="let job of sortedJobs; let i = index; trackBy: trackById"
           [routerLink]="['./', job.id, 'results']"
+          [ngClass]="{ 'font-medium': i === 0 }"
         >
-          <td
-            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-          >
-            {{ job.id }}
-          </td>
-          <td class="px-3 py-4 text-sm text-gray-500">
-            {{ job.project.name || 'Unknown' }}
-          </td>
-          <td class="px-3 py-4 text-sm text-gray-500">
-            {{ job.total_files || 0 }}
+          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900">
+            <div class="flex items-center">
+              <span
+                *ngIf="i === 0"
+                class="flex h-5 w-5 rounded-full bg-black justify-center items-center text-white text-xs mr-2"
+              >
+                #
+              </span>
+              <span *ngIf="i === 0" class="font-semibold">New</span>
+              <span *ngIf="i !== 0">#{{ jobs.length - i }}</span>
+            </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-            {{ job.duration || 0 }} ms
+            {{ formatShortDate(job.created_at) }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
-            <span
-              class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
-              [ngClass]="getStatusClass(job.status || '')"
+            <div>{{ job.duration }}ms</div>
+            <div
+              *ngIf="getPercentChange(job, 'duration', i) !== 0"
+              class="text-xs"
+              [ngClass]="
+                getChangeColorClass(getPercentChange(job, 'duration', i), false)
+              "
             >
-              {{ job.status || 'Unknown' }}
-            </span>
+              {{ getPercentChange(job, 'duration', i) > 0 ? '' : '-'
+              }}{{ Math.abs(getPercentChange(job, 'duration', i)) }}%
+            </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-            {{ formatDate(job.created_at) }}
+            <div>
+              {{ job.total_files }}
+            </div>
+            <div
+              *ngIf="getPercentChange(job, 'total_files', i) !== 0"
+              class="text-xs text-gray-500"
+            >
+              ({{ getPercentChange(job, 'total_files', i) }}%)
+            </div>
           </td>
-          <td
-            class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
-          >
-            <span class="text-indigo-600">View Results</span>
+          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <div>
+              {{ job.total_matches }}
+            </div>
+            <div
+              *ngIf="getPercentChange(job, 'total_matches', i) !== 0"
+              class="text-xs text-gray-500"
+            >
+              ({{ getPercentChange(job, 'total_matches', i) }}%)
+            </div>
+          </td>
+          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <div>
+              {{ job.rules_matched }}
+            </div>
+            <div
+              *ngIf="getPercentChange(job, 'rules_matched', i) !== 0"
+              class="text-xs text-gray-500"
+            >
+              ({{ getPercentChange(job, 'rules_matched', i) }}%)
+            </div>
+          </td>
+          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+            <div>
+              {{ formatNumber(job.files_per_second_wall_time) }}
+            </div>
+            <div
+              *ngIf="
+                getPercentChange(job, 'files_per_second_wall_time', i) !== 0
+              "
+              class="text-xs"
+              [ngClass]="
+                getChangeColorClass(
+                  getPercentChange(job, 'files_per_second_wall_time', i)
+                )
+              "
+            >
+              {{
+                getPercentChange(job, 'files_per_second_wall_time', i) > 0
+                  ? '+'
+                  : ''
+              }}{{ getPercentChange(job, 'files_per_second_wall_time', i) }}%
+            </div>
+          </td>
+          <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <div class="flex items-center">
+              <div class="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
+                <div
+                  class="h-1.5 rounded-full"
+                  [ngClass]="
+                    getEfficiencyColorClass(job.parallel_efficiency_percent)
+                  "
+                  [ngStyle]="{ width: job.parallel_efficiency_percent + '%' }"
+                ></div>
+              </div>
+              <span>{{ Math.round(job.parallel_efficiency_percent) }}%</span>
+            </div>
+            <div
+              *ngIf="
+                getPercentChange(job, 'parallel_efficiency_percent', i) !== 0
+              "
+              class="text-xs"
+              [ngClass]="
+                getChangeColorClass(
+                  getPercentChange(job, 'parallel_efficiency_percent', i)
+                )
+              "
+            >
+              {{
+                getPercentChange(job, 'parallel_efficiency_percent', i) > 0
+                  ? '+'
+                  : ''
+              }}{{ getPercentChange(job, 'parallel_efficiency_percent', i) }}%
+            </div>
           </td>
         </tr>
       </tbody>
