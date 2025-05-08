@@ -70,10 +70,6 @@ export class PerformanceMetricsComponent implements OnChanges {
     scales: {
       x: {
         type: 'category',
-        title: {
-          display: true,
-          text: 'Analysis Run',
-        },
         ticks: {
           maxRotation: 70,
           minRotation: 70,
@@ -88,7 +84,6 @@ export class PerformanceMetricsComponent implements OnChanges {
           display: true,
           text: 'Files Per Second',
         },
-        min: 0,
       },
       efficiency: {
         type: 'linear',
@@ -97,8 +92,6 @@ export class PerformanceMetricsComponent implements OnChanges {
           display: true,
           text: 'Parallel Efficiency (%)',
         },
-        min: 0,
-        max: 100, // Efficiency is a percentage
         grid: {
           drawOnChartArea: false,
         },
