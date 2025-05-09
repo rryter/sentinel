@@ -231,6 +231,9 @@
     <entry key="config/cable">
       <value>file://$MODULE_DIR$/../../sentinel-backend/config/cable.yml</value>
     </entry>
+    <entry key="config/cache">
+      <value>file://$MODULE_DIR$/../../sentinel-backend/config/cache.yml</value>
+    </entry>
     <entry key="config/database">
       <value>file://$MODULE_DIR$/../../sentinel-backend/config/database.yml</value>
     </entry>
@@ -252,8 +255,8 @@
     <entry key="config/routes.rb">
       <value>file://$MODULE_DIR$/../../sentinel-backend/config/routes.rb</value>
     </entry>
-    <entry key="config/secrets">
-      <value>file://$MODULE_DIR$/../../sentinel-backend/config</value>
+    <entry key="config/solid_cache">
+      <value>file://$MODULE_DIR$/../../sentinel-backend/config/solid_cache.yml</value>
     </entry>
     <entry key="db">
       <value>file://$MODULE_DIR$/../../sentinel-backend/db</value>
@@ -287,6 +290,11 @@
     </entry>
     <entry key="public/stylesheets">
       <value>file://$MODULE_DIR$/../../sentinel-backend/public/stylesheets</value>
+    </entry>
+    <entry key="test/mailers/previews">
+      <value>file://$MODULE_DIR$/../../sentinel-backend/spec/mailers/previews</value>
+      <value>file://$MODULE_DIR$/../../sentinel-backend/test/mailers/previews</value>
+      <value>file://$MODULE_DIR$/../../sentinel-backend/test/mailers/previews</value>
     </entry>
     <entry key="tmp">
       <value>file://$MODULE_DIR$/../../sentinel-backend/tmp</value>
