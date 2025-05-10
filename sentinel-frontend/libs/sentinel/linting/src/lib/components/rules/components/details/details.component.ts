@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
 import { AnalysisJobsService } from '@sentinel/api';
+import { MarkdownRendererComponent } from '@shared/ui-custom';
 import { BrnTabsDirective } from '@spartan-ng/brain/tabs';
 import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 import {
@@ -11,8 +12,6 @@ import {
   HlmCardHeaderDirective,
   HlmCardTitleDirective,
 } from '@spartan-ng/ui-card-helm';
-import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
-import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import {
   HlmTabsComponent,
   HlmTabsContentDirective,
@@ -39,11 +38,11 @@ import { PerformanceMetricsComponent } from './performance-metrics/performance-m
     HlmCardHeaderDirective,
     HlmCardTitleDirective,
 
-    HlmLabelDirective,
-    HlmInputDirective,
     HlmButtonDirective,
     AnalysisRunChartComponent,
     PerformanceMetricsComponent,
+
+    MarkdownRendererComponent,
   ],
   providers: [BrnTabsDirective],
   templateUrl: './details.component.html',
