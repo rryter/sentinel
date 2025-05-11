@@ -1,0 +1,2 @@
+class RuleGroup < ApplicationRecord
+end

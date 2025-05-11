@@ -35,6 +35,13 @@ Rails.application.routes.draw do
 
       resources :rules
       
+      resources :rule_groups do
+        member do
+          post :add_rules
+          delete 'rules/:rule_id', to: 'rule_groups#remove_rule', as: :remove_rule
+        end
+      end
+
       resources :violations, only: [:index] do
         collection do
           get :time_series
