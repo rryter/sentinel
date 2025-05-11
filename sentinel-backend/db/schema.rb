@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_02_145808) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_11_194801) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -81,12 +81,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_02_145808) do
     t.index ["analysis_job_id"], name: "index_files_with_violations_on_analysis_job_id"
   end
 
+  create_table "project_rules", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "rule_id", null: false
+    t.bigint "project_id", null: false
+    t.boolean "enabled"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_project_rules_on_project_id"
+    t.index ["rule_id"], name: "index_project_rules_on_rule_id"
+  end
+
   create_table "projects", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "repository_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_projects_on_name", unique: true
+  end
+
+  create_table "rules", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "severities", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -136,6 +153,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_02_145808) do
   add_foreign_key "analysis_jobs", "projects"
   add_foreign_key "credentials", "users"
   add_foreign_key "files_with_violations", "analysis_jobs"
+  add_foreign_key "project_rules", "projects"
+  add_foreign_key "project_rules", "rules"
   add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
   add_foreign_key "violations", "severities"
 end

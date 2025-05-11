@@ -153,11 +153,6 @@ export class LintListComponent implements OnInit {
     }
   }
 
-  formatPercentChange(percentChange: number): string {
-    if (percentChange === 0) return '(0%)';
-    return percentChange > 0 ? `+${percentChange}%` : `${percentChange}%`;
-  }
-
   trackById(
     index: number,
     item: ApiV1AnalysisJobsGet200ResponseDataInner,

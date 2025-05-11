@@ -13,6 +13,11 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :projects, only: [:index, :show, :create] do
         resources :analysis_submissions, only: [:create], path: 'analysis_submissions'
+        resources :rules, only: [:index, :update], controller: 'project_rules' do
+          member do
+            post :toggle
+          end
+        end
       end
       
       resources :analysis_jobs, only: [:index, :show, :create] do
@@ -24,9 +29,9 @@ Rails.application.routes.draw do
         resources :violations, only: [:index] do
           collection do
             get :time_series
-          end
-        end
       end
+
+      resources :rules
       
       resources :violations, only: [:index] do
         collection do
