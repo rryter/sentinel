@@ -29,6 +29,8 @@ Rails.application.routes.draw do
         resources :violations, only: [:index] do
           collection do
             get :time_series
+          end
+        end
       end
 
       resources :rules

@@ -1,4 +1,4 @@
-class Rule < ApplicationRecord
+class Rule < ActiveRecord::Base
   has_many :project_rules, dependent: :destroy
   has_many :projects, through: :project_rules
 

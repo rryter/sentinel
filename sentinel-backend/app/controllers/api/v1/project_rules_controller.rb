@@ -6,17 +6,8 @@ module Api
 
       # GET /api/v1/projects/:project_id/rules
       def index
-        @rules = Rule.all.map do |rule|
-          project_rule = rule.project_rules.find_by(project: @project)
-          {
-            id: rule.id,
-            name: rule.name,
-            description: rule.description,
-            enabled: project_rule&.enabled || false
-          }
-        end
-
-        render json: @rules
+        @rules = Rule.includes(:project_rules).all
+        render json: @rules, each_serializer: RuleWithProjectStateSerializer, project: @project
       end
 
       # PATCH/PUT /api/v1/projects/:project_id/rules/:id
