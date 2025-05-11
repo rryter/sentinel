@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_11_194801) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_11_201400) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -99,6 +99,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_11_194801) do
     t.index ["name"], name: "index_projects_on_name", unique: true
   end
 
+  create_table "rule_group_memberships", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "rule_id", null: false
+    t.bigint "rule_group_id", null: false
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rule_group_id"], name: "index_rule_group_memberships_on_rule_group_id"
+    t.index ["rule_id"], name: "index_rule_group_memberships_on_rule_id"
+  end
+
+  create_table "rule_groups", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "rules", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -155,6 +172,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_11_194801) do
   add_foreign_key "files_with_violations", "analysis_jobs"
   add_foreign_key "project_rules", "projects"
   add_foreign_key "project_rules", "rules"
+  add_foreign_key "rule_group_memberships", "rule_groups"
+  add_foreign_key "rule_group_memberships", "rules"
   add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
   add_foreign_key "violations", "severities"
 end
