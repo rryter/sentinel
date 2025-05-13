@@ -1,4 +1,5 @@
 class Rule < ActiveRecord::Base
+  belongs_to :severity
   has_many :project_rules, dependent: :destroy
   has_many :projects, through: :project_rules
   has_many :rule_group_memberships, dependent: :destroy

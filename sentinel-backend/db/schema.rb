@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_11_201400) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_13_161504) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -121,6 +121,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_11_201400) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "severity_id", null: false
+    t.text "default_config"
+    t.boolean "enabled_by_default"
+    t.index ["severity_id"], name: "index_rules_on_severity_id"
   end
 
   create_table "severities", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
@@ -174,6 +178,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_11_201400) do
   add_foreign_key "project_rules", "rules"
   add_foreign_key "rule_group_memberships", "rule_groups"
   add_foreign_key "rule_group_memberships", "rules"
+  add_foreign_key "rules", "severities"
   add_foreign_key "violations", "files_with_violations", column: "file_with_violations_id"
   add_foreign_key "violations", "severities"
 end

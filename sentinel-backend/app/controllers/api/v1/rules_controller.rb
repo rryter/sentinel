@@ -6,7 +6,7 @@ module Api
     # GET /rules
   def index
     @rules = Rule.all
-    render json: @rules.as_json
+    render json: @rules
   end
 
     # GET /rules/:id
