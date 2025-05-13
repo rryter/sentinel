@@ -34,7 +34,7 @@ if [ ! -f "$BACKEND_DIR/swagger/v1/swagger.json" ]; then
 fi
 
 echo "Generating Angular API clients from OpenAPI spec..."
-(cd $FRONTEND_DIR && java -jar node_modules/@openapitools/openapi-generator-cli/versions/7.13.0.jar generate \
+(cd $FRONTEND_DIR && npx openapi-generator-cli generate \
     -i ../$BACKEND_DIR/swagger/v1/swagger.json \
     -g typescript-angular \
     -o libs/shared/api \
