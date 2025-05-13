@@ -36,7 +36,10 @@ module Api
         user = User.find(auth_data["user_id"])
 
         # Use the authentication params instead of root level params
-        webauthn_params = params[:authentication].presence || params
+        unpermitted_params = params[:authentication].presence || params
+        webauthn_params = unpermitted_params.permit(
+          :id, :rawId, :type, { response: [:authenticatorData, :clientDataJSON, :signature] }
+        )
 
         # Validate required parameters
         required_params = [:id, :rawId, :type, :response]
@@ -60,8 +63,8 @@ module Api
           }, status: :unprocessable_entity
         end
 
-        # Find the credential using the URL-safe base64 ID - this matches how we store it during registration
-        credential_id = webauthn_params[:id] + "="
+        # Find the credential using the URL-safe base64 ID
+        credential_id = webauthn_params[:id]
         credential = user.credentials.find_by(external_id: credential_id)
 
         unless credential
@@ -69,7 +72,8 @@ module Api
         end
 
         begin
-          webauthn_credential = WebAuthn::Credential.from_get(webauthn_params)
+          # Convert to hash before passing to the WebAuthn library
+          webauthn_credential = WebAuthn::Credential.from_get(webauthn_params.to_h)
 
           webauthn_credential.verify(
             auth_data["challenge"],
@@ -83,7 +87,7 @@ module Api
 
           # You might want to generate a JWT token here for subsequent API calls
           render json: {
-            status: "success",
+            status: "ok",
             user: {
               id: user.id,
               email: user.email

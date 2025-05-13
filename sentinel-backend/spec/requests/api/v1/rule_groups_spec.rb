@@ -194,8 +194,15 @@ RSpec.describe 'Api::V1::RuleGroups', type: :request do
       tags 'Rule Groups'
 
       response '200', 'rule removed' do
+        let!(:rule_group_membership) { create(:rule_group_membership, rule_group: rule_group, rule: rule) }
         let(:id) { rule_group.id }
         let(:rule_id) { rule.id }
+
+        before do
+          # Ensure the rule is associated before attempting to remove it
+          rule_group.rules << rule unless rule_group.rules.include?(rule)
+        end
+
         run_test!
       end
 

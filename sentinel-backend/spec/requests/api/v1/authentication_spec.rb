@@ -209,9 +209,9 @@ RSpec.describe 'Api::V1::Authentication', type: :request do
             allow_any_instance_of(Api::V1::AuthenticationController).to receive(:session).and_return({
               :authentication_challenge => { 'challenge' => 'test-challenge', 'user_id' => user.id }
             })
-            # Let from_get succeed (it's stubbed in the outer before block with .with(authentication))
-            # Explicitly stub Credential.find_by! to raise the error for this test
-            allow(Credential).to receive(:find_by!).with(external_id: credential.external_id).and_raise(ActiveRecord::RecordNotFound)
+            # Simulate that the specific user's credential is not found
+            allow(User).to receive(:find).with(user.id).and_return(user) # Ensure the correct user is found
+            allow(user.credentials).to receive(:find_by).with(external_id: credential.external_id).and_return(nil)
           end
           schema type: :object, properties: {
             error: { type: :string }
