@@ -6,8 +6,20 @@ module Api
 
       # GET /api/v1/projects/:project_id/rules
       def index
-        @rules = Rule.includes(:project_rules).all
-        render json: @rules, each_serializer: RuleWithProjectStateSerializer, project: @project
+        rules_array = Rule.includes(:project_rules).all.map do |rule|
+          project_rule = rule.project_rules.find_by(project: @project)
+          {
+            id: rule.id,
+            name: rule.name,
+            description: rule.description,
+            enabled: project_rule&.enabled || false,
+            created_at: rule.created_at,
+            updated_at: rule.updated_at
+          }
+        end
+
+        # Fix the serialization issue by specifying a root
+        render json: { rules: rules_array }, status: :ok
       end
 
       # PATCH/PUT /api/v1/projects/:project_id/rules/:id

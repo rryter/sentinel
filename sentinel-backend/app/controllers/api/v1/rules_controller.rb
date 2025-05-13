@@ -4,10 +4,10 @@ module Api
     before_action :set_rule, only: [:show, :update, :destroy]
 
     # GET /rules
-    def index
-        @rules = Rule.all
-        render json: @rules
-    end
+  def index
+    @rules = Rule.all
+    render json: @rules.as_json
+  end
 
     # GET /rules/:id
     def show

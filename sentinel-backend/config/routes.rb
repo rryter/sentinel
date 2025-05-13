@@ -16,6 +16,7 @@ Rails.application.routes.draw do
         resources :rules, only: [:index, :update], controller: 'project_rules' do
           member do
             post :toggle
+            post '/' => 'project_rules#toggle'
           end
         end
       end
