@@ -1,13 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { ProjectRulesService, RulesService } from '@sentinel/api';
-import {} from '@spartan-ng/brain/switch';
+import { FormsModule } from '@angular/forms';
+import {
+  ApiV1ProjectsProjectIdRulesGet200ResponseRulesInner,
+  ProjectRulesService,
+  RulesService,
+} from '@sentinel/api';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmSwitchComponent } from '@spartan-ng/ui-switch-helm';
 import { map } from 'rxjs';
+
 @Component({
   selector: 'lib-settings',
-  imports: [CommonModule, HlmLabelDirective, HlmSwitchComponent],
+  imports: [CommonModule, FormsModule, HlmLabelDirective, HlmSwitchComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
@@ -21,4 +26,21 @@ export class SettingsComponent {
       projectId: 2,
     })
     .pipe(map((response) => response.rules));
+
+  onRuleToggle(
+    rule: ApiV1ProjectsProjectIdRulesGet200ResponseRulesInner,
+    checked: boolean,
+  ) {
+    if (checked == rule.enabled) {
+      return;
+    }
+    console.log('onRuleToggle');
+    rule.enabled = checked;
+    this.projectRulesService
+      .toggleRule({
+        id: rule.id,
+        projectId: 2,
+      })
+      .subscribe();
+  }
 }

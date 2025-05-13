@@ -1,0 +1,36 @@
+/* Custom styling for the settings component */
+:host {
+  display: block;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+h2 {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.leading-relaxed {
+  line-height: 1.6;
+}
+
+/* Subtle animation for rule items */
+ul li {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+ul li:hover {
+  transform: translateX(2px);
+}
+
+/* Improved focus styles for better accessibility */
+button:focus, 
+hlm-switch:focus {
+  outline: 2px solid rgba(79, 70, 229, 0.5);
+  outline-offset: 2px;
+}
+
+/* Custom styles for enabled rules */
+li.bg-indigo-50 {
+  box-shadow: inset 2px 0 0 0 rgba(79, 70, 229, 0.6);
+}
