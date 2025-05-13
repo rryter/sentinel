@@ -1,6 +1,6 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
-import { environment } from '../../../apps/sentinel/src/environments/environment';
-import { Configuration, ConfigurationParameters } from './configuration';
+import { Configuration, ConfigurationParameters } from '@sentinel/api';
+import { environment } from '../environments/environment';
 
 export function withBackendApiConfiguration(
   configurationParameters: ConfigurationParameters = {},

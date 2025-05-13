@@ -6,11 +6,12 @@ import {
   withComponentInputBinding,
   withViewTransitions,
 } from '@angular/router';
-import { provideApi, withBackendApiConfiguration } from '@sentinel/api';
+
 import { provideIcons } from '@shared/ui-custom';
 import { BarController, Colors, Legend } from 'chart.js';
 import { provideCharts } from 'ng2-charts';
 import { provideMarkdown } from 'ngx-markdown';
+import { provideApi, withBackendApiConfiguration } from './api.provider';
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
