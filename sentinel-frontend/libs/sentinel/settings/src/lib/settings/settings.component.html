@@ -18,11 +18,12 @@
           </dt>
           <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
             <div class="text-gray-900">
-              U0NPUERhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ==
+              {{ apiToken | obfuscated }}
             </div>
             <button
               type="button"
               class="font-semibold text-indigo-600 hover:text-indigo-500"
+              (click)="openUpdateApiTokenDialog()"
             >
               Update
             </button>

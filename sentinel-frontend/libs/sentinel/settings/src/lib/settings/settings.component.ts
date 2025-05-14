@@ -6,19 +6,30 @@ import {
   ProjectRulesService,
   RulesService,
 } from '@sentinel/api';
+import { HlmDialogService } from '@spartan-ng/ui-dialog-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmSwitchComponent } from '@spartan-ng/ui-switch-helm';
 import { map } from 'rxjs';
+import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-api-token-dialog.component';
 
 @Component({
   selector: 'lib-settings',
-  imports: [CommonModule, FormsModule, HlmLabelDirective, HlmSwitchComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HlmLabelDirective,
+    HlmSwitchComponent,
+    UpdateApiTokenDialogComponent,
+  ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent {
   projectRulesService = inject(ProjectRulesService);
   rulesService = inject(RulesService);
+  private dialogService = inject(HlmDialogService);
+
+  apiToken = 'U0NPUERhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ==';
 
   rules$ = this.rulesService.apiV1RulesGet();
   projectRules$ = this.projectRulesService
@@ -42,5 +53,20 @@ export class SettingsComponent {
         projectId: 2,
       })
       .subscribe();
+  }
+
+  openUpdateApiTokenDialog() {
+    // Pass the current API token as context to the dialog
+    const dialogRef = this.dialogService.open(UpdateApiTokenDialogComponent, {
+      context: { currentToken: this.apiToken },
+    });
+
+    dialogRef.closed$.subscribe((newToken: string | undefined) => {
+      if (newToken) {
+        this.apiToken = newToken;
+        // Here you would normally call a service to update the API token
+        console.log('API Token updated:', newToken);
+      }
+    });
   }
 }
