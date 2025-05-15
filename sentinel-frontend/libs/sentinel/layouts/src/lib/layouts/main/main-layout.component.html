@@ -6,6 +6,8 @@
   <body class="h-full">
   ```
 -->
+@let projectIdValue = projectId();
+{{ projectIdValue | json }}
 <div>
   <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
   <div class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
@@ -95,7 +97,7 @@
                       Projects
                     </a>
                   </li>
-                  @if (projectId) {
+                  @if (projectIdValue) {
                     <brn-separator hlmSeparator />
 
                     <li>
@@ -295,13 +297,19 @@
                   Projects
                 </a>
               </li>
-              @if (projectId) {
+
+              @if (projectIdValue) {
                 <brn-separator hlmSeparator />
 
                 <li>
                   <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                   <a
-                    [routerLink]="['/projects', projectId, 'linting', 'rules']"
+                    [routerLink]="[
+                      '/projects',
+                      projectId(),
+                      'linting',
+                      'rules',
+                    ]"
                     routerLinkActive="bg-gray-800 text-white"
                     [routerLinkActiveOptions]="{ exact: true }"
                     class="group flex gap-x-3 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 p-2 text-sm/6 font-semibold text-white"
@@ -316,7 +324,7 @@
                 </li>
                 <li>
                   <a
-                    [routerLink]="['/projects', projectId, 'linting']"
+                    [routerLink]="['/projects', projectId(), 'linting']"
                     routerLinkActive="bg-gray-800 text-white"
                     [routerLinkActiveOptions]="{ exact: true }"
                     class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
@@ -331,7 +339,12 @@
                 </li>
                 <li>
                   <a
-                    [routerLink]="['/projects', projectId, 'builds', 'metrics']"
+                    [routerLink]="[
+                      '/projects',
+                      projectId(),
+                      'builds',
+                      'metrics',
+                    ]"
                     routerLinkActive="bg-gray-800 text-white"
                     class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
                   >
@@ -341,6 +354,21 @@
                       name="lucideHammer"
                     ></ng-icon>
                     Build Metrics
+                  </a>
+                </li>
+
+                <li>
+                  <a
+                    [routerLink]="['/projects', projectId(), 'settings']"
+                    routerLinkActive="bg-gray-800 text-white"
+                    class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+                  >
+                    <ng-icon
+                      hlm
+                      class="size-6 shrink-0"
+                      name="lucideSettings"
+                    ></ng-icon>
+                    Settings
                   </a>
                 </li>
               }

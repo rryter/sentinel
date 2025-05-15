@@ -12,17 +12,18 @@ import {
   lucideChevronRight,
   lucideChevronUp,
   lucideCircle,
+  lucideCircleCheck,
   lucideClock,
   lucideEllipsis,
   lucideFile,
+  lucideFolders,
+  lucideHammer,
   lucideInfo,
   lucideLayoutGrid,
-  lucideX,
-  lucideFolders,
   lucideScroll,
   lucideSearch,
-  lucideCircleCheck,
-  lucideHammer,
+  lucideSettings,
+  lucideX,
 } from '@ng-icons/lucide';
 
 export function provideIcons(): Provider[] {
@@ -50,6 +51,7 @@ export function provideIcons(): Provider[] {
       lucideSearch,
       lucideCircleCheck,
       lucideHammer,
+      lucideSettings,
     }),
   ];
 }
