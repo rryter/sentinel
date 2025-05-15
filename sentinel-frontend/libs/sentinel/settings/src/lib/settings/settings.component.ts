@@ -37,7 +37,7 @@ export class SettingsComponent {
   rules$ = this.rulesService.apiV1RulesGet();
   projectRules$ = this.projectRulesService
     .apiV1ProjectsProjectIdRulesGet({
-      projectId: this.routingService.projectId!,
+      projectId: this.routingService.projectId ?? 0,
     })
     .pipe(map((response) => response.rules));
 
