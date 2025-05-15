@@ -10,6 +10,7 @@ import { HlmDialogService } from '@spartan-ng/ui-dialog-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmSwitchComponent } from '@spartan-ng/ui-switch-helm';
 import { map } from 'rxjs';
+import { ObfuscatedPipe } from '../pipes/obfuscated.pipe';
 import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-api-token-dialog.component';
 
 @Component({
@@ -20,6 +21,7 @@ import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-
     HlmLabelDirective,
     HlmSwitchComponent,
     UpdateApiTokenDialogComponent,
+    ObfuscatedPipe,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
@@ -29,7 +31,7 @@ export class SettingsComponent {
   rulesService = inject(RulesService);
   private dialogService = inject(HlmDialogService);
 
-  apiToken = 'U0NPUERhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ==';
+  apiToken = 'a3e363b4ea23b0b17edb87a6609f9a0bf3b30f0515d4a52f1d093267bbf689d8';
 
   rules$ = this.rulesService.apiV1RulesGet();
   projectRules$ = this.projectRulesService
@@ -56,7 +58,6 @@ export class SettingsComponent {
   }
 
   openUpdateApiTokenDialog() {
-    // Pass the current API token as context to the dialog
     const dialogRef = this.dialogService.open(UpdateApiTokenDialogComponent, {
       context: { currentToken: this.apiToken },
     });
