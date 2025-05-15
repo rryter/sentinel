@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { execSync } from 'child_process';
 import { BuildOptions, BuildResult, Plugin } from 'esbuild';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -31,6 +33,10 @@ interface BuildMetrics {
   workspace_project: string;
   workspace_environment: string;
   workspace_user: string;
+
+  // Git info
+  git_commit_hash: string;
+  git_branch_name: string;
 }
 
 interface PluginOptions {
@@ -111,6 +117,40 @@ function getWorkspaceInfo(_buildOptions: BuildOptions) {
       environment: process.env.NODE_ENV || 'development',
       user: process.env.USER || os.userInfo().username || 'unknown',
     };
+  }
+}
+
+/**
+ * Get Git information (commit hash and branch name)
+ */
+function getGitInfo(): { commitHash: string; branchName: string } {
+  // Use a module-level cache to avoid repeated Git commands
+  if ((getGitInfo as any).cache) {
+    return (getGitInfo as any).cache;
+  }
+
+  try {
+    // Execute git commands to get commit hash and branch name
+    const commitHash = execSync('git rev-parse HEAD', {
+      encoding: 'utf8',
+    }).trim();
+    const branchName = execSync('git rev-parse --abbrev-ref HEAD', {
+      encoding: 'utf8',
+    }).trim();
+
+    const result = {
+      commitHash: commitHash || 'unknown',
+      branchName: branchName || 'unknown',
+    };
+
+    // Cache the result
+    (getGitInfo as any).cache = result;
+    return result;
+  } catch (error) {
+    console.warn('[Build Metrics] Error getting Git info:', error);
+    const result = { commitHash: 'unknown', branchName: 'unknown' };
+    (getGitInfo as any).cache = result;
+    return result;
   }
 }
 
@@ -314,6 +354,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       process.env.NX_BUILD_TARGET || 'unknown:unknown:unknown';
     const { project, environment } = extractBuildTarget(buildTarget);
 
+    // Get Git information
+    const { commitHash, branchName } = getGitInfo();
+
     return {
       timestamp: new Date().toISOString(),
       duration_ms: duration,
@@ -333,6 +376,8 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       workspace_project: project,
       workspace_environment: environment,
       workspace_user: process.env.USER || os.userInfo().username || 'unknown',
+      git_commit_hash: commitHash,
+      git_branch_name: branchName,
     };
   };
 
@@ -413,6 +458,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
           );
           console.log(`[Build Metrics] Processed ${fileCount} files`);
           console.log(`[Build Metrics] File types:`, fileTypes);
+          console.log(
+            `[Build Metrics] Git branch: ${metrics.git_branch_name}, commit: ${metrics.git_commit_hash.substring(0, 8)}`,
+          );
 
           if (result.errors.length > 0) {
             console.log(

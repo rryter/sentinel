@@ -9,10 +9,13 @@ import {
 import { RoutingService } from '@shared/ui-custom';
 import { HlmDialogService } from '@spartan-ng/ui-dialog-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
+import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
 import { HlmSwitchComponent } from '@spartan-ng/ui-switch-helm';
-import { map } from 'rxjs';
+import { toast } from 'ngx-sonner';
+import { map, Subject } from 'rxjs';
 import { ObfuscatedPipe } from '../pipes/obfuscated.pipe';
 import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-api-token-dialog.component';
+
 @Component({
   selector: 'lib-settings',
   imports: [
@@ -22,6 +25,7 @@ import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-
     HlmSwitchComponent,
     UpdateApiTokenDialogComponent,
     ObfuscatedPipe,
+    HlmToasterComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
@@ -35,6 +39,21 @@ export class SettingsComponent {
   apiToken = 'a3e363b4ea23b0b17edb87a6609f9a0bf3b30f0515d4a52f1d093267bbf689d8';
 
   rules$ = this.rulesService.apiV1RulesGet();
+
+  toggleRule$ = new Subject();
+
+  constructor() {
+    this.toggleRule$.subscribe(() => {
+      toast('Event has been created', {
+        description: 'Sunday, December 03, 2024 at 9:00 AM',
+        action: {
+          label: 'Undo',
+          onClick: () => console.log('Undo'),
+        },
+      });
+    });
+  }
+
   projectRules$ = this.projectRulesService
     .apiV1ProjectsProjectIdRulesGet({
       projectId: this.routingService.projectId ?? 0,
@@ -45,21 +64,12 @@ export class SettingsComponent {
     rule: ApiV1ProjectsProjectIdRulesGet200ResponseRulesInner,
     checked: boolean,
   ) {
-    if (!this.routingService.projectId) {
-      throw new Error('Missing Project ID');
-    }
+    this.toggleRule$.next({
+      id: rule.id,
+      projectId: this.routingService.projectId,
+    });
 
-    if (checked == rule.enabled) {
-      return;
-    }
-    console.log('onRuleToggle');
     rule.enabled = checked;
-    this.projectRulesService
-      .toggleRule({
-        id: rule.id,
-        projectId: this.routingService.projectId,
-      })
-      .subscribe();
   }
 
   openUpdateApiTokenDialog() {
