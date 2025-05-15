@@ -6,13 +6,13 @@ import {
   ProjectRulesService,
   RulesService,
 } from '@sentinel/api';
+import { RoutingService } from '@shared/ui-custom';
 import { HlmDialogService } from '@spartan-ng/ui-dialog-helm';
 import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
 import { HlmSwitchComponent } from '@spartan-ng/ui-switch-helm';
 import { map } from 'rxjs';
 import { ObfuscatedPipe } from '../pipes/obfuscated.pipe';
 import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-api-token-dialog.component';
-
 @Component({
   selector: 'lib-settings',
   imports: [
@@ -29,6 +29,7 @@ import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-
 export class SettingsComponent {
   projectRulesService = inject(ProjectRulesService);
   rulesService = inject(RulesService);
+  routingService = inject(RoutingService);
   private dialogService = inject(HlmDialogService);
 
   apiToken = 'a3e363b4ea23b0b17edb87a6609f9a0bf3b30f0515d4a52f1d093267bbf689d8';
@@ -36,7 +37,7 @@ export class SettingsComponent {
   rules$ = this.rulesService.apiV1RulesGet();
   projectRules$ = this.projectRulesService
     .apiV1ProjectsProjectIdRulesGet({
-      projectId: 2,
+      projectId: this.routingService.projectId!,
     })
     .pipe(map((response) => response.rules));
 
@@ -44,6 +45,10 @@ export class SettingsComponent {
     rule: ApiV1ProjectsProjectIdRulesGet200ResponseRulesInner,
     checked: boolean,
   ) {
+    if (!this.routingService.projectId) {
+      throw new Error('Missing Project ID');
+    }
+
     if (checked == rule.enabled) {
       return;
     }
@@ -52,7 +57,7 @@ export class SettingsComponent {
     this.projectRulesService
       .toggleRule({
         id: rule.id,
-        projectId: 2,
+        projectId: this.routingService.projectId,
       })
       .subscribe();
   }
