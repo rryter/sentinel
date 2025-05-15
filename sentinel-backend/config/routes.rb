@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :projects, only: [:index, :show, :create] do
+        resources :build_metrics, only: [:index, :create]
         resources :analysis_submissions, only: [:create], path: 'analysis_submissions'
         resources :rules, only: [:index, :update], controller: 'project_rules' do
           member do
@@ -63,7 +64,6 @@ Rails.application.routes.draw do
           
       resources :examples
 
-      resources :build_metrics, only: [:index, :create]
       resources :violations_metrics, only: [:index]
     end
   end

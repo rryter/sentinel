@@ -15,3 +15,6 @@ export { MarkdownRendererComponent } from './lib/components/markdown/markdown-re
 
 // Providers
 export { provideIcons } from './lib/providers/icons.provider';
+
+// Services
+export { RoutingService } from './lib/services/routing.service';

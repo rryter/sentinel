@@ -1,10 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import { lucideChevronDown } from '@ng-icons/lucide';
-import { BuildMetricsSelectorComponent } from '@shared/ui-custom';
+import {
+  BuildMetricsSelectorComponent,
+  RoutingService,
+} from '@shared/ui-custom';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
@@ -70,6 +78,8 @@ export class BuildMetricsComponent implements OnInit {
   interval$ = new BehaviorSubject<Interval>(this.selectedInterval);
   private readonly baseApiUrl = environment.apiBaseUrl;
 
+  routingService = inject(RoutingService);
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -82,7 +92,8 @@ export class BuildMetricsComponent implements OnInit {
     console.log('fetching metrics for interval', interval);
     return this.http
       .get<BuildMetricsResponse>(
-        this.baseApiUrl + `/api/v1/build_metrics?interval=${interval}`,
+        this.baseApiUrl +
+          `/api/v1/projects/${this.routingService.projectId}/build_metrics?interval=${interval}`,
       )
       .pipe(map((response) => response.metrics));
   }
