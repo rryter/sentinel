@@ -1,9 +1,10 @@
 require 'swagger_helper'
 
 RSpec.describe 'Api::V1::Rules', type: :request do
+  let!(:severity) { create(:severity) }
   let!(:existing_rule) { create(:rule) }
   let(:rule_id) { existing_rule.id }
-  let(:valid_rule_params) { { rule: { name: 'No Console', description: 'Prevents usage of console.log' } } }
+  let(:valid_rule_params) { { rule: { name: 'No Console', description: 'Prevents usage of console.log', severity_id: severity.id } } }
   let(:invalid_rule_params) { { rule: { name: nil } } }
 
   path '/api/v1/rules' do
@@ -12,18 +13,24 @@ RSpec.describe 'Api::V1::Rules', type: :request do
       produces 'application/json'
       
       response '200', 'rules found' do
-        schema type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'integer' },
-              name: { type: 'string' },
-              description: { type: 'string' },
-              created_at: { type: 'string', format: 'date-time' },
-              updated_at: { type: 'string', format: 'date-time' }
-            },
-            required: %w[id name description]
-          }
+        schema type: 'object',
+          properties: {
+            rules: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'integer' },
+                  name: { type: 'string' },
+                  description: { type: 'string' },
+                  created_at: { type: 'string', format: 'date-time' },
+                  updated_at: { type: 'string', format: 'date-time' }
+                },
+                required: %w[id name description]
+              }
+            }
+          },
+          required: ['rules']
 
         run_test!
       end
@@ -40,9 +47,10 @@ RSpec.describe 'Api::V1::Rules', type: :request do
             type: :object,
             properties: {
               name: { type: :string },
-              description: { type: :string }
+              description: { type: :string },
+              severity_id: { type: :integer }
             },
-            required: %w[name description]
+            required: %w[name description severity_id]
           }
         }
       }

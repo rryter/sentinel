@@ -1,13 +1,13 @@
 module Api
   module V1
     class BuildMetricsController < ApplicationController
+      before_action :set_project
+      
       def index
         query = BuildMetric.all
 
-        # Filter by project if specified
-        if params[:project].present?
-          query = query.by_project(params[:project])
-        end
+        # Filter by project based on route
+        query = query.by_project(@project.name)
 
         # Filter by environment if specified
         if params[:environment].present?
@@ -170,6 +170,14 @@ module Api
 
         status = any_errors ? :unprocessable_entity : :created
         render json: { results: results }, status: status
+      end
+      
+      private
+      
+      def set_project
+        @project = Project.find(params[:project_id])
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Project not found' }, status: :not_found
       end
     end
   end

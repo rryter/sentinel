@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :rule do
     sequence(:name) { |n| "Rule #{n}" }
     description { "This is a test rule description" }
+    association :severity
   end
 
   factory :project_rule do

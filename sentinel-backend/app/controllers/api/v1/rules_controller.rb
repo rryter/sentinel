@@ -6,7 +6,7 @@ module Api
     # GET /rules
   def index
     @rules = Rule.all
-    render json: @rules
+    render json: { rules: @rules }
   end
 
     # GET /rules/:id
@@ -49,7 +49,7 @@ module Api
     end
 
     def rule_params
-        params.require(:rule).permit(:name, :description)
+        params.require(:rule).permit(:name, :description, :severity_id)
     end
     end
   end 

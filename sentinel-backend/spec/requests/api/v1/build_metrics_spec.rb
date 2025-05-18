@@ -8,11 +8,12 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     }
   end
 
-  describe "GET /api/v1/build_metrics" do
-    let!(:build_metric) { create(:build_metric) }
+  describe "GET /api/v1/projects/:project_id/build_metrics" do
+    let!(:project) { create(:project) }
+    let!(:build_metric) { create(:build_metric, workspace_project: project.name) }
 
     it "returns build metrics data" do
-      get "/api/v1/build_metrics", headers: valid_headers
+      get "/api/v1/projects/#{project.id}/build_metrics", headers: valid_headers
 
       expect(response).to have_http_status(:success)
       json_response = JSON.parse(response.body)
@@ -33,16 +34,16 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
     context "with interval parameter" do
       it "returns metrics for the specified interval" do
-        get "/api/v1/build_metrics?interval=1h", headers: valid_headers
+        get "/api/v1/projects/#{project.id}/build_metrics?interval=1h", headers: valid_headers
         expect(response).to have_http_status(:success)
       end
     end
 
-    context "with project filter" do
-      let!(:project_metric) { create(:build_metric, workspace_project: "test-project") }
+    context "with environment filter" do
+      let!(:project_metric) { create(:build_metric, workspace_project: project.name, workspace_environment: "test-env") }
 
-      it "returns metrics filtered by project" do
-        get "/api/v1/build_metrics?project=test-project", headers: valid_headers
+      it "returns metrics filtered by environment" do
+        get "/api/v1/projects/#{project.id}/build_metrics?environment=test-env", headers: valid_headers
         expect(response).to have_http_status(:success)
         json_response = JSON.parse(response.body)
         expect(json_response["metrics"]).not_to be_empty
@@ -50,7 +51,9 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     end
   end
 
-  describe "POST /api/v1/build_metrics" do
+  describe "POST /api/v1/projects/:project_id/build_metrics" do
+    let!(:project) { create(:project) }
+    
     context "with valid parameters" do
       let(:valid_attributes) do
         {
@@ -71,7 +74,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
               build_error_count: 0,
               build_warning_count: 0,
               workspace_name: "@sentinel/source",
-              workspace_project: "unknown",
+              workspace_project: project.name,
               workspace_environment: "development",
               workspace_user: "testuser"
             }
@@ -81,7 +84,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
       it "creates new build metrics" do
         expect {
-          post "/api/v1/build_metrics", params: valid_attributes.to_json, headers: valid_headers
+          post "/api/v1/projects/#{project.id}/build_metrics", params: valid_attributes.to_json, headers: valid_headers
         }.to change(BuildMetric, :count).by(1)
         
         expect(response).to have_http_status(:created)
@@ -96,7 +99,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         expect(build_metric.is_initial_build).to eq(true)
         expect(build_metric.machine_hostname).to eq("ai-code")
         expect(build_metric.workspace_name).to eq("@sentinel/source")
-        expect(build_metric.workspace_project).to eq("unknown")
+        expect(build_metric.workspace_project).to eq(project.name)
         expect(build_metric.workspace_environment).to eq("development")
         expect(build_metric.workspace_user).to eq("testuser")
       end
@@ -105,7 +108,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         valid_attributes[:metrics] << valid_attributes[:metrics].first.dup
         
         expect {
-          post "/api/v1/build_metrics", params: valid_attributes.to_json, headers: valid_headers
+          post "/api/v1/projects/#{project.id}/build_metrics", params: valid_attributes.to_json, headers: valid_headers
         }.to change(BuildMetric, :count).by(2)
         
         expect(response).to have_http_status(:created)
@@ -129,7 +132,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
       end
 
       it "returns 422 status with validation errors" do
-        post "/api/v1/build_metrics", params: invalid_attributes.to_json, headers: valid_headers
+        post "/api/v1/projects/#{project.id}/build_metrics", params: invalid_attributes.to_json, headers: valid_headers
         
         expect(response).to have_http_status(:unprocessable_entity)
         
@@ -141,14 +144,14 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
     context "with empty metrics array" do
       it "returns 400 bad request" do
-        post "/api/v1/build_metrics", params: { metrics: [] }.to_json, headers: valid_headers
+        post "/api/v1/projects/#{project.id}/build_metrics", params: { metrics: [] }.to_json, headers: valid_headers
         expect(response).to have_http_status(:bad_request)
       end
     end
 
     context "with invalid JSON" do
       it "returns 400 bad request" do
-        post "/api/v1/build_metrics", params: "invalid json", headers: valid_headers
+        post "/api/v1/projects/#{project.id}/build_metrics", params: "invalid json", headers: valid_headers
         expect(response).to have_http_status(:bad_request)
       end
     end
@@ -174,7 +177,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
               build_error_count: 0,
               build_warning_count: 0,
               workspace_name: "@sentinel/source",
-              workspace_project: "unknown",
+              workspace_project: project.name,
               workspace_environment: "development",
               workspace_user: "testuser"
             },
@@ -189,7 +192,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
       it "returns unprocessable_entity status and creates only valid metrics" do
         expect {
-          post "/api/v1/build_metrics", params: mixed_attributes.to_json, headers: valid_headers
+          post "/api/v1/projects/#{project.id}/build_metrics", params: mixed_attributes.to_json, headers: valid_headers
         }.to change(BuildMetric, :count).by(1)
         
         expect(response).to have_http_status(:unprocessable_entity)

@@ -232,14 +232,17 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         console.log('[Build Metrics] Sending data:', JSON.parse(metricsJson));
       }
 
-      const response = await fetch(`${backendUrl}/api/v1/build_metrics`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiToken}`,
+      const response = await fetch(
+        `${backendUrl}/api/v1/projects/3/build_metrics`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiToken}`,
+          },
+          body: JSON.stringify({ metrics: metricsToSend }),
         },
-        body: JSON.stringify({ metrics: metricsToSend }),
-      });
+      );
 
       if (!response.ok) {
         const errorData = await response
