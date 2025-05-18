@@ -11,7 +11,7 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { ApiV1RulesGet200ResponseInner } from '../model/models';
+import { ApiV1RulesGet200Response } from '../model/models';
 import { ApiV1RulesIdGet200Response } from '../model/models';
 import { ApiV1RulesIdPatchRequest } from '../model/models';
 import { ApiV1RulesPostRequest } from '../model/models';
@@ -46,7 +46,7 @@ export interface RulesServiceInterface {
      * Lists all rules
      * 
 */
-    apiV1RulesGet(extraHttpRequestParams?: any): Observable<Array<ApiV1RulesGet200ResponseInner>>;
+    apiV1RulesGet(extraHttpRequestParams?: any): Observable<ApiV1RulesGet200Response>;
 
     /**
      * Deletes a rule

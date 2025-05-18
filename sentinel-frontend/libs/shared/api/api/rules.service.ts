@@ -17,7 +17,7 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { ApiV1RulesGet200ResponseInner } from '../model/api-v1-rules-get200-response-inner';
+import { ApiV1RulesGet200Response } from '../model/api-v1-rules-get200-response';
 // @ts-ignore
 import { ApiV1RulesIdGet200Response } from '../model/api-v1-rules-id-get200-response';
 // @ts-ignore
@@ -53,9 +53,9 @@ export class RulesService extends BaseService implements RulesServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiV1RulesGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ApiV1RulesGet200ResponseInner>>;
-    public apiV1RulesGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ApiV1RulesGet200ResponseInner>>>;
-    public apiV1RulesGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ApiV1RulesGet200ResponseInner>>>;
+    public apiV1RulesGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ApiV1RulesGet200Response>;
+    public apiV1RulesGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ApiV1RulesGet200Response>>;
+    public apiV1RulesGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ApiV1RulesGet200Response>>;
     public apiV1RulesGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -85,7 +85,7 @@ export class RulesService extends BaseService implements RulesServiceInterface {
 
         let localVarPath = `/api/v1/rules`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<ApiV1RulesGet200ResponseInner>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<ApiV1RulesGet200Response>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

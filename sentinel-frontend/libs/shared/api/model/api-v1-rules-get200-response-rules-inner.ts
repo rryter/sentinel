@@ -7,11 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ApiV1RulesPostRequestRule } from './api-v1-rules-post-request-rule';
 
 
-export interface ApiV1RulesPostRequest { 
-    rule?: ApiV1RulesPostRequestRule;
+export interface ApiV1RulesGet200ResponseRulesInner { 
+    id: number;
+    name: string;
+    description: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 

@@ -70,9 +70,11 @@ model/api-v1-rule-groups-id-patch-request-rule-group.ts
 model/api-v1-rule-groups-id-patch-request.ts
 model/api-v1-rule-groups-post-request-rule-group.ts
 model/api-v1-rule-groups-post-request.ts
-model/api-v1-rules-get200-response-inner.ts
+model/api-v1-rules-get200-response-rules-inner.ts
+model/api-v1-rules-get200-response.ts
 model/api-v1-rules-id-get200-response.ts
 model/api-v1-rules-id-patch-request.ts
+model/api-v1-rules-post-request-rule.ts
 model/api-v1-rules-post-request.ts
 model/api-v1-violations-get200-response-data-inner-file-with-violations.ts
 model/api-v1-violations-get200-response-data-inner.ts

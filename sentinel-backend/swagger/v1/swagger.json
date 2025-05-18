@@ -1726,34 +1726,42 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "description": {
-                        "type": "string"
-                      },
-                      "created_at": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "updated_at": {
-                        "type": "string",
-                        "format": "date-time"
+                  "type": "object",
+                  "properties": {
+                    "rules": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "description"
+                        ]
                       }
-                    },
-                    "required": [
-                      "id",
-                      "name",
-                      "description"
-                    ]
-                  }
+                    }
+                  },
+                  "required": [
+                    "rules"
+                  ]
                 }
               }
             }
@@ -1788,11 +1796,15 @@
                       },
                       "description": {
                         "type": "string"
+                      },
+                      "severity_id": {
+                        "type": "integer"
                       }
                     },
                     "required": [
                       "name",
-                      "description"
+                      "description",
+                      "severity_id"
                     ]
                   }
                 }
