@@ -71,7 +71,10 @@ module Api
             'AVG(CASE WHEN NOT is_initial_build THEN build_files_count END) as hot_reload_avg_files_count',
             # Overall system metrics
             'AVG(machine_memory_free) as avg_memory_free',
-            'AVG(machine_memory_total) as avg_memory_total'
+            'AVG(machine_memory_total) as avg_memory_total',
+            # Git information
+            'MAX(branch_name) as branch_name',
+            'MAX(commit_hash) as commit_hash'
           ].join(', '))
           .group('time_bucket')
           .order(Arel.sql('time_bucket'))
@@ -105,6 +108,10 @@ module Api
             },
             system: {
               memory_usage_percent: (((m.avg_memory_total - m.avg_memory_free) / m.avg_memory_total.to_f) * 100).round(2)
+            },
+            git: {
+              branch: m.branch_name,
+              commit: m.commit_hash
             }
           }},
           filters: available_filters
@@ -149,7 +156,9 @@ module Api
               :workspace_project,
               :workspace_environment,
               :workspace_user,
-              :workspace_task
+              :workspace_task,
+              :branch_name,
+              :commit_hash
             )
             
             build_metric = BuildMetric.new(permitted_params)

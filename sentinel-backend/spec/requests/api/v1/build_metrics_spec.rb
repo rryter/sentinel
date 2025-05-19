@@ -10,7 +10,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
   describe "GET /api/v1/projects/:project_id/build_metrics" do
     let!(:project) { create(:project) }
-    let!(:build_metric) { create(:build_metric, workspace_project: project.name) }
+    let!(:build_metric) { create(:build_metric, workspace_project: project.name, branch_name: "main", commit_hash: "abc123") }
 
     it "returns build metrics data" do
       get "/api/v1/projects/#{project.id}/build_metrics", headers: valid_headers
@@ -28,8 +28,14 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         "timestamp",
         "initial_builds",
         "hot_reloads",
-        "system"
+        "system",
+        "git"
       )
+      
+      # Verify git information
+      expect(metric["git"]).to include("branch", "commit")
+      expect(metric["git"]["branch"]).to eq("main")
+      expect(metric["git"]["commit"]).to eq("abc123")
     end
 
     context "with interval parameter" do
@@ -76,7 +82,9 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
               workspace_name: "@sentinel/source",
               workspace_project: project.name,
               workspace_environment: "development",
-              workspace_user: "testuser"
+              workspace_user: "testuser",
+              branch_name: "develop",
+              commit_hash: "abcdef123456"
             }
           ]
         }
@@ -102,6 +110,8 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         expect(build_metric.workspace_project).to eq(project.name)
         expect(build_metric.workspace_environment).to eq("development")
         expect(build_metric.workspace_user).to eq("testuser")
+        expect(build_metric.branch_name).to eq("develop")
+        expect(build_metric.commit_hash).to eq("abcdef123456")
       end
 
       it "handles batch creation of multiple metrics" do
