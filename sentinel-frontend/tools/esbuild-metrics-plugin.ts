@@ -182,7 +182,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
   if (!enabled) {
     return {
       name: 'build-metrics-plugin',
-      setup() {},
+      setup() {
+        // No setup needed if disabled
+      },
     };
   }
 
@@ -431,6 +433,9 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         const buildEndTime = performance.now();
         const duration = Math.round(buildEndTime - buildStartTime); // Round to ensure integer milliseconds
 
+        const sizeData = await analyzeBundleSize(result, build.initialOptions);
+        console.log(sizeData);
+
         // Process files from metafile
         if (result.metafile?.inputs) {
           for (const [filePath] of Object.entries(result.metafile.inputs)) {
@@ -439,7 +444,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
             fileTypes[ext] = (fileTypes[ext] || 0) + 1;
 
             if (logToConsole) {
-              console.log(`[Build Metrics] Processing file: ${filePath}`);
+              // console.log(`[Build Metrics] Processing file: ${filePath}`);
             }
           }
         }
@@ -493,4 +498,113 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
 // Default export for compatibility
 export default function (options: PluginOptions): Plugin {
   return buildMetricsPlugin(options);
+}
+
+async function analyzeBundleSize(
+  result: BuildResult<BuildOptions>,
+  buildOptions: BuildOptions,
+) {
+  const outputs = result.metafile?.outputs || {};
+  console.log(outputs);
+  const totalSizes = { raw: 0, gzipped: 0 };
+  const fileDetails: any[] = [];
+
+  for (const [outputPath, output] of Object.entries(outputs)) {
+    const fullPath = path.resolve('dist/apps/sentinel/' + outputPath);
+
+    if (!fs.existsSync(fullPath)) continue;
+
+    const stats = fs.statSync(fullPath);
+    const rawSize = stats.size;
+    const gzippedSize = await getGzippedSize(fullPath);
+
+    const fileInfo = {
+      path: outputPath,
+      rawSize,
+      gzippedSize,
+      rawSizeFormatted: formatSize(rawSize),
+      gzippedSizeFormatted: formatSize(gzippedSize),
+      inputs: output.inputs ? Object.keys(output.inputs) : [],
+      entryPoint: output.entryPoint,
+    };
+
+    fileDetails.push(fileInfo);
+    totalSizes.raw += rawSize;
+    totalSizes.gzipped += gzippedSize;
+  }
+
+  // Sort by size (largest first)
+  fileDetails.sort((a, b) => b.rawSize - a.rawSize);
+
+  return {
+    totalSize: {
+      raw: totalSizes.raw,
+      gzipped: totalSizes.gzipped,
+      rawFormatted: formatSize(totalSizes.raw),
+      gzippedFormatted: formatSize(totalSizes.gzipped),
+    },
+    files: fileDetails,
+    fileCount: fileDetails.length,
+  };
+}
+
+async function getGzippedSize(filePath) {
+  try {
+    const { gzipSync } = await import('zlib');
+    const content = fs.readFileSync(filePath);
+    return gzipSync(content).length;
+  } catch (error) {
+    console.warn(
+      `Could not calculate gzipped size for ${filePath}:`,
+      error.message,
+    );
+    return 0;
+  }
+}
+
+function formatSize(bytes) {
+  if (bytes === 0) return '0 B';
+
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+async function writeReport(outputFile, report) {
+  try {
+    const reportJson = JSON.stringify(report, null, 2);
+    fs.writeFileSync(outputFile, reportJson);
+  } catch (error) {
+    console.error('Failed to write bundle size report:', error.message);
+  }
+}
+
+function logSizeReport(report, threshold) {
+  console.log('\n📊 Bundle Size Report');
+  console.log('='.repeat(50));
+
+  console.log(`🕒 Build Time: ${report.buildTime}`);
+  console.log(`📁 Files: ${report.fileCount}`);
+  console.log(
+    `📏 Total Size: ${report.totalSize.rawFormatted} (${report.totalSize.gzippedFormatted} gzipped)`,
+  );
+
+  if (threshold && report.totalSize.raw > threshold) {
+    console.warn(
+      `⚠️  Bundle size (${report.totalSize.rawFormatted}) exceeds threshold (${formatSize(threshold)})`,
+    );
+  }
+
+  console.log('\n📋 File Breakdown:');
+  report.files.forEach((file, index) => {
+    const emoji = index === 0 ? '🏆' : index < 3 ? '🥈' : '📄';
+    console.log(`${emoji} ${file.path}`);
+    console.log(
+      `   └─ ${file.rawSizeFormatted} (${file.gzippedSizeFormatted} gzipped)`,
+    );
+  });
+
+  console.log('='.repeat(50));
 }
