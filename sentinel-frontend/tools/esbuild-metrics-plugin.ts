@@ -433,8 +433,8 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
         const buildEndTime = performance.now();
         const duration = Math.round(buildEndTime - buildStartTime); // Round to ensure integer milliseconds
 
-        const sizeData = await analyzeBundleSize(result, build.initialOptions);
-        console.log(sizeData);
+        const sizeData = await analyzeBundleSize(result); // Removed second argument
+        console.log(sizeData.totalSize);
 
         // Process files from metafile
         if (result.metafile?.inputs) {
@@ -500,14 +500,52 @@ export default function (options: PluginOptions): Plugin {
   return buildMetricsPlugin(options);
 }
 
+interface FileDetail {
+  path: string;
+  rawSize: number;
+  gzippedSize: number;
+  rawSizeFormatted: string;
+  gzippedSizeFormatted: string;
+  inputs: string[];
+  entryPoint?: string;
+  sourceMapPath?: string;
+  sourceMapRawSize?: number;
+  sourceMapGzippedSize?: number;
+  sourceMapRawSizeFormatted?: string;
+  sourceMapGzippedSizeFormatted?: string;
+  isSourceMap?: boolean; // To explicitly mark if the primary path is a sourcemap (for ungrouped maps)
+}
+
+interface SizeInfo {
+  raw: number;
+  gzipped: number;
+  rawFormatted: string;
+  gzippedFormatted: string;
+}
+
+interface BundleSizeReportData {
+  totalSize: {
+    js: SizeInfo;
+    jsMap: SizeInfo;
+    css: SizeInfo;
+    cssMap: SizeInfo;
+  };
+  files: FileDetail[];
+  fileCount: number;
+}
+
 async function analyzeBundleSize(
   result: BuildResult<BuildOptions>,
-  buildOptions: BuildOptions,
-) {
+): Promise<BundleSizeReportData> {
   const outputs = result.metafile?.outputs || {};
-  console.log(outputs);
-  const totalSizes = { raw: 0, gzipped: 0 };
-  const fileDetails: any[] = [];
+  const totalSizes = {
+    js: { raw: 0, gzipped: 0 },
+    jsMap: { raw: 0, gzipped: 0 },
+    css: { raw: 0, gzipped: 0 },
+    cssMap: { raw: 0, gzipped: 0 },
+  };
+  const fileDetailsMap: Map<string, FileDetail> = new Map();
+  const sourceMapDetails: Map<string, Partial<FileDetail>> = new Map();
 
   for (const [outputPath, output] of Object.entries(outputs)) {
     const fullPath = path.resolve('dist/apps/sentinel/' + outputPath);
@@ -517,38 +555,130 @@ async function analyzeBundleSize(
     const stats = fs.statSync(fullPath);
     const rawSize = stats.size;
     const gzippedSize = await getGzippedSize(fullPath);
+    const rawSizeFormatted = formatSize(rawSize);
+    const gzippedSizeFormatted = formatSize(gzippedSize);
+    const inputs = output.inputs ? Object.keys(output.inputs) : [];
+    const entryPoint = output.entryPoint;
 
-    const fileInfo = {
-      path: outputPath,
-      rawSize,
-      gzippedSize,
-      rawSizeFormatted: formatSize(rawSize),
-      gzippedSizeFormatted: formatSize(gzippedSize),
-      inputs: output.inputs ? Object.keys(output.inputs) : [],
-      entryPoint: output.entryPoint,
-    };
-
-    fileDetails.push(fileInfo);
-    totalSizes.raw += rawSize;
-    totalSizes.gzipped += gzippedSize;
+    if (outputPath.endsWith('.js.map')) {
+      totalSizes.jsMap.raw += rawSize;
+      totalSizes.jsMap.gzipped += gzippedSize;
+      const mainAssetPath = outputPath.replace('.map', '');
+      sourceMapDetails.set(mainAssetPath, {
+        path: outputPath, // Store original sourcemap path for reference if needed
+        rawSize,
+        gzippedSize,
+        rawSizeFormatted,
+        gzippedSizeFormatted,
+      });
+    } else if (outputPath.endsWith('.css.map')) {
+      totalSizes.cssMap.raw += rawSize;
+      totalSizes.cssMap.gzipped += gzippedSize;
+      const mainAssetPath = outputPath.replace('.map', '');
+      sourceMapDetails.set(mainAssetPath, {
+        path: outputPath,
+        rawSize,
+        gzippedSize,
+        rawSizeFormatted,
+        gzippedSizeFormatted,
+      });
+    } else if (outputPath.endsWith('.js')) {
+      totalSizes.js.raw += rawSize;
+      totalSizes.js.gzipped += gzippedSize;
+      fileDetailsMap.set(outputPath, {
+        path: outputPath,
+        rawSize,
+        gzippedSize,
+        rawSizeFormatted,
+        gzippedSizeFormatted,
+        inputs,
+        entryPoint,
+      });
+    } else if (outputPath.endsWith('.css')) {
+      totalSizes.css.raw += rawSize;
+      totalSizes.css.gzipped += gzippedSize;
+      fileDetailsMap.set(outputPath, {
+        path: outputPath,
+        rawSize,
+        gzippedSize,
+        rawSizeFormatted,
+        gzippedSizeFormatted,
+        inputs,
+        entryPoint,
+      });
+    } else {
+      // Handle other file types (e.g., images, fonts) if necessary, or treat them as individual files
+      // For now, add them directly if they are not maps
+      if (!outputPath.endsWith('.map')) {
+        fileDetailsMap.set(outputPath, {
+          path: outputPath,
+          rawSize,
+          gzippedSize,
+          rawSizeFormatted,
+          gzippedSizeFormatted,
+          inputs,
+          entryPoint,
+        });
+      }
+    }
   }
 
-  // Sort by size (largest first)
-  fileDetails.sort((a, b) => b.rawSize - a.rawSize);
+  const finalFileDetails: FileDetail[] = [];
+  for (const [mainAssetPath, detail] of fileDetailsMap.entries()) {
+    const smDetails = sourceMapDetails.get(mainAssetPath);
+    if (smDetails) {
+      detail.sourceMapPath = smDetails.path;
+      detail.sourceMapRawSize = smDetails.rawSize;
+      detail.sourceMapGzippedSize = smDetails.gzippedSize;
+      detail.sourceMapRawSizeFormatted = smDetails.rawSizeFormatted;
+      detail.sourceMapGzippedSizeFormatted = smDetails.gzippedSizeFormatted;
+    }
+    finalFileDetails.push(detail);
+  }
+
+  // Add any sourcemaps that didn't have a corresponding main asset (orphaned sourcemaps)
+  // These might occur if a .map file is generated but its parent is not in the outputs for some reason
+  // or if we want to list all files including un-grouped sourcemaps.
+  // For this request, we only want grouped files or main files, so we can skip adding orphaned sourcemaps explicitly
+  // unless they were already added as 'other' file types.
+
+  // Sort by size (largest first) - main asset size
+  finalFileDetails.sort((a, b) => b.rawSize - a.rawSize);
 
   return {
     totalSize: {
-      raw: totalSizes.raw,
-      gzipped: totalSizes.gzipped,
-      rawFormatted: formatSize(totalSizes.raw),
-      gzippedFormatted: formatSize(totalSizes.gzipped),
+      js: {
+        raw: totalSizes.js.raw,
+        gzipped: totalSizes.js.gzipped,
+        rawFormatted: formatSize(totalSizes.js.raw),
+        gzippedFormatted: formatSize(totalSizes.js.gzipped),
+      },
+      jsMap: {
+        raw: totalSizes.jsMap.raw,
+        gzipped: totalSizes.jsMap.gzipped,
+        rawFormatted: formatSize(totalSizes.jsMap.raw),
+        gzippedFormatted: formatSize(totalSizes.jsMap.gzipped),
+      },
+      css: {
+        raw: totalSizes.css.raw,
+        gzipped: totalSizes.css.gzipped,
+        rawFormatted: formatSize(totalSizes.css.raw),
+        gzippedFormatted: formatSize(totalSizes.css.gzipped),
+      },
+      cssMap: {
+        raw: totalSizes.cssMap.raw,
+        gzipped: totalSizes.cssMap.gzipped,
+        rawFormatted: formatSize(totalSizes.cssMap.raw),
+        gzippedFormatted: formatSize(totalSizes.cssMap.gzipped),
+      },
     },
-    files: fileDetails,
-    fileCount: fileDetails.length,
+    files: finalFileDetails,
+    fileCount: finalFileDetails.length,
   };
 }
 
-async function getGzippedSize(filePath) {
+async function getGzippedSize(filePath: string): Promise<number> {
+  // Added types for parameters and return
   try {
     const { gzipSync } = await import('zlib');
     const content = fs.readFileSync(filePath);
@@ -562,7 +692,8 @@ async function getGzippedSize(filePath) {
   }
 }
 
-function formatSize(bytes) {
+function formatSize(bytes: number): string {
+  // Added type for parameter and return
   if (bytes === 0) return '0 B';
 
   const k = 1024;
@@ -572,39 +703,50 @@ function formatSize(bytes) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-async function writeReport(outputFile, report) {
-  try {
-    const reportJson = JSON.stringify(report, null, 2);
-    fs.writeFileSync(outputFile, reportJson);
-  } catch (error) {
-    console.error('Failed to write bundle size report:', error.message);
-  }
-}
+// Removed unused writeReport function
 
-function logSizeReport(report, threshold) {
-  console.log('\n📊 Bundle Size Report');
+function logSizeReport(report: BundleSizeReportData, threshold?: number) {
+  // Used BundleSizeReportData
+  console.log('\\n📊 Bundle Size Report');
   console.log('='.repeat(50));
 
-  console.log(`🕒 Build Time: ${report.buildTime}`);
+  // console.log(`🕒 Build Time: ${report.buildTime}`); // Removed: buildTime is not in BundleSizeReportData
   console.log(`📁 Files: ${report.fileCount}`);
   console.log(
-    `📏 Total Size: ${report.totalSize.rawFormatted} (${report.totalSize.gzippedFormatted} gzipped)`,
+    `📏 Total JS Size: ${report.totalSize.js.rawFormatted} (${report.totalSize.js.gzippedFormatted} gzipped)`, // Corrected path
+  );
+  console.log(
+    `📏 Total CSS Size: ${report.totalSize.css.rawFormatted} (${report.totalSize.css.gzippedFormatted} gzipped)`, // Added CSS total size
   );
 
-  if (threshold && report.totalSize.raw > threshold) {
+  if (threshold && report.totalSize.js.raw > threshold) {
+    // Corrected path for JS
     console.warn(
-      `⚠️  Bundle size (${report.totalSize.rawFormatted}) exceeds threshold (${formatSize(threshold)})`,
+      `⚠️  JS Bundle size (${report.totalSize.js.rawFormatted}) exceeds threshold (${formatSize(threshold)})`, // Corrected path
     );
   }
+  // Optionally, add a threshold check for CSS or combined size if needed
 
-  console.log('\n📋 File Breakdown:');
-  report.files.forEach((file, index) => {
-    const emoji = index === 0 ? '🏆' : index < 3 ? '🥈' : '📄';
-    console.log(`${emoji} ${file.path}`);
-    console.log(
-      `   └─ ${file.rawSizeFormatted} (${file.gzippedSizeFormatted} gzipped)`,
-    );
+  console.log('\\n📋 File Breakdown (Top 5):');
+  report.files.slice(0, 5).forEach((file, index) => {
+    const icon =
+      index === 0 ? '🏆' : index === 1 ? '🥈' : index === 2 ? '🥉' : '📄';
+    let output = `${icon} ${file.path}\n`;
+    output += `└─ ${file.rawSizeFormatted} (${file.gzippedSizeFormatted} gzipped)`;
+
+    if (
+      file.sourceMapPath &&
+      file.sourceMapRawSizeFormatted &&
+      file.sourceMapGzippedSizeFormatted
+    ) {
+      output += `\n  Sourcemap: ${file.sourceMapPath}`;
+      output += `\n  └─ ${file.sourceMapRawSizeFormatted} (${file.sourceMapGzippedSizeFormatted} gzipped)`;
+    }
+    console.log(output);
   });
 
-  console.log('='.repeat(50));
+  // Optionally, add more detailed breakdown for all files or specific groups
+  // report.files.forEach((file) => {
+  //   console.log(`- ${file.path}: ${file.rawSizeFormatted} (${file.gzippedSizeFormatted} gzipped)`);
+  // });
 }

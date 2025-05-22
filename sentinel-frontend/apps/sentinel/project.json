@@ -17,6 +17,7 @@
         "tsConfig": "apps/sentinel/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "namedChunks": true,
+        "statsJson": true,
         "plugins": [
           {
             "path": "tools/esbuild-metrics-plugin.ts",
