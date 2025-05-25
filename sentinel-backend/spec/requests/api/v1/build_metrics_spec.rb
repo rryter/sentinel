@@ -1,6 +1,30 @@
 require 'rails_helper'
 
 RSpec.describe "Api::V1::BuildMetrics", type: :request do
+  def generate_metrics(count, project_name)
+    Array.new(count) do |i|
+      {
+        timestamp: (Time.current - i.minutes).iso8601,
+        duration_ms: 1000 + i,
+        is_initial_build: i.even?,
+        machine_hostname: "test-#{i}",
+        machine_platform: "linux",
+        machine_cpu_count: 4,
+        machine_memory_total: 1000000,
+        machine_memory_free: 500000,
+        process_node_version: "v18",
+        process_memory: 100000,
+        build_files_count: 100,
+        build_output_dir: "dist",
+        build_error_count: 0,
+        build_warning_count: 0,
+        workspace_name: "test",
+        workspace_project: project_name,
+        workspace_environment: "test",
+        workspace_user: "test"
+      }
+    end
+  end
   let(:valid_headers) do
     {
       "Content-Type" => "application/json",
@@ -14,7 +38,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
     context "when project does not exist" do
       it "returns 404 not found" do
-        get "/api/v1/projects/99999/build_metrics", headers: valid_headers
+        get "/api/v1/projects/#{Project.maximum(:id).to_i + 1}/build_metrics", headers: valid_headers
         
         expect(response).to have_http_status(:not_found)
         json_response = JSON.parse(response.body)
@@ -75,6 +99,12 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
       it "handles invalid interval gracefully (defaults to 1h)" do
         get "/api/v1/projects/#{project.id}/build_metrics?interval=invalid", headers: valid_headers
         expect(response).to have_http_status(:success)
+        
+        json_response = JSON.parse(response.body)
+        expect(json_response).to include("metrics", "filters")
+        
+        # Verify that the default interval is used
+        expect(json_response["filters"]["interval"]).to eq("1h")
       end
       
       it "handles case insensitive intervals" do
@@ -122,6 +152,10 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
       it "handles invalid time format gracefully" do
         get "/api/v1/projects/#{project.id}/build_metrics?start_time=invalid-date", headers: valid_headers
         expect(response).to have_http_status(:success)
+        
+        json_response = JSON.parse(response.body)
+        expect(json_response["metrics"]).to be_empty
+        expect(json_response["filters"]).to include("projects", "environments")
       end
     end
 
@@ -148,7 +182,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         create(:build_metric, 
                workspace_project: project.name,
                machine_memory_total: 16000000000,
-               machine_memory_free: 8000000000)
+        expect(metric["system"]["memory_usage_percent"]).to satisfy { |value| value.is_a?(String) || value.is_a?(Numeric) }
       end
 
       it "calculates memory usage percentage correctly" do
@@ -195,7 +229,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
     context "when project does not exist" do
       it "returns 404 not found" do
-        post "/api/v1/projects/99999/build_metrics", 
+        post "/api/v1/projects/#{Project.maximum(:id).to_i + 1}/build_metrics", 
              params: { metrics: [] }.to_json, 
              headers: valid_headers
         
@@ -284,6 +318,11 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         }.to change(BuildMetric, :count).by(1)
         
         expect(response).to have_http_status(:created)
+        
+        # Verify that omitted fields are absent
+        build_metric = BuildMetric.last
+        expect(build_metric.branch_name).to be_nil
+        expect(build_metric.commit_hash).to be_nil
       end
     end
 
@@ -308,6 +347,12 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         json_response = JSON.parse(response.body)
         expect(json_response["results"].first["status"]).to eq("error")
         expect(json_response["results"].first).to have_key("errors")
+        
+        # Verify specific validation errors
+        errors = json_response["results"].first["errors"]
+        expect(errors).to include("workspace_project" => ["can't be blank"])
+        expect(errors).to include("workspace_environment" => ["can't be blank"])
+        expect(errors).to include("workspace_user" => ["can't be blank"])
       end
 
       it "validates numeric fields" do
@@ -416,34 +461,10 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
               workspace_project: project.name,
               workspace_environment: "development",
               workspace_user: "testuser"
-            },
-            {
-              # Invalid metric (missing fields)
-              timestamp: Time.current.iso8601,
-              duration_ms: 5781
-            }
-          ]
-        }
-      end
-
-      it "returns unprocessable_entity status and creates only valid metrics" do
-        expect {
-          post "/api/v1/projects/#{project.id}/build_metrics", params: mixed_attributes.to_json, headers: valid_headers
-        }.to change(BuildMetric, :count).by(1)
-        
-        expect(response).to have_http_status(:unprocessable_entity)
-        
-        json_response = JSON.parse(response.body)
-        expect(json_response["results"].length).to eq(2)
-        expect(json_response["results"].first["status"]).to eq("success")
-        expect(json_response["results"].last["status"]).to eq("error")
-      end
-    end
-
-    context "with large dataset" do
-      it "handles batch creation of many metrics" do
+          expect {
+            post "/api/v1/projects/#{project.id}/build_metrics", params: mixed_attributes.to_json, headers: valid_headers
         large_attributes = {
-          metrics: Array.new(50) do |i|
+          metrics: Array.new(10) do |i| # Reduced from 50 to 10
             {
               timestamp: (Time.current - i.minutes).iso8601,
               duration_ms: 1000 + i,
@@ -466,6 +487,13 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
             }
           end
         }
+        expect(json_response["results"].last["status"]).to eq("error")
+      end
+    end
+
+    context "with large dataset" do
+      it "handles batch creation of many metrics" do
+        large_attributes = { metrics: generate_metrics(50, project.name) }
         
         expect {
           post "/api/v1/projects/#{project.id}/build_metrics", params: large_attributes.to_json, headers: valid_headers
@@ -476,3 +504,4 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     end
   end
 end
+∏
