@@ -1,5 +1,4 @@
 ---
-tools: ["githubRepo", "codebase", "resolve-library-id", "get-library-docs"]
 description: "Add Spartan Button"
 ---
 
