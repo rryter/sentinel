@@ -34,7 +34,11 @@ module Api
         end
 
         # Get metrics grouped by time interval (default 1 hour)
-        interval = (params[:interval] || '1h').downcase
+        requested_interval = (params[:interval] || '1h').downcase
+        # Validate interval and fallback to default
+        valid_intervals = %w[1m 5m 15m 30m 1h 6h 12h 1d]
+        interval = valid_intervals.include?(requested_interval) ? requested_interval : '1h'
+        
         time_bucket =
           case interval
           when '1m'
@@ -90,7 +94,8 @@ module Api
         # Get unique projects and environments for filters
         available_filters = {
           projects: BuildMetric.distinct.pluck(:workspace_project),
-          environments: BuildMetric.distinct.pluck(:workspace_environment)
+          environments: BuildMetric.distinct.pluck(:workspace_environment),
+          interval: interval
         }
 
         render json: {
@@ -182,13 +187,24 @@ module Api
               results << { 
                 id: metric_params[:id], 
                 status: 'error', 
-                errors: build_metric.errors.full_messages 
+                errors: build_metric.errors.as_json 
               }
             end
           end
         end
 
-        status = any_errors ? :unprocessable_entity : :created
+        # Determine status based on results
+        success_count = results.count { |r| r[:status] == 'success' }
+        error_count = results.count { |r| r[:status] == 'error' }
+        
+        status = if success_count > 0 && error_count > 0
+                   :ok  # Mixed results - some succeeded, some failed
+                 elsif success_count > 0 && error_count == 0
+                   :created  # All succeeded
+                 else
+                   :unprocessable_entity  # All failed
+                 end
+                 
         render json: { results: results }, status: status
       end
       
