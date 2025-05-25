@@ -3,6 +3,10 @@ class BuildMetric < ActiveRecord::Base
   validates :timestamp, presence: true
   validates :duration_ms, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :is_initial_build, inclusion: { in: [true, false] }
+  validate :validate_boolean_fields
+  
+  # Custom attribute accessor to track raw value
+  attr_accessor :raw_is_initial_build
   
   # Machine metrics validations
   validates :machine_hostname, presence: true
@@ -47,5 +51,17 @@ class BuildMetric < ActiveRecord::Base
 
   def successful?
     build_error_count.zero?
+  end
+
+  private
+
+  def validate_boolean_fields
+    # Check if raw_is_initial_build was set and is not a valid boolean
+    if raw_is_initial_build && raw_is_initial_build.is_a?(String)
+      valid_boolean_strings = ['true', 'false', '1', '0']
+      unless valid_boolean_strings.include?(raw_is_initial_build.downcase)
+        errors.add(:is_initial_build, 'must be a boolean value')
+      end
+    end
   end
 end

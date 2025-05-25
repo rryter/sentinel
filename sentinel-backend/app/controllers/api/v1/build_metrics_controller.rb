@@ -16,13 +16,21 @@ module Api
 
         # Filter by time range
         if params[:start_time].present?
-          start_time = Time.zone.parse(params[:start_time])
-          query = query.where('timestamp >= ?', start_time.to_i * 1000)
+          begin
+            start_time = Time.zone.parse(params[:start_time])
+            query = query.where('timestamp >= ?', start_time)
+          rescue ArgumentError
+            # Invalid time format, ignore the filter
+          end
         end
 
         if params[:end_time].present?
-          end_time = Time.zone.parse(params[:end_time])
-          query = query.where('timestamp <= ?', end_time.to_i * 1000)
+          begin
+            end_time = Time.zone.parse(params[:end_time])
+            query = query.where('timestamp <= ?', end_time)
+          rescue ArgumentError
+            # Invalid time format, ignore the filter
+          end
         end
 
         # Get metrics grouped by time interval (default 1 hour)
@@ -162,6 +170,9 @@ module Api
             )
             
             build_metric = BuildMetric.new(permitted_params)
+            
+            # Store raw boolean value for validation
+            build_metric.raw_is_initial_build = metric_params[:is_initial_build]
 
             if build_metric.save
               results << { id: build_metric.id, status: 'success' }
