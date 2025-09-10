@@ -40,7 +40,7 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "19.2.9",
+    "@angular-devkit/build-angular": "20.2.2",
     "@angular-devkit/core": "19.2.9",
     "@angular-devkit/schematics": "19.2.9",
     "@angular/cli": "19.2.9",
@@ -89,7 +89,7 @@
     "tslib": "^2.3.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.19.0",
-    "vite": "^6.3.4",
+    "vite": "^6.3.6",
     "vitest": "^3.0.0"
   }
 }
