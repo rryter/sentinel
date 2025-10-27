@@ -27,6 +27,7 @@ import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
 import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
 import { firstValueFrom } from 'rxjs';
 import { RuleResultsComponent } from '../rules/components';
+import { LintSummaryItemComponent } from '../lint-summary-item/lint-summary-item.component';
 
 @Component({
   selector: 'sen-lint-results',
@@ -36,6 +37,7 @@ import { RuleResultsComponent } from '../rules/components';
     DetailsContainerComponent,
     HlmBadgeDirective,
     HlmSkeletonComponent,
+    LintSummaryItemComponent,
     NgIcon,
     PaginationComponent,
     RuleResultsComponent,

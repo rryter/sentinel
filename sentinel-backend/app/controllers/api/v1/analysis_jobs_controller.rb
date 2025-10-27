@@ -36,7 +36,7 @@ module Api
           data: ActiveModelSerializers::SerializableResource.new(
             @job,
             adapter: :attributes,
-            serializer: AnalysisJobSerializer,
+            serializer: AnalysisJobSummarySerializer,
             include: ['project']
           ).as_json
         }
@@ -87,7 +87,8 @@ module Api
               
               render json: {
                 data: ActiveModelSerializers::SerializableResource.new(
-                  @job.reload, 
+                  @job.reload,
+                  serializer: AnalysisJobSerializer,
                   adapter: :attributes,
                   include: ['project']
                 ).as_json
@@ -105,7 +106,12 @@ module Api
             PerformanceMetricsService.update_job_with_metrics(@job, results)
 
             render json: {
-              data: ActiveModelSerializers::SerializableResource.new(@job.reload, adapter: :attributes).as_json
+              data: ActiveModelSerializers::SerializableResource.new(
+                @job.reload,
+                serializer: AnalysisJobSerializer,
+                adapter: :attributes,
+                include: ['project']
+              ).as_json
             }, status: :created
           rescue StandardError => e
             @job.update(status: "failed", error_message: e.message)

@@ -31,6 +31,7 @@ model/analysis-job.ts
 model/api-v1-analysis-jobs-analysis-job-id-violations-get200-response-meta.ts
 model/api-v1-analysis-jobs-analysis-job-id-violations-get200-response.ts
 model/api-v1-analysis-jobs-get200-response-data-inner-project.ts
+model/api-v1-analysis-jobs-get200-response-data-inner-rules-statistics-inner.ts
 model/api-v1-analysis-jobs-get200-response-data-inner.ts
 model/api-v1-analysis-jobs-get200-response-meta.ts
 model/api-v1-analysis-jobs-get200-response.ts

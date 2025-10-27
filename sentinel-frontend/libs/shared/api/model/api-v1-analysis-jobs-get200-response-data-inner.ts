@@ -8,6 +8,7 @@
  * Do not edit the class manually.
  */
 import { ApiV1AnalysisJobsGet200ResponseDataInnerProject } from './api-v1-analysis-jobs-get200-response-data-inner-project';
+import { ApiV1AnalysisJobsGet200ResponseDataInnerRulesStatisticsInner } from './api-v1-analysis-jobs-get200-response-data-inner-rules-statistics-inner';
 
 
 export interface ApiV1AnalysisJobsGet200ResponseDataInner { 
@@ -27,6 +28,8 @@ export interface ApiV1AnalysisJobsGet200ResponseDataInner {
     parallel_cores_used: number;
     parallel_speedup_factor: number;
     parallel_efficiency_percent: number;
+    error_message?: string | null;
+    rules_statistics: Array<ApiV1AnalysisJobsGet200ResponseDataInnerRulesStatisticsInner>;
     project: ApiV1AnalysisJobsGet200ResponseDataInnerProject;
 }
 export enum ApiV1AnalysisJobsGet200ResponseDataInnerStatusEnum {

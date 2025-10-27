@@ -81,6 +81,28 @@
                           "parallel_efficiency_percent": {
                             "type": "number"
                           },
+                          "error_message": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "rules_statistics": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "rule": {
+                                  "type": "string"
+                                },
+                                "count": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "rule",
+                                "count"
+                              ]
+                            }
+                          },
                           "project": {
                             "type": "object",
                             "properties": {
@@ -128,6 +150,7 @@
                           "parallel_cores_used",
                           "parallel_speedup_factor",
                           "parallel_efficiency_percent",
+                          "rules_statistics",
                           "project"
                         ]
                       }
@@ -230,6 +253,28 @@
                         "parallel_efficiency_percent": {
                           "type": "number"
                         },
+                        "error_message": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "rules_statistics": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rule": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "rule",
+                              "count"
+                            ]
+                          }
+                        },
                         "project": {
                           "type": "object",
                           "properties": {
@@ -277,6 +322,7 @@
                         "parallel_cores_used",
                         "parallel_speedup_factor",
                         "parallel_efficiency_percent",
+                        "rules_statistics",
                         "project"
                       ]
                     }
@@ -394,6 +440,28 @@
                         "parallel_efficiency_percent": {
                           "type": "number"
                         },
+                        "error_message": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "rules_statistics": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rule": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "rule",
+                              "count"
+                            ]
+                          }
+                        },
                         "project": {
                           "type": "object",
                           "properties": {
@@ -441,6 +509,7 @@
                         "parallel_cores_used",
                         "parallel_speedup_factor",
                         "parallel_efficiency_percent",
+                        "rules_statistics",
                         "project"
                       ]
                     }

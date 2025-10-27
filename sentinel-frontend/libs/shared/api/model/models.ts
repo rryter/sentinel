@@ -6,6 +6,7 @@ export * from './api-v1-analysis-jobs-analysis-job-id-violations-get200-response
 export * from './api-v1-analysis-jobs-get200-response';
 export * from './api-v1-analysis-jobs-get200-response-data-inner';
 export * from './api-v1-analysis-jobs-get200-response-data-inner-project';
+export * from './api-v1-analysis-jobs-get200-response-data-inner-rules-statistics-inner';
 export * from './api-v1-analysis-jobs-get200-response-meta';
 export * from './api-v1-analysis-jobs-id-process-results-post200-response';
 export * from './api-v1-analysis-jobs-post201-response';

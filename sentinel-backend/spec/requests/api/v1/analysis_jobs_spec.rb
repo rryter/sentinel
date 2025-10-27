@@ -30,7 +30,19 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                   parallel_cores_used: { type: 'integer' },
                   parallel_speedup_factor: { type: 'number' },
                   parallel_efficiency_percent: { type: 'number' },
-                  project: { 
+                  error_message: { type: 'string', nullable: true },
+                  rules_statistics: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        rule: { type: 'string' },
+                        count: { type: 'integer' }
+                      },
+                      required: ['rule', 'count']
+                    }
+                  },
+                  project: {
                     type: 'object',
                     properties: {
                       id: { type: 'integer' },
@@ -47,7 +59,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                   'created_at', 'updated_at', 'duration',
                   'files_per_second_wall_time', 'cumulative_processing_time_ms',
                   'avg_time_per_file_ms', 'files_per_second_cpu_time', 'parallel_cores_used',
-                  'parallel_speedup_factor', 'parallel_efficiency_percent', 'project'
+                  'parallel_speedup_factor', 'parallel_efficiency_percent', 'rules_statistics', 'project'
                 ]
               }
             },
@@ -83,6 +95,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             'parallel_cores_used',
             'parallel_speedup_factor',
             'parallel_efficiency_percent',
+            'rules_statistics',
             'project'
           )
           
@@ -128,7 +141,19 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 parallel_cores_used: { type: :integer },
                 parallel_speedup_factor: { type: :number },
                 parallel_efficiency_percent: { type: :number },
-                project: { 
+                error_message: { type: :string, nullable: true },
+                rules_statistics: {
+                  type: :array,
+                  items: {
+                    type: :object,
+                    properties: {
+                      rule: { type: :string },
+                      count: { type: :integer }
+                    },
+                    required: ['rule', 'count']
+                  }
+                },
+                project: {
                   type: :object,
                   properties: {
                     id: { type: :integer },
@@ -145,7 +170,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 'created_at', 'updated_at', 'duration',
                 'files_per_second_wall_time', 'cumulative_processing_time_ms',
                 'avg_time_per_file_ms', 'files_per_second_cpu_time', 'parallel_cores_used',
-                'parallel_speedup_factor', 'parallel_efficiency_percent', 'project'
+                'parallel_speedup_factor', 'parallel_efficiency_percent', 'rules_statistics', 'project'
               ]
             }
           },
@@ -203,7 +228,19 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 parallel_cores_used: { type: :integer },
                 parallel_speedup_factor: { type: :number },
                 parallel_efficiency_percent: { type: :number },
-                project: { 
+                error_message: { type: :string, nullable: true },
+                rules_statistics: {
+                  type: :array,
+                  items: {
+                    type: :object,
+                    properties: {
+                      rule: { type: :string },
+                      count: { type: :integer }
+                    },
+                    required: ['rule', 'count']
+                  }
+                },
+                project: {
                   type: :object,
                   properties: {
                     id: { type: :integer },
@@ -220,12 +257,12 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
                 'created_at', 'updated_at', 'duration',
                 'files_per_second_wall_time', 'cumulative_processing_time_ms',
                 'avg_time_per_file_ms', 'files_per_second_cpu_time', 'parallel_cores_used',
-                'parallel_speedup_factor', 'parallel_efficiency_percent', 'project'
+                'parallel_speedup_factor', 'parallel_efficiency_percent', 'rules_statistics', 'project'
               ]
             }
           },
           required: ['data']
-          
+
         let(:project) { create(:project) }
         let(:analysis_job) { create(:analysis_job, :completed, project: project) }
         let(:id) { analysis_job.id }
@@ -246,6 +283,7 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
             'parallel_cores_used',
             'parallel_speedup_factor',
             'parallel_efficiency_percent',
+            'rules_statistics',
             'project'
           )
           

@@ -14,6 +14,10 @@ Rails.application.routes.draw do
       resources :projects, only: [:index, :show, :create] do
         resources :build_metrics, only: [:index, :create]
         resources :analysis_submissions, only: [:create], path: 'analysis_submissions'
+        resources :analysis_jobs do
+          resources :violations do
+          end
+        end
         resources :rules, only: [:index, :update], controller: 'project_rules' do
           member do
             post :toggle

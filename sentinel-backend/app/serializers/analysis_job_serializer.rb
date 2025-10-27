@@ -18,6 +18,31 @@ class AnalysisJobSerializer < ActiveModel::Serializer
   # Related entities
   has_one :project
 
+  # Optional error_message attribute (only if column exists)
+  attribute :error_message, if: :has_error_message?
+
+  def has_error_message?
+    object.respond_to?(:error_message)
+  end
+
+  # Add rule statistics
+  attribute :rules_statistics
+
+  def rules_statistics
+    return [] unless object.id
+
+    # Use ActiveRecord to get the counts by rule name
+    counts = Violation
+      .joins(:file_with_violations)
+      .where(files_with_violations: { analysis_job_id: object.id })
+      .group(:rule_name)
+      .count
+
+    # Convert to array of hashes and sort by count descending
+    counts.map { |rule, count| { rule: rule, count: count } }
+          .sort_by { |item| -item[:count] }
+  end
+
   # Cache the serializer
   cache key: 'analysis_job', expires_in: 1.hour
 

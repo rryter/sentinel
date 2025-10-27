@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_27_120000) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_27_150000) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -30,6 +30,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_27_120000) do
     t.datetime "updated_at", null: false
     t.string "commit_hash"
     t.string "branch_name"
+    t.text "error_message"
     t.index ["project_id"], name: "index_analysis_jobs_on_project_id"
     t.index ["status"], name: "index_analysis_jobs_on_status"
   end

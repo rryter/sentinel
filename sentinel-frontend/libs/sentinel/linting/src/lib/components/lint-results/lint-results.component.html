@@ -86,7 +86,16 @@
     <h3 class="text-lg font-medium text-gray-900 mb-4">Violations</h3>
     <div class="bg-white shadow rounded-lg overflow-hidden">
       @if (violations) {
-        <div class="overflow-y-auto">
+        <div class="p-4 space-y-2">
+          @for (stat of data.rules_statistics; track stat.rule) {
+            <sen-lint-summary-item
+              [rule]="stat.rule"
+              [count]="stat.count"
+            ></sen-lint-summary-item>
+          }
+        </div>
+
+        <!-- <div class="overflow-y-auto">
           @if (!isLoading() && violations) {
             <sen-rule-results
               [results]="violationsData()"
@@ -102,7 +111,7 @@
             (currentPageChange)="setCurrentPage($event)"
             (itemsPerPageChange)="setItemsPerPage($event)"
           ></app-pagination>
-        </div>
+        </div> -->
       } @else {
         <div class="p-8 text-center">
           <div class="mx-auto w-24 h-24 mb-4 text-gray-300">
