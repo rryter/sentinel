@@ -15,19 +15,19 @@ default = ["custom_rules"]
 custom_rules = []
 
 [dependencies]
-walkdir = "2.4"
+walkdir = "2.5"
 
 # Command line argument parsing
-clap = { version = "4.4", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 
 # For the future integration with oxc parser
-oxc_allocator = "0.63.0"
-oxc_parser = "0.63.0"
-oxc_ast = "0.63.0"
-oxc_ast_visit = "0.63.0"
-oxc_span = "0.63.0"
-oxc_semantic = "0.63.0"
-oxc_diagnostics = "0.63.0"
+oxc_allocator = "0.95.0"
+oxc_parser = "0.95.0"
+oxc_ast = "0.95.0"
+oxc_ast_visit = "0.95.0"
+oxc_span = "0.95.0"
+oxc_semantic = "0.95.0"
+oxc_diagnostics = "0.95.0"
 
 # For config file parsing
 serde = { version = "1.0", features = ["derive"] }
@@ -38,22 +38,22 @@ dirs = "5.0"
 chrono = "0.4"
 
 # For parallel processing
-rayon = "1.8"
+rayon = "1.11"
 
 # For getting CPU cores count
-num_cpus = "1.16"
+num_cpus = "1.17"
 tabled = "0.18.0"
 
 # For making HTTP requests
 reqwest = { version = "0.12", features = ["json", "blocking"] }
 
 # For Gzip compression
-flate2 = "1.0"
+flate2 = "1.1"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
-walkdir = "2.4"
-tempfile = "3.8.0"
+walkdir = "2.5"
+tempfile = "3.23.0"
 
 [[bench]]
 name = "analyzer_bench"
