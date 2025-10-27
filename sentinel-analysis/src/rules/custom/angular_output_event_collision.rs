@@ -17,11 +17,39 @@ impl AngularOutputEventCollisionRule {
 
 /// List of common DOM event names to check against
 const DOM_EVENTS: &[&str] = &[
-    "click", "dblclick", "mousedown", "mouseup", "mouseover", "mouseout", "mousemove",
-    "keydown", "keypress", "keyup", "submit", "reset", "change", "focus", "blur",
-    "load", "unload", "resize", "scroll", "select", "input", "contextmenu",
-    "dragstart", "drag", "dragenter", "dragleave", "dragover", "drop", "dragend",
-    "touchstart", "touchmove", "touchend", "touchcancel"
+    "click",
+    "dblclick",
+    "mousedown",
+    "mouseup",
+    "mouseover",
+    "mouseout",
+    "mousemove",
+    "keydown",
+    "keypress",
+    "keyup",
+    "submit",
+    "reset",
+    "change",
+    "focus",
+    "blur",
+    "load",
+    "unload",
+    "resize",
+    "scroll",
+    "select",
+    "input",
+    "contextmenu",
+    "dragstart",
+    "drag",
+    "dragenter",
+    "dragleave",
+    "dragover",
+    "drop",
+    "dragend",
+    "touchstart",
+    "touchmove",
+    "touchend",
+    "touchcancel",
 ];
 
 /// Visitor implementation that checks Angular output names
@@ -38,21 +66,24 @@ impl OutputEventVisitor {
     }
 
     fn create_diagnostic(span: Span, event_name: &str) -> OxcDiagnostic {
-        OxcDiagnostic::error(format!("Output name '{}' collides with native DOM event", event_name))
-            .with_help("Choose a different name to avoid confusion with native browser events")
-            .with_label(span.label("Output declaration"))
+        OxcDiagnostic::error(format!(
+            "Output name '{}' collides with native DOM event",
+            event_name
+        ))
+        .with_help("Choose a different name to avoid confusion with native browser events")
+        .with_label(span.label("Output declaration"))
     }
 }
 
 impl<'a> Visit<'a> for OutputEventVisitor {
     fn visit_class(&mut self, _node: &Class<'a>) {
         // Iterate through class elements to find property definitions
-       /*  for element in &node.body.elements {
+        /*  for element in &node.body.elements {
             if let ClassElement::PropertyDefinition(prop) = element {
                 // Get the property name
                 if let Some(Expression::Identifier(key)) = &prop.key {
                     let prop_name = key.name.as_str();
-                    
+
                     // Check if this property's value is an output() call
                     if let Some(Expression::CallExpression(call)) = &prop.value {
                         if let Expression::Identifier(callee) = &call.callee {
@@ -78,7 +109,7 @@ impl Rule for AngularOutputEventCollisionRule {
 
     fn run_on_node(&self, node: &AstKind, _span: Span, _file_path: &str) -> Vec<OxcDiagnostic> {
         let mut visitor = OutputEventVisitor::new();
-        
+
         match node {
             AstKind::Class(class) => {
                 visitor.visit_class(class);

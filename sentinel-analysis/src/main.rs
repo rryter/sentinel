@@ -36,7 +36,10 @@ fn main() {
         config.rules_config = Some(rules_config_path.clone());
         // Optional: Add a debug print to confirm the path is being set
         if debug_level >= scoper::utilities::DebugLevel::Debug {
-            println!("DEBUG: Rules config path set from command line: {}", rules_config_path);
+            println!(
+                "DEBUG: Rules config path set from command line: {}",
+                rules_config_path
+            );
         }
     }
 
@@ -50,11 +53,16 @@ fn main() {
                     if let Some(path_str) = rules_path_beside_exe.to_str() {
                         config.rules_config = Some(path_str.to_string());
                         if debug_level >= scoper::utilities::DebugLevel::Debug {
-                            println!("DEBUG: Rules config path set from rules.json next to executable: {}", path_str);
+                            println!(
+                                "DEBUG: Rules config path set from rules.json next to executable: {}",
+                                path_str
+                            );
                         }
                     } else {
                         if debug_level >= scoper::utilities::DebugLevel::Warn {
-                            eprintln!("WARNING: Found rules.json next to executable, but its path is not valid UTF-8.");
+                            eprintln!(
+                                "WARNING: Found rules.json next to executable, but its path is not valid UTF-8."
+                            );
                         }
                     }
                 }
@@ -95,29 +103,34 @@ fn main() {
     let findings_path = std::path::Path::new(output_dir_str).join("findings.json");
 
     if debug_level >= scoper::utilities::DebugLevel::Info {
-        println!("INFO: Attempting to read findings from: {}", findings_path.display());
+        println!(
+            "INFO: Attempting to read findings from: {}",
+            findings_path.display()
+        );
     }
 
     match std::fs::read_to_string(&findings_path) {
-        Ok(findings_content) => {
-            match serde_json::from_str::<Value>(&findings_content) {
-                Ok(json_payload) => {
-                    if let Err(e) = send_results_to_api(&config, &json_payload, debug_level) {
-                        if debug_level >= scoper::utilities::DebugLevel::Error {
-                            eprintln!("ERROR: Failed to send results to API: {}", e);
-                        }
-                    }
-                }
-                Err(e) => {
+        Ok(findings_content) => match serde_json::from_str::<Value>(&findings_content) {
+            Ok(json_payload) => {
+                if let Err(e) = send_results_to_api(&config, &json_payload, debug_level) {
                     if debug_level >= scoper::utilities::DebugLevel::Error {
-                        eprintln!("ERROR: Failed to parse findings.json content: {}", e);
+                        eprintln!("ERROR: Failed to send results to API: {}", e);
                     }
                 }
             }
-        }
+            Err(e) => {
+                if debug_level >= scoper::utilities::DebugLevel::Error {
+                    eprintln!("ERROR: Failed to parse findings.json content: {}", e);
+                }
+            }
+        },
         Err(e) => {
             if debug_level >= scoper::utilities::DebugLevel::Error {
-                eprintln!("ERROR: Failed to read findings.json from {}: {}", findings_path.display(), e);
+                eprintln!(
+                    "ERROR: Failed to read findings.json from {}: {}",
+                    findings_path.display(),
+                    e
+                );
             }
         }
     }
@@ -127,8 +140,12 @@ fn send_results_to_api(
     config: &Config,
     analysis_results: &Value, // Ensure this is serde_json::Value
     debug_level: scoper::utilities::DebugLevel,
-) -> Result<(), Box<dyn std::error::Error>> { // Return a boxed error for more flexibility
-    let api_url = config.api_url.as_deref().unwrap_or("https://api.scoper.cloud/api/v1/projects/3/analysis_submissions");
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Return a boxed error for more flexibility
+    let api_url = config
+        .api_url
+        .as_deref()
+        .unwrap_or("https://api.scoper.cloud/api/v1/projects/3/analysis_submissions");
 
     if debug_level >= scoper::utilities::DebugLevel::Info {
         println!("INFO: Sending analysis results to {}", api_url);
@@ -162,7 +179,8 @@ fn send_results_to_api(
             eprintln!("{}", error_message);
         }
         // Attempt to read the error response body
-        match response.text() { // Changed from response.text().await to response.text()
+        match response.text() {
+            // Changed from response.text().await to response.text()
             Ok(body) => {
                 if debug_level >= scoper::utilities::DebugLevel::Error {
                     eprintln!("ERROR: API Response Body: {}", body);

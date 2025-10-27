@@ -1,7 +1,7 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use scoper::{RulesRegistry, analyzer, utilities::DebugLevel};
 use std::fs;
 use std::sync::Arc;
-use scoper::{RulesRegistry, analyzer, utilities::DebugLevel};
 
 const SMALL_FILE: &str = r#"
 function test() {
