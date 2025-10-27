@@ -1,3 +1,5 @@
 sentinel-refactored/bin/sentinel
 node_modules
 metrics
+target/rust-analyzer/flycheck0/stderr
+target/rust-analyzer/flycheck0/stdout
