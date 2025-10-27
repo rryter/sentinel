@@ -113,9 +113,9 @@ export class BuildMetricsChartComponent implements OnChanges {
             const datasetLabel = context.dataset.label || '';
             const value = context.parsed.y;
             if (datasetLabel.includes('Files')) {
-              return `${datasetLabel}: ${value.toFixed(0)}`;
+              return `${datasetLabel}: ${value?.toFixed(0)}`;
             }
-            return `${datasetLabel}: ${value.toFixed(2)}s`;
+            return `${datasetLabel}: ${value?.toFixed(2)}s`;
           },
         },
       },

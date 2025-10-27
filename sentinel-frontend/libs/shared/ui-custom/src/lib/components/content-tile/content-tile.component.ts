@@ -1,11 +1,11 @@
+import { HlmIcon } from '@spartan-ng/helm/icon';
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIcon } from '@ng-icons/core';
-import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 @Component({
   selector: 'app-content-tile',
-  imports: [CommonModule, NgIcon, HlmIconDirective],
+  imports: [CommonModule, NgIcon, HlmIcon],
   templateUrl: './content-tile.component.html',
   styleUrls: ['./content-tile.component.scss'],
 })

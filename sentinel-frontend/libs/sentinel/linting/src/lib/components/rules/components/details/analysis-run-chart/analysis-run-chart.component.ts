@@ -172,13 +172,13 @@ export class AnalysisRunChartComponent implements OnChanges {
             const datasetLabel = context.dataset.label || '';
             const value = context.parsed.y;
             if (datasetLabel.includes('Files/s')) {
-              return `${datasetLabel}: ${value.toFixed(0)}`;
+              return `${datasetLabel}: ${value?.toFixed(0)}`;
             }
             if (datasetLabel.includes('Files')) {
-              return `${datasetLabel}: ${value.toFixed(0)}`;
+              return `${datasetLabel}: ${value?.toFixed(0)}`;
             }
             // Assuming the other dataset is Duration
-            return `${datasetLabel}: ${value.toFixed(0)}ms`; // Changed to toFixed(0) and 'ms'
+            return `${datasetLabel}: ${value?.toFixed(0)}ms`; // Changed to toFixed(0) and 'ms'
           },
         },
       },

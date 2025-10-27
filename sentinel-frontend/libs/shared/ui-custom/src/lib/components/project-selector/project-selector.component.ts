@@ -1,9 +1,9 @@
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiV1ProjectsGet200ResponseDataProjectsInner } from '@sentinel/api';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
-import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
 
 @Component({
   selector: 'sen-project-selector',

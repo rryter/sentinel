@@ -1,13 +1,13 @@
+import { HlmNumberedPagination } from '@spartan-ng/helm/pagination';
 import {
   ChangeDetectionStrategy,
   Component,
   input,
   model,
 } from '@angular/core';
-import { HlmNumberedPaginationComponent } from '@spartan-ng/ui-pagination-helm';
 
 /**
- * A reusable pagination component that wraps Spartan UI's HlmNumberedPaginationComponent
+ * A reusable pagination component that wraps Spartan UI's HlmNumberedPagination
  * and provides a clean API for handling pagination in the application.
  *
  * Example usage:
@@ -22,7 +22,7 @@ import { HlmNumberedPaginationComponent } from '@spartan-ng/ui-pagination-helm';
  */
 @Component({
   selector: 'app-pagination',
-  imports: [HlmNumberedPaginationComponent],
+  imports: [HlmNumberedPagination],
   template: `
     <hlm-numbered-pagination
       [(currentPage)]="currentPage"

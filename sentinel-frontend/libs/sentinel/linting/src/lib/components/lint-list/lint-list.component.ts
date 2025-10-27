@@ -1,3 +1,4 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
@@ -6,12 +7,12 @@ import {
   ApiV1AnalysisJobsGet200ResponseDataInner,
   ProjectsService,
 } from '@sentinel/api';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+
 import { map, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'sen-lint-list',
-  imports: [CommonModule, RouterModule, HlmButtonDirective],
+  imports: [CommonModule, RouterModule],
   providers: [DatePipe],
   templateUrl: './lint-list.component.html',
   styleUrls: ['./lint-list.component.scss'],

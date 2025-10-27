@@ -1,3 +1,4 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,11 +9,10 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
 import { RouterModule } from '@angular/router';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'sen-uploader',
-  imports: [CommonModule, HttpClientModule, RouterModule, HlmButtonDirective],
+  imports: [CommonModule, HttpClientModule, RouterModule, HlmButton],
   templateUrl: './uploader.component.html',
   styleUrl: './uploader.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

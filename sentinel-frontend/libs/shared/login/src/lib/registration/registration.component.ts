@@ -1,3 +1,6 @@
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmFormFieldImports } from '@spartan-ng/helm/form-field';
+import { HlmInput } from '@spartan-ng/helm/input';
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import {
@@ -16,9 +19,7 @@ import {
   lucideMail,
   lucideUser,
 } from '@ng-icons/lucide';
-import { HlmButtonModule } from '@spartan-ng/ui-button-helm';
-import { HlmFormFieldModule } from '@spartan-ng/ui-formfield-helm';
-import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
+
 import { WebAuthnRegistrationService } from '../services/webauthn-registration.service';
 
 @Component({
@@ -28,9 +29,9 @@ import { WebAuthnRegistrationService } from '../services/webauthn-registration.s
     NgIcon,
     RouterLink,
     ReactiveFormsModule,
-    HlmFormFieldModule,
-    HlmInputDirective,
-    HlmButtonModule,
+    HlmFormFieldImports,
+    HlmInput,
+    HlmButtonImports,
   ],
   templateUrl: './registration.component.html',
   providers: [

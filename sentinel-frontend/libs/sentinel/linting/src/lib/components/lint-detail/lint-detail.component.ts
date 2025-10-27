@@ -1,10 +1,10 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'lib-lint-detail',
-  imports: [CommonModule, HlmButtonDirective],
+  imports: [CommonModule, HlmButton],
   templateUrl: './lint-detail.component.html',
   styleUrl: './lint-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

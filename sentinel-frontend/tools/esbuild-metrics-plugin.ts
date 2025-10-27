@@ -235,7 +235,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       }
 
       const response = await fetch(
-        `${backendUrl}/api/v1/projects/3/build_metrics`,
+        `${backendUrl}/api/v1/projects/1/build_metrics`,
         {
           method: 'POST',
           headers: {

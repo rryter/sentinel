@@ -1,16 +1,17 @@
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmButton } from '@spartan-ng/helm/button';
+import {
+  HlmDialogClose,
+  HlmDialogFooter,
+  HlmDialogHeader,
+  HlmDialogTitle,
+} from '@spartan-ng/helm/dialog';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmLabel } from '@spartan-ng/helm/label';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import {
-  HlmDialogCloseDirective,
-  HlmDialogFooterComponent,
-  HlmDialogHeaderComponent,
-  HlmDialogTitleDirective,
-} from '@spartan-ng/ui-dialog-helm';
-import { HlmInputDirective } from '@spartan-ng/ui-input-helm';
-import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
+
 import { generateBrowserApiToken } from '../../helpers/api-token.helpers';
 
 @Component({
@@ -19,13 +20,12 @@ import { generateBrowserApiToken } from '../../helpers/api-token.helpers';
   imports: [
     CommonModule,
     FormsModule,
-    HlmDialogHeaderComponent,
-    HlmDialogTitleDirective,
-    HlmDialogFooterComponent,
-    HlmDialogCloseDirective,
-    HlmInputDirective,
-    HlmButtonDirective,
-    HlmLabelDirective,
+    HlmDialogHeader,
+    HlmDialogTitle,
+    HlmDialogFooter,
+    HlmInput,
+    HlmButton,
+    HlmLabel,
   ],
   template: `
     <hlm-dialog-header>

@@ -1,3 +1,5 @@
+import { BadgeVariants, HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -19,14 +21,11 @@ import {
 import {
   ContentTileComponent,
   DetailsContainerComponent,
-  PaginationComponent,
   TileDetailComponent,
   TileDividerComponent,
 } from '@shared/ui-custom';
-import { BadgeVariants, HlmBadgeDirective } from '@spartan-ng/ui-badge-helm';
-import { HlmSkeletonComponent } from '@spartan-ng/ui-skeleton-helm';
+
 import { firstValueFrom } from 'rxjs';
-import { RuleResultsComponent } from '../rules/components';
 import { LintSummaryItemComponent } from '../lint-summary-item/lint-summary-item.component';
 
 @Component({
@@ -35,12 +34,10 @@ import { LintSummaryItemComponent } from '../lint-summary-item/lint-summary-item
     CommonModule,
     ContentTileComponent,
     DetailsContainerComponent,
-    HlmBadgeDirective,
-    HlmSkeletonComponent,
+    HlmBadge,
+    HlmSkeleton,
     LintSummaryItemComponent,
     NgIcon,
-    PaginationComponent,
-    RuleResultsComponent,
     TileDetailComponent,
     TileDividerComponent,
   ],

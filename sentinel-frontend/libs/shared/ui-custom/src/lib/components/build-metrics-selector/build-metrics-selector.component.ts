@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
-import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 export interface SelectOption {
   label: string;

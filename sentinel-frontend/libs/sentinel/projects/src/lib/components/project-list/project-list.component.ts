@@ -1,3 +1,5 @@
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmIcon } from '@spartan-ng/helm/icon';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
@@ -5,12 +7,10 @@ import {
   ApiV1ProjectsGet200ResponseDataProjectsInner,
   ProjectsService,
 } from '@sentinel/api';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
-import { HlmIconDirective } from '@spartan-ng/ui-icon-helm';
 
 @Component({
   selector: 'app-project-list',
-  imports: [CommonModule, RouterModule, HlmButtonDirective, HlmIconDirective],
+  imports: [CommonModule, RouterModule, HlmButton, HlmIcon],
   providers: [ProjectsService],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.scss'],

@@ -1,3 +1,4 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import {
@@ -9,7 +10,7 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ProjectsService } from '@sentinel/api';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+
 import { firstValueFrom } from 'rxjs';
 import { GitHubRepository, GitHubService } from '../../services/github.service';
 
@@ -19,7 +20,7 @@ interface GroupedRepositories {
 
 @Component({
   selector: 'app-project-create',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, HlmButtonDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HlmButton],
   template: `
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">

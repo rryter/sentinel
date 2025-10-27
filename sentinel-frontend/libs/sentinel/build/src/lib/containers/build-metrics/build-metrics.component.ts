@@ -1,3 +1,5 @@
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -13,8 +15,7 @@ import {
   BuildMetricsSelectorComponent,
   RoutingService,
 } from '@shared/ui-custom';
-import { BrnSelectImports } from '@spartan-ng/brain/select';
-import { HlmSelectImports } from '@spartan-ng/ui-select-helm';
+
 import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../../../../../apps/sentinel/src/environments/environment';
 import { BuildMetricsChartComponent } from '../../components/build-metrics-chart/build-metrics-chart.component';

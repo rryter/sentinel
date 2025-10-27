@@ -1,3 +1,7 @@
+import { HlmDialogService } from '@spartan-ng/helm/dialog';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmToaster } from '@spartan-ng/helm/sonner';
+import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -7,10 +11,7 @@ import {
   RulesService,
 } from '@sentinel/api';
 import { RoutingService } from '@shared/ui-custom';
-import { HlmDialogService } from '@spartan-ng/ui-dialog-helm';
-import { HlmLabelDirective } from '@spartan-ng/ui-label-helm';
-import { HlmToasterComponent } from '@spartan-ng/ui-sonner-helm';
-import { HlmSwitchComponent } from '@spartan-ng/ui-switch-helm';
+
 import { toast } from 'ngx-sonner';
 import { map, Subject } from 'rxjs';
 import { ObfuscatedPipe } from '../pipes/obfuscated.pipe';
@@ -21,11 +22,10 @@ import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-
   imports: [
     CommonModule,
     FormsModule,
-    HlmLabelDirective,
-    HlmSwitchComponent,
-    UpdateApiTokenDialogComponent,
+    HlmLabel,
+    HlmSwitch,
     ObfuscatedPipe,
-    HlmToasterComponent,
+    HlmToaster,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',

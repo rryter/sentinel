@@ -1,3 +1,4 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule } from '@angular/common';
 import {
   Component,
@@ -17,7 +18,7 @@ import {
   ProjectsService,
 } from '@sentinel/api';
 import { ProjectSelectorComponent } from '@shared/ui-custom';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+
 import { EMPTY, catchError, of } from 'rxjs';
 import { LintStatusComponent } from '../lint-status/lint-status.component';
 
@@ -40,7 +41,7 @@ interface Lint {
   imports: [
     CommonModule,
     FormsModule,
-    HlmButtonDirective,
+    HlmButton,
     LintStatusComponent,
     ProjectSelectorComponent,
   ],

@@ -1,3 +1,4 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -6,11 +7,10 @@ import {
   Project,
   ProjectsService,
 } from '@sentinel/api';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-project-detail',
-  imports: [CommonModule, RouterModule, HlmButtonDirective],
+  imports: [CommonModule, RouterModule, HlmButton],
   providers: [ProjectsService],
   template: `
     <div class="px-4 sm:px-6 lg:px-8">

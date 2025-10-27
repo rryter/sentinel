@@ -1,11 +1,11 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'saas-not-found-404',
-  imports: [CommonModule, RouterLink, HlmButtonDirective],
+  imports: [CommonModule, RouterLink, HlmButton],
   templateUrl: './not-found-404.component.html',
   styleUrl: './not-found-404.component.css',
 })

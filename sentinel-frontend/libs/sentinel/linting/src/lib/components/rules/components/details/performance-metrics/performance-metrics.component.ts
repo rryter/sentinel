@@ -106,10 +106,10 @@ export class PerformanceMetricsComponent implements OnChanges {
             const datasetLabel = context.dataset.label || '';
             const value = context.parsed.y;
             if (datasetLabel.includes('Efficiency')) {
-              return `${datasetLabel}: ${value.toFixed(0)}%`;
+              return `${datasetLabel}: ${value?.toFixed(0)}%`;
             }
             // Removed Cores condition
-            return `${datasetLabel}: ${value.toFixed(0)}`;
+            return `${datasetLabel}: ${value}`;
           },
         },
       },

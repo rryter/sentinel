@@ -1,11 +1,11 @@
+import { HlmButton } from '@spartan-ng/helm/button';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 
 @Component({
   selector: 'app-build-list',
-  imports: [CommonModule, RouterModule, HlmButtonDirective],
+  imports: [CommonModule, RouterModule, HlmButton],
   template: `
     <div class="px-4 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
