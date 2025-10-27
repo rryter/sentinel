@@ -1,12 +1,8 @@
 import { HlmFormFieldImports } from '@spartan-ng/helm/form-field';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import {
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { email, Field, form } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFingerprint, lucideGithub, lucideMail } from '@ng-icons/lucide';
@@ -22,29 +18,33 @@ import { AuthService } from '../services/auth.service';
     CommonModule,
     NgIcon,
     RouterLink,
-    ReactiveFormsModule,
     HlmFormFieldImports,
     HlmInput,
+    Field,
   ],
   providers: [provideIcons({ lucideFingerprint, lucideMail, lucideGithub })],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  private _formBuilder = inject(NonNullableFormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  showEmailLogin = false;
 
-  form = this._formBuilder.group({
-    email: ['', [Validators.required, Validators.email]],
-  });
+  showEmailLogin = false;
+  initialFeedbackFormValue = {
+    email: '',
+  };
+
+  feedbackFormModel = signal<typeof this.initialFeedbackFormValue>(
+    this.initialFeedbackFormValue,
+  );
+  feedbackForm = form(this.feedbackFormModel);
 
   async startWebAuthnLogin() {
-    if (!this.form.valid) {
+    if (!this.feedbackForm().valid()) {
       return;
     }
 
-    if (!this.form.value.email) {
+    if (!this.feedbackForm().value()) {
       console.error('Email is required for WebAuthn login');
       return;
     }
@@ -52,7 +52,9 @@ export class LoginComponent {
     try {
       // Get authentication options from server
       const optionsJSON = await firstValueFrom(
-        this.authService.getWebAuthnSignInOptions(this.form.value.email),
+        this.authService.getWebAuthnSignInOptions(
+          this.feedbackForm().value().email,
+        ),
       );
 
       // Start the WebAuthn authentication process
