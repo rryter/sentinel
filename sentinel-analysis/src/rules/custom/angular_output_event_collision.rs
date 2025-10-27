@@ -1,5 +1,5 @@
 use oxc_ast::AstKind;
-use oxc_ast::ast::{CallExpression, Class, ClassElement, Expression};
+use oxc_ast::ast::Class;
 use oxc_ast_visit::Visit;
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
@@ -45,7 +45,7 @@ impl OutputEventVisitor {
 }
 
 impl<'a> Visit<'a> for OutputEventVisitor {
-    fn visit_class(&mut self, node: &Class<'a>) {
+    fn visit_class(&mut self, _node: &Class<'a>) {
         // Iterate through class elements to find property definitions
        /*  for element in &node.body.elements {
             if let ClassElement::PropertyDefinition(prop) = element {
