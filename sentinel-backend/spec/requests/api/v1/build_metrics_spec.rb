@@ -34,7 +34,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
   describe "GET /api/v1/projects/:project_id/build_metrics" do
     let!(:project) { create(:project) }
-    let!(:build_metric) { create(:build_metric, workspace_project: project.name, branch_name: "main", commit_hash: "abc123") }
+    let!(:build_metric) { create(:build_metric, project: project, workspace_project: project.name, branch_name: "main", commit_hash: "abc123") }
 
     context "when project does not exist" do
       it "returns 404 not found" do
@@ -115,13 +115,15 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
     context "with time range filtering" do
       let!(:old_metric) do
-        create(:build_metric, 
-               workspace_project: project.name, 
+        create(:build_metric,
+               project: project,
+               workspace_project: project.name,
                timestamp: 2.days.ago)
       end
-      let!(:recent_metric) do 
-        create(:build_metric, 
-               workspace_project: project.name, 
+      let!(:recent_metric) do
+        create(:build_metric,
+               project: project,
+               workspace_project: project.name,
                timestamp: 1.hour.ago)
       end
 
@@ -160,7 +162,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     end
 
     context "with environment filter" do
-      let!(:project_metric) { create(:build_metric, workspace_project: project.name, workspace_environment: "test-env") }
+      let!(:project_metric) { create(:build_metric, project: project, workspace_project: project.name, workspace_environment: "test-env") }
 
       it "returns metrics filtered by environment" do
         get "/api/v1/projects/#{project.id}/build_metrics?environment=test-env", headers: valid_headers
@@ -179,7 +181,8 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
 
     context "system metrics calculations" do
       let!(:metric_with_memory) do
-        create(:build_metric, 
+        create(:build_metric,
+               project: project,
                workspace_project: project.name,
                machine_memory_total: 16000000000,
                machine_memory_free: 4000000000,
@@ -214,9 +217,9 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     context "with multiple metrics across time periods" do
       before do
         # Create metrics across different time periods
-        create(:build_metric, workspace_project: project.name, timestamp: 3.hours.ago, is_initial_build: true)
-        create(:build_metric, workspace_project: project.name, timestamp: 2.hours.ago, is_initial_build: false)
-        create(:build_metric, workspace_project: project.name, timestamp: 1.hour.ago, is_initial_build: true)
+        create(:build_metric, project: project, workspace_project: project.name, timestamp: 3.hours.ago, is_initial_build: true)
+        create(:build_metric, project: project, workspace_project: project.name, timestamp: 2.hours.ago, is_initial_build: false)
+        create(:build_metric, project: project, workspace_project: project.name, timestamp: 1.hour.ago, is_initial_build: true)
       end
 
       it "aggregates metrics correctly by time bucket" do
@@ -295,6 +298,7 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
         
         # Verify stored data
         build_metric = BuildMetric.last
+        expect(build_metric.project_id).to eq(project.id)
         expect(build_metric.duration_ms).to eq(5781)
         expect(build_metric.is_initial_build).to eq(true)
         expect(build_metric.machine_hostname).to eq("ai-code")

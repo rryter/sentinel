@@ -1,4 +1,7 @@
 class BuildMetric < ActiveRecord::Base
+  # Associations
+  belongs_to :project, optional: true
+
   # Validations
   validates :timestamp, presence: true
   validates :duration_ms, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }

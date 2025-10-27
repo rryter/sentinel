@@ -4,10 +4,8 @@ module Api
       before_action :set_project
       
       def index
-        query = BuildMetric.all
-
-        # Filter by project based on route
-        query = query.by_project(@project.name)
+        # Filter by project_id using the foreign key relationship
+        query = @project.build_metrics
 
         # Filter by environment if specified
         if params[:environment].present?
@@ -146,7 +144,7 @@ module Api
           metrics.each do |metric_params|
             # Log incoming parameters for debugging
             Rails.logger.info("Processing metric: #{metric_params.inspect}")
-            
+
             permitted_params = metric_params.permit(
               :id,
               :timestamp,
@@ -173,8 +171,9 @@ module Api
               :branch_name,
               :commit_hash
             )
-            
-            build_metric = BuildMetric.new(permitted_params)
+
+            # Associate with the project using the foreign key
+            build_metric = @project.build_metrics.new(permitted_params)
             
             # Store raw boolean value for validation
             build_metric.raw_is_initial_build = metric_params[:is_initial_build]

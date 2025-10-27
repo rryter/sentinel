@@ -1,5 +1,8 @@
 FactoryBot.define do
   factory :build_metric do
+    # Association - will create a project if not provided
+    project { association :project }
+
     timestamp { Time.current }
     duration_ms { rand(1000..10000) }
     is_initial_build { [true, false].sample }
@@ -17,7 +20,7 @@ FactoryBot.define do
     build_entry_points { ["./src/index.js"] }
     build_file_types { { "js" => rand(10..100), "css" => rand(5..50) } }
     workspace_name { "@test/workspace" }
-    workspace_project { "test-project" }
+    workspace_project { project&.name || "test-project" }
     workspace_environment { "test" }
     workspace_user { "test-user" }
     workspace_task { "build" }

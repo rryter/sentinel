@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_15_155949) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_27_120000) do
   create_table "analysis_jobs", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.string "status", default: "pending", null: false
@@ -60,6 +60,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_15_155949) do
     t.string "workspace_task"
     t.string "commit_hash"
     t.string "branch_name"
+    t.bigint "project_id"
+    t.index ["project_id", "timestamp"], name: "index_build_metrics_on_project_id_and_timestamp"
+    t.index ["project_id"], name: "index_build_metrics_on_project_id"
     t.index ["timestamp"], name: "index_build_metrics_on_timestamp"
     t.index ["workspace_environment"], name: "index_build_metrics_on_workspace_environment"
     t.index ["workspace_project"], name: "index_build_metrics_on_workspace_project"
@@ -176,6 +179,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_15_155949) do
   end
 
   add_foreign_key "analysis_jobs", "projects"
+  add_foreign_key "build_metrics", "projects"
   add_foreign_key "credentials", "users"
   add_foreign_key "files_with_violations", "analysis_jobs"
   add_foreign_key "project_rules", "projects"
