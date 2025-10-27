@@ -65,9 +65,10 @@ module Api
             user_verification: true
           )
 
-          # Save the credential to the database using URL-safe base64 with standard padding
+          # Save the credential to the database using URL-safe base64 without padding
+          # (to match what browsers send during authentication)
           credential = user.credentials.build(
-            external_id: Base64.urlsafe_encode64(webauthn_credential.raw_id),
+            external_id: Base64.urlsafe_encode64(webauthn_credential.raw_id, padding: false),
             public_key: webauthn_credential.public_key,
             nickname: "Default authentication",
             sign_count: webauthn_credential.sign_count || 0

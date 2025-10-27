@@ -64,8 +64,16 @@ module Api
         end
 
         # Find the credential using the URL-safe base64 ID
+        # Try both with and without padding since browsers may send either format
         credential_id = webauthn_params[:id]
-        credential = user.credentials.find_by(external_id: credential_id)
+
+        # Calculate padded version if needed
+        padding_needed = (4 - credential_id.length % 4) % 4
+        credential_id_padded = credential_id + ('=' * padding_needed)
+
+        # Try to find with either format (check without padding first as that's most common)
+        credential = user.credentials.find_by(external_id: credential_id) ||
+                     user.credentials.find_by(external_id: credential_id_padded)
 
         unless credential
           return render json: { error: "Credential not found" }, status: :not_found
