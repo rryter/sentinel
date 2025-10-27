@@ -6,7 +6,8 @@
     "declarationMap": true,
     "inlineSources": true,
     "types": [],
-    "rootDir": "../../../"
+    "rootDir": "../../../",
+    "moduleResolution": "bundler"
   },
   "exclude": [
     "src/**/*.spec.ts",

@@ -22,7 +22,7 @@
           {
             "path": "tools/esbuild-metrics-plugin.ts",
             "options": {
-              "backendUrl": "https://api.scoper.cloud",
+              "backendUrl": "http://localhost:3000",
               "logToConsole": false,
               "apiToken": "c212c0e86edeb6724f0762c60421d112da0567d439109c532e61a29b31e6dcb3"
             }
@@ -90,7 +90,8 @@
       "defaultConfiguration": "development",
       "options": {
         "host": "0.0.0.0"
-      }
+      },
+      "continuous": true
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
