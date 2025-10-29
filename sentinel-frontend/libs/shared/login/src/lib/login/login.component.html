@@ -11,7 +11,7 @@
 >
   <!-- Form -->
   <div class="space-y-4">
-    <form class="space-y-4" (submit)="startWebAuthnLogin()" novalidate>
+    <form class="space-y-4" (submit)="submitForm($event)" novalidate>
       <hlm-form-field class="relative block">
         <label class="block text-sm font-medium text-gray-400">Full name</label>
         <div class="relative rounded-md">
@@ -23,28 +23,37 @@
           <input
             hlmInput
             type="email"
-            [field]="feedbackForm.email"
+            [field]="loginForm.email"
             placeholder="Enter your email"
             formControlName="email"
             class="block w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-white"
             [class.border-red-400]="
-              feedbackForm().invalid() && feedbackForm().touched
+              loginForm().invalid() && loginForm().touched
             "
           />
         </div>
         <hlm-error class="mt-2 text-red-400">E-Mail is required</hlm-error>
       </hlm-form-field>
+
+      @if (loginConfig().passkey === true) {
+        <button
+          type="submit"
+          [disabled]="!loginForm().valid() || pending()"
+          [ariaBusy]="pending()"
+          class="w-full flex items-center justify-center gap-x-2 py-3 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-transform duration-200 hover:scale-[1.02]"
+        >
+          <ng-icon name="lucideFingerprint" class="h-6 w-6" />
+          @if (pending()) {
+            Please Wait ...
+          } @else {
+            Login
+          }
+        </button>
+      }
     </form>
   </div>
 
-  <!-- Passkey Button -->
-  <button
-    class="w-full flex items-center justify-center gap-x-2 py-3 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-transform duration-200 hover:scale-[1.02]"
-    (click)="startWebAuthnLogin()"
-  >
-    <ng-icon name="lucideFingerprint" class="h-6 w-6" />
-    {{ 'Sign in with passkey' }}
-  </button>
+  {{ loginForm().submitting() }}
 </div>
 
 <!-- Create Account Link -->

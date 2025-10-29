@@ -1,6 +1,8 @@
 import { Route } from '@angular/router';
-import { AuthComponentComponent, MainLayoutComponent } from '@sentinel/layouts';
+import { MainLayoutComponent } from '@sentinel/layouts';
 import { GitHubCallbackComponent } from './auth/github-callback/github-callback.component';
+import { LoginComponent } from './auth/login/login.component';
+import { RegistrationPageComponent } from './auth/registration/registration.component';
 export const appRoutes: Route[] = [
   {
     path: 'auth/github/callback',
@@ -8,8 +10,16 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'auth',
-    component: AuthComponentComponent,
-    loadChildren: () => import('@shared/login').then((m) => m.loginRoutes),
+    children: [
+      {
+        path: 'login',
+        component: LoginComponent,
+      },
+      {
+        path: 'registration',
+        component: RegistrationPageComponent,
+      },
+    ],
   },
   {
     path: 'projects',

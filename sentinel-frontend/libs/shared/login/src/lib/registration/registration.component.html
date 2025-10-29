@@ -8,7 +8,7 @@
 <!-- Auth Card -->
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
   <div>
-    <form [formGroup]="form" (submit)="register()" class="space-y-6">
+    <form (submit)="register($event)" class="space-y-6" novalidate>
       <!-- Full name field -->
       <hlm-form-field class="w-full">
         <label for="name" class="block text-sm font-medium text-gray-400"
@@ -23,14 +23,15 @@
           <input
             id="name"
             hlmInput
+            [field]="registrationForm.name"
             aria-label="Full Name"
-            formControlName="name"
             type="text"
             class="block w-full pl-10 pr-3 py-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-white"
           />
         </div>
         <hlm-error>Your name is required</hlm-error>
       </hlm-form-field>
+
       <!-- Email field -->
       <hlm-form-field class="w-full">
         <label for="email" class="block text-sm font-medium text-gray-400"
@@ -45,8 +46,8 @@
           <input
             id="email"
             hlmInput
+            [field]="registrationForm.email"
             aria-label="E-Mail"
-            formControlName="email"
             type="email"
             class="block w-full pl-10 pr-3 py-3 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-white"
           />

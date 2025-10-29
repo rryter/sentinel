@@ -1,13 +1,7 @@
-import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { HlmFormFieldImports } from '@spartan-ng/helm/form-field';
-import { HlmInput } from '@spartan-ng/helm/input';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import {
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { Field, form } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -19,7 +13,11 @@ import {
   lucideMail,
   lucideUser,
 } from '@ng-icons/lucide';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmFormFieldImports } from '@spartan-ng/helm/form-field';
+import { HlmInput } from '@spartan-ng/helm/input';
 
+import { RegistrationForm } from '../models/registration.model';
 import { WebAuthnRegistrationService } from '../services/webauthn-registration.service';
 
 @Component({
@@ -32,6 +30,7 @@ import { WebAuthnRegistrationService } from '../services/webauthn-registration.s
     HlmFormFieldImports,
     HlmInput,
     HlmButtonImports,
+    Field,
   ],
   templateUrl: './registration.component.html',
   providers: [
@@ -48,35 +47,27 @@ import { WebAuthnRegistrationService } from '../services/webauthn-registration.s
   styleUrl: './registration.component.scss',
 })
 export class RegistrationComponent {
-  private _formBuilder = inject(NonNullableFormBuilder);
   private webAuthnService = inject(WebAuthnRegistrationService);
 
-  form = this._formBuilder.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-  });
+  private readonly initialRegistrationFormValue: RegistrationForm = {
+    name: '',
+    email: '',
+  };
 
-  // Form getter helpers
-  get emailControl() {
-    return this.form.get('email');
-  }
-  get nameControl() {
-    return this.form.get('name');
-  }
+  private readonly loginRegistrationState = signal<RegistrationForm>(
+    this.initialRegistrationFormValue,
+  );
 
-  async register() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  protected readonly registrationForm = form(this.loginRegistrationState);
+
+  async register(e: Event) {
+    e.preventDefault();
+
+    if (this.registrationForm().invalid()) {
       return;
     }
 
-    const { email, name } = this.form.value;
-
-    // Type guard to ensure values are not undefined
-    if (!email || !name) {
-      console.error('Form values are invalid');
-      return;
-    }
+    const { email, name } = this.registrationForm().value();
 
     try {
       await this.webAuthnService.registerUser(email, name);
