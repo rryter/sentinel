@@ -6,15 +6,24 @@ You are tasked with creating 3 different UI design variations based on this brie
 
 ## Process:
 
-### Step 0: Check for Validation Flag
+### Step 0: Parse Flags and Variation Count
 
-First, check if the brief contains the `--validate` flag:
-- If `--validate` or `-v` is present: Set `AUTO_VALIDATE=true` and remove the flag from the brief before proceeding
+First, parse the brief for flags and variation count:
+
+**A. Check for Validation Flag:**
+- If `--validate` or `-v` is present: Set `AUTO_VALIDATE=true` and remove the flag from the brief
 - Otherwise: Set `AUTO_VALIDATE=false` and prompt user later
 
+**B. Determine Variation Count:**
+- Look for `--count=N`, `--variations=N`, or `-n N` in the brief
+- If found: Set `VARIATION_COUNT=N` and remove the flag from the brief
+- If not found: Set `VARIATION_COUNT=2` (default)
+- **Constraints**: Minimum 1, Maximum 5
+
 Examples:
-- Input: `"create a dashboard --validate"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=true
-- Input: `"create a dashboard"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=false
+- Input: `"create a dashboard --validate --count=3"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=true, VARIATION_COUNT=3
+- Input: `"create a dashboard -n 4"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=false, VARIATION_COUNT=4
+- Input: `"create a dashboard"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=false, VARIATION_COUNT=2 (default)
 
 ### Step 1: Brainstorm Design Variations
 
@@ -29,7 +38,7 @@ First, analyze the brief and determine a consistent **feature-name** following t
 
 Validate this name before proceeding. It will be used in all directory paths and must follow the rules above.
 
-Then propose 3 distinct design approaches. Consider:
+Then propose **VARIATION_COUNT** distinct design approaches. Consider:
 
 - Different layout patterns (e.g., dashboard grid, wizard flow, card-based, list-detail, kanban)
 - Different visual styles (e.g., minimal/clean, data-dense, illustrative, modern/bold)
@@ -37,34 +46,27 @@ Then propose 3 distinct design approaches. Consider:
 - Information hierarchy and focus areas
 - Target audience needs and use case priorities
 
-Document your 3 design variations clearly:
+Document your design variations clearly (repeat for each variation from 1 to VARIATION_COUNT):
 
-**Variation 1: [Name]**
+**Variation [N]: [Name]**
 
 - Concept: [2-3 sentence description of the design philosophy]
 - Layout pattern: [e.g., grid-based dashboard, vertical timeline, card carousel]
 - Key features: [Main UI elements and interactions]
 - Best for: [User scenario or use case this excels at]
 
-**Variation 2: [Name]**
-
-- Concept: [2-3 sentence description]
-- Layout pattern: [Different from variation 1]
-- Key features: [Main UI elements and interactions]
-- Best for: [Different user scenario]
-
-**Variation 3: [Name]**
-
-- Concept: [2-3 sentence description]
-- Layout pattern: [Different from variations 1 & 2]
-- Key features: [Main UI elements and interactions]
-- Best for: [Different user scenario]
+**Note:** Ensure each variation is meaningfully different from the others. If VARIATION_COUNT=1, still provide a well-thought-out design approach.
 
 ### Step 2: Implement in Parallel
 
-Use the Task tool to launch 3 general-purpose agents IN PARALLEL to implement each design variation.
+Use the Task tool to launch **VARIATION_COUNT** general-purpose agents IN PARALLEL to implement each design variation.
 
-**CRITICAL**: You MUST send a single message containing 3 Task tool calls to run all agents simultaneously. Do NOT wait for one agent to complete before starting the next.
+**CRITICAL**: You MUST send a single message containing VARIATION_COUNT Task tool calls to run all agents simultaneously. Do NOT wait for one agent to complete before starting the next.
+
+**Examples:**
+- If VARIATION_COUNT=2: Send 1 message with 2 Task tool calls
+- If VARIATION_COUNT=3: Send 1 message with 3 Task tool calls
+- If VARIATION_COUNT=1: Send 1 message with 1 Task tool call
 
 Each agent should receive a prompt following this structure:
 
@@ -107,11 +109,11 @@ Deliverable Requirements:
 
 Deliverable:
 A complete, immediately viewable HTML prototype that demonstrates the design variation.
-All 3 variations should use the SAME feature name, only the variation number differs.
+All variations should use the SAME feature name, only the variation number differs.
 ```
 
 Error Handling:
-- Wait for all 3 agents to complete
+- Wait for all VARIATION_COUNT agents to complete
 - If any agent fails, note which variation failed and why
 - You may retry a failed agent once
 - If retries fail, proceed to Step 3 with successful variations only
@@ -126,12 +128,19 @@ Create `ui-design/[feature-name]-comparison.html` that includes:
 - Title: "UI Design Comparison: [Feature Name]"
 - Brief description of the original brief
 - **If validation was run:** Link to validation report at the top
-- Side-by-side preview of all 3 variations (use iframes or embedded views)
+- Side-by-side preview of all VARIATION_COUNT variations (use iframes or embedded views)
 - **If validation was run:** Add validation badges/metrics below each variation preview
 - Links to each individual HTML file
 - Summary of each variation's approach
 - Recommendations from the summary below
 - **If validation was run:** Highlight best performer based on metrics
+
+**Note:** Adapt the grid layout based on VARIATION_COUNT:
+- 1 variation: Single centered view (max-width 1200px)
+- 2 variations: 2-column grid
+- 3 variations: 3-column grid
+- 4 variations: 2x2 grid
+- 5 variations: Use a responsive grid that adapts to viewport
 
 #### 3.2: Update Design Catalog
 
@@ -156,11 +165,11 @@ Create or update `ui-design/INDEX.md` with an entry for this design session:
 
 #### 3.3: Provide Summary
 
-Provide a markdown summary comparing the 3 variations with:
-- **Comparison Table:** Side-by-side feature matrix
+Provide a markdown summary comparing all VARIATION_COUNT variations with:
+- **Comparison Table:** Side-by-side feature matrix for all variations
 - **Strengths & Weaknesses:** For each variation
 - **Use Cases:** When to use each approach
-- **Recommendation:** For typical scenarios matching the brief
+- **Recommendation:** For typical scenarios matching the brief (or single recommendation if VARIATION_COUNT=1)
 
 ### Step 3.5: Optional Validation (Playwright MCP)
 
@@ -169,7 +178,7 @@ Provide a markdown summary comparing the 3 variations with:
 - If `AUTO_VALIDATE=false`: Prompt the user with this message:
 
 ```
-All 3 design variations have been generated successfully!
+All [VARIATION_COUNT] design variation(s) have been generated successfully!
 
 Would you like to run automated validation using Playwright MCP?
 This will:
@@ -193,7 +202,7 @@ Run validation? (yes/no):
    - If available: Proceed with validation
 
 2. **Run Validation Checks:**
-   For each variation (1, 2, 3), use Playwright MCP to:
+   For each variation (1 through VARIATION_COUNT), use Playwright MCP to:
 
    a. **Screenshot Capture:**
    - Open `ui-design/[feature-name]-variation-[N]/index.html` in browser
@@ -236,21 +245,21 @@ Run validation? (yes/no):
        <h1 class="text-3xl font-bold mb-6">Validation Report: [Feature Name]</h1>
 
        <!-- Summary Dashboard -->
-       <div class="grid grid-cols-3 gap-6 mb-8">
-         <!-- Per-variation summary cards with pass/fail metrics -->
+       <div class="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 mb-8">
+         <!-- Per-variation summary cards with pass/fail metrics (one for each VARIATION_COUNT) -->
        </div>
 
        <!-- Detailed Results per Variation -->
        <div class="space-y-8">
-         <!-- Variation 1 -->
+         <!-- Repeat this section for each variation (1 through VARIATION_COUNT) -->
          <section class="bg-white rounded-lg shadow p-6">
-           <h2>Variation 1: [Name]</h2>
+           <h2>Variation [N]: [Name]</h2>
 
            <!-- Screenshots Gallery -->
            <div class="grid grid-cols-3 gap-4 my-4">
-             <img src="[feature-name]-variation-1/screenshots/desktop.png" />
-             <img src="[feature-name]-variation-1/screenshots/tablet.png" />
-             <img src="[feature-name]-variation-1/screenshots/mobile.png" />
+             <img src="[feature-name]-variation-[N]/screenshots/desktop.png" />
+             <img src="[feature-name]-variation-[N]/screenshots/tablet.png" />
+             <img src="[feature-name]-variation-[N]/screenshots/mobile.png" />
            </div>
 
            <!-- Accessibility Results -->
@@ -271,8 +280,6 @@ Run validation? (yes/no):
              <ul><!-- Test results --></ul>
            </div>
          </section>
-
-         <!-- Repeat for Variations 2 & 3 -->
        </div>
 
        <!-- Comparison Matrix -->
@@ -282,16 +289,16 @@ Run validation? (yes/no):
            <thead>
              <tr>
                <th>Metric</th>
+               <!-- Add one <th> for each variation (1 through VARIATION_COUNT) -->
                <th>Variation 1</th>
-               <th>Variation 2</th>
-               <th>Variation 3</th>
+               <!-- ... Variation 2, 3, etc. as needed ... -->
              </tr>
            </thead>
            <tbody>
-             <tr><td>A11y Score</td><td colspan="3"><!-- Scores --></td></tr>
-             <tr><td>Load Time</td><td colspan="3"><!-- Times --></td></tr>
-             <tr><td>DOM Nodes</td><td colspan="3"><!-- Counts --></td></tr>
-             <tr><td>Interactions</td><td colspan="3"><!-- Pass/Fail --></td></tr>
+             <tr><td>A11y Score</td><!-- Add <td> for each variation --><!-- Scores --></tr>
+             <tr><td>Load Time</td><!-- Add <td> for each variation --><!-- Times --></tr>
+             <tr><td>DOM Nodes</td><!-- Add <td> for each variation --><!-- Counts --></tr>
+             <tr><td>Interactions</td><!-- Add <td> for each variation --><!-- Pass/Fail --></tr>
            </tbody>
          </table>
        </section>
@@ -375,3 +382,37 @@ Provide the user with:
    - **Document decision:** Note which variation was chosen and why in project docs
 
 5. **Design Catalog:** Link to `ui-design/INDEX.md` to view all past design sessions
+
+---
+
+## Usage Examples
+
+### Default (2 variations, no validation)
+```bash
+/ui-design "create a user profile editor"
+```
+
+### Custom variation count
+```bash
+/ui-design "create a dashboard --count=4"
+/ui-design "create a kanban board -n 3"
+/ui-design "create a single landing page hero --variations=1"
+```
+
+### With validation
+```bash
+/ui-design "create a login form --validate"
+/ui-design "create a checkout flow --count=3 --validate"
+/ui-design "create a settings page -n 2 -v"
+```
+
+### Combining flags
+```bash
+/ui-design "create a data table --count=5 --validate"
+/ui-design "create an analytics dashboard -n 4 -v"
+```
+
+**Flag Reference:**
+- `--count=N`, `--variations=N`, `-n N`: Number of variations (1-5, default: 2)
+- `--validate`, `-v`: Auto-run Playwright validation after generation
+- Flags can appear anywhere in the brief and will be removed before processing
