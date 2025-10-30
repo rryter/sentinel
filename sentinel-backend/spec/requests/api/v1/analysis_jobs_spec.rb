@@ -336,10 +336,104 @@ RSpec.describe 'Api::V1::AnalysisJobs', type: :request do
       
       response '404', 'analysis job not found' do
         let(:id) { 0 }
-        
+
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data).to have_key('error')
+        end
+      end
+    end
+  end
+
+  path '/api/v1/analysis_jobs/rule_history' do
+    get 'Gets historical rule violation data' do
+      tags 'Analysis Jobs'
+      produces 'application/json'
+      parameter name: :project_id, in: :query, type: :integer, required: true, description: 'Project ID to get history for'
+      parameter name: :limit, in: :query, type: :integer, required: false, description: 'Number of jobs to retrieve (default: 10)'
+
+      response '200', 'rule history retrieved' do
+        schema type: :object,
+          properties: {
+            data: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  job_id: { type: :integer },
+                  created_at: { type: :string, format: 'date-time' },
+                  completed_at: { type: :string, format: 'date-time' },
+                  total_files: { type: :integer },
+                  total_violations: { type: :integer },
+                  rules: {
+                    type: :array,
+                    items: {
+                      type: :object,
+                      properties: {
+                        rule_name: { type: :string },
+                        violations_count: { type: :integer }
+                      },
+                      required: ['rule_name', 'violations_count']
+                    }
+                  }
+                },
+                required: ['job_id', 'created_at', 'completed_at', 'total_files', 'total_violations', 'rules']
+              }
+            },
+            meta: {
+              type: :object,
+              properties: {
+                project_id: { type: :integer },
+                total_jobs: { type: :integer }
+              },
+              required: ['project_id', 'total_jobs']
+            }
+          },
+          required: ['data', 'meta']
+
+        let(:project) { create(:project) }
+        let(:project_id) { project.id }
+        let!(:jobs) { create_list(:analysis_job, 3, :completed, project: project, total_matches: 5) }
+
+        before do
+          # Create violations for each job with different rule names
+          # Use different line numbers to avoid unique constraint violation
+          jobs.each_with_index do |job, idx|
+            file = create(:file_with_violations, analysis_job: job)
+            # Create violations with unique line numbers
+            3.times do |i|
+              create(:violation, file_with_violations: file, rule_name: 'no-debugger', start_line: i + 1, end_line: i + 1)
+            end
+            if idx.even?
+              2.times do |i|
+                create(:violation, file_with_violations: file, rule_name: 'no-console', start_line: i + 10, end_line: i + 10)
+              end
+            end
+          end
+        end
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['data']).to be_an(Array)
+          expect(data['data'].length).to eq(3)
+          expect(data['meta']['project_id']).to eq(project.id)
+          expect(data['meta']['total_jobs']).to eq(3)
+
+          # Check first job has rule data
+          first_job = data['data'].first
+          expect(first_job).to include('job_id', 'created_at', 'completed_at', 'total_files', 'total_violations', 'rules')
+          expect(first_job['rules']).to be_an(Array)
+          expect(first_job['rules'].first).to include('rule_name', 'violations_count')
+        end
+      end
+
+      response '400', 'missing project_id parameter' do
+        let(:project_id) { nil }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data).to have_key('error')
+          expect(data['error']).to eq('project_id parameter is required')
         end
       end
     end

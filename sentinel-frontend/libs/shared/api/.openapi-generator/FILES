@@ -38,6 +38,10 @@ model/api-v1-analysis-jobs-get200-response.ts
 model/api-v1-analysis-jobs-id-process-results-post200-response.ts
 model/api-v1-analysis-jobs-post-request.ts
 model/api-v1-analysis-jobs-post201-response.ts
+model/api-v1-analysis-jobs-rule-history-get200-response-data-inner-rules-inner.ts
+model/api-v1-analysis-jobs-rule-history-get200-response-data-inner.ts
+model/api-v1-analysis-jobs-rule-history-get200-response-meta.ts
+model/api-v1-analysis-jobs-rule-history-get200-response.ts
 model/api-v1-auth-webauthn-login-authenticate-post-request-response.ts
 model/api-v1-auth-webauthn-login-authenticate-post-request.ts
 model/api-v1-auth-webauthn-login-authenticate-post200-response.ts
@@ -91,5 +95,6 @@ model/project.ts
 ng-package.json
 package.json
 param.ts
+provide-api.ts
 tsconfig.json
 variables.ts

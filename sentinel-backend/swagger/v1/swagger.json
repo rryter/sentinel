@@ -568,6 +568,121 @@
         }
       }
     },
+    "/api/v1/analysis_jobs/rule_history": {
+      "get": {
+        "summary": "Gets historical rule violation data",
+        "tags": [
+          "Analysis Jobs"
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "description": "Project ID to get history for",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Number of jobs to retrieve (default: 10)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "rule history retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "job_id": {
+                            "type": "integer"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "completed_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "total_files": {
+                            "type": "integer"
+                          },
+                          "total_violations": {
+                            "type": "integer"
+                          },
+                          "rules": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "rule_name": {
+                                  "type": "string"
+                                },
+                                "violations_count": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "rule_name",
+                                "violations_count"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "job_id",
+                          "created_at",
+                          "completed_at",
+                          "total_files",
+                          "total_violations",
+                          "rules"
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "project_id": {
+                          "type": "integer"
+                        },
+                        "total_jobs": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "project_id",
+                        "total_jobs"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "missing project_id parameter"
+          }
+        }
+      }
+    },
     "/api/v1/auth/webauthn/login/options": {
       "post": {
         "summary": "Get WebAuthn login options",

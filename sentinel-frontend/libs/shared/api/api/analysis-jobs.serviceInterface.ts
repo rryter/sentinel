@@ -15,6 +15,7 @@ import { ApiV1AnalysisJobsGet200Response } from '../model/models';
 import { ApiV1AnalysisJobsIdProcessResultsPost200Response } from '../model/models';
 import { ApiV1AnalysisJobsPost201Response } from '../model/models';
 import { ApiV1AnalysisJobsPostRequest } from '../model/models';
+import { ApiV1AnalysisJobsRuleHistoryGet200Response } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -30,6 +31,11 @@ export interface ApiV1AnalysisJobsIdProcessResultsPostRequestParams {
 
 export interface ApiV1AnalysisJobsPostRequestParams {
     apiV1AnalysisJobsPostRequest?: ApiV1AnalysisJobsPostRequest;
+}
+
+export interface ApiV1AnalysisJobsRuleHistoryGetRequestParams {
+    projectId: number;
+    limit?: number;
 }
 
 
@@ -63,5 +69,12 @@ export interface AnalysisJobsServiceInterface {
 * @param requestParameters
      */
     apiV1AnalysisJobsPost(requestParameters: ApiV1AnalysisJobsPostRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsPost201Response>;
+
+    /**
+     * Gets historical rule violation data
+     * 
+* @param requestParameters
+     */
+    apiV1AnalysisJobsRuleHistoryGet(requestParameters: ApiV1AnalysisJobsRuleHistoryGetRequestParams, extraHttpRequestParams?: any): Observable<ApiV1AnalysisJobsRuleHistoryGet200Response>;
 
 }

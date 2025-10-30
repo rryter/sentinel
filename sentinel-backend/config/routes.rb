@@ -32,6 +32,10 @@ Rails.application.routes.draw do
           get 'files/:file_path/violations', to: 'analysis_jobs#file_violations', constraints: { file_path: /.*/ }
         end
 
+        collection do
+          get :rule_history
+        end
+
         resources :violations, only: [:index] do
           collection do
             get :time_series

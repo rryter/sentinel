@@ -2,12 +2,13 @@
   "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
   "spaces": 2,
   "generator-cli": {
-    "version": "7.13.0",
+    "version": "7.16.0",
     "generators": {
       "sentinel-api": {
         "generatorName": "typescript-angular",
         "output": "src/app/api/generated",
         "inputSpec": "../sentinel-backend/swagger/v1/swagger.json",
+        "skipValidateSpec": true,
         "additionalProperties": {
           "providedIn": "root",
           "ngVersion": "19.0.0",
@@ -21,24 +22,13 @@
           "taggedUnions": true,
           "enumPropertyNaming": "UPPERCASE",
           "stringEnums": true,
-          "snapshot": false,
           "npmName": "sentinel-api-client",
-          "typeMapping": {
-            "array": "Array"
-          },
           "apiModulePrefix": "Api",
           "modelModulePrefix": "Model",
           "legacyDiscriminatorBehavior": false
         },
         "typeMappings": {
           "file": "Blob"
-        },
-        "templateDir": null,
-        "globalProperties": {
-          "apiTests": false,
-          "modelTests": false,
-          "apiDocs": false,
-          "modelDocs": false
         }
       }
     }

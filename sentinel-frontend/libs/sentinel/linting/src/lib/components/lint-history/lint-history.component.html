@@ -1,0 +1,118 @@
+<div class="container">
+  <!-- Header -->
+  <header class="header">
+    <h1>Linter Violations Dashboard</h1>
+    <p class="subtitle">Track and analyze code quality violations over time</p>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Selection Panel -->
+    <aside class="selection-panel">
+      <div class="panel-header">
+        <h2>Rule Selection</h2>
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search rules..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+          >
+        </div>
+      </div>
+
+      <div class="rule-categories">
+        @for (category of filteredCategories(); track category.name) {
+          <div class="category">
+            <div class="category-header" (click)="toggleCategory(category)">
+              <span class="category-title">
+                <svg
+                  class="category-toggle"
+                  [class.expanded]="category.expanded"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+                {{ category.name }}
+              </span>
+              <span class="rule-count">{{ category.rules.length }}</span>
+            </div>
+
+            @if (category.expanded) {
+              <div class="rule-list">
+                @for (rule of category.rules; track rule.name) {
+                  <label class="rule-item" (click)="toggleRule(rule); $event.preventDefault()">
+                    <input
+                      type="checkbox"
+                      class="rule-checkbox"
+                      [checked]="rule.checked"
+                      (click)="$event.stopPropagation()"
+                      (change)="toggleRule(rule)"
+                    >
+                    <span class="rule-label">{{ rule.name }}</span>
+                    <span class="rule-count">{{ rule.count }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="panel-footer">
+        <button class="btn btn-secondary" (click)="clearAll()">Clear All</button>
+        <button class="btn btn-primary" (click)="applySelection()">Apply</button>
+      </div>
+    </aside>
+
+    <!-- Chart Area -->
+    <main class="chart-area">
+      <div class="chart-header">
+        <h2 class="chart-title">Violations Over Time</h2>
+        <div class="time-range-selector">
+          <button
+            class="time-btn"
+            [class.active]="selectedTimeRange() === '7D'"
+            (click)="selectTimeRange('7D')"
+          >7D</button>
+          <button
+            class="time-btn"
+            [class.active]="selectedTimeRange() === '30D'"
+            (click)="selectTimeRange('30D')"
+          >30D</button>
+          <button
+            class="time-btn"
+            [class.active]="selectedTimeRange() === '90D'"
+            (click)="selectTimeRange('90D')"
+          >90D</button>
+          <button
+            class="time-btn"
+            [class.active]="selectedTimeRange() === '1Y'"
+            (click)="selectTimeRange('1Y')"
+          >1Y</button>
+          <button
+            class="time-btn"
+            [class.active]="selectedTimeRange() === 'All'"
+            (click)="selectTimeRange('All')"
+          >All</button>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        @if (selectedRules().length > 0) {
+          <canvas #violationsChart></canvas>
+        } @else {
+          <div class="chart-placeholder">
+            Select rules to display chart
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>

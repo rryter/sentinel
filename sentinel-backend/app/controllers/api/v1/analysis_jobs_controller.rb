@@ -152,7 +152,7 @@ module Api
         begin
           # Initialize the analysis service
           service = AnalysisService.new(@job.id)
-          
+
           # Process the results
           if service.process_results(@job)
             render json: { message: 'Analysis results processing has been scheduled' }, status: :ok
@@ -163,6 +163,50 @@ module Api
           Rails.logger.error("Failed to process results for job #{@job.id}: #{e.message}\n#{e.backtrace.join("\n")}")
           render json: { error: e.message }, status: :unprocessable_entity
         end
+      end
+
+      # Get historical data for rule violations across analysis jobs
+      def rule_history
+        project_id = params[:project_id]
+        limit = params[:limit]&.to_i || 10
+
+        if project_id.blank?
+          render json: { error: 'project_id parameter is required' }, status: :bad_request
+          return
+        end
+
+        # Get the most recent completed jobs for the project
+        jobs = AnalysisJob
+          .where(project_id: project_id, status: 'completed')
+          .order(created_at: :desc)
+          .limit(limit)
+
+        # For each job, aggregate violations by rule_name
+        history_data = jobs.map do |job|
+          # Group violations by rule_name and count them
+          rule_counts = Violation
+            .joins(file_with_violations: :analysis_job)
+            .where(analysis_jobs: { id: job.id })
+            .group(:rule_name)
+            .count
+
+          {
+            job_id: job.id,
+            created_at: job.created_at,
+            completed_at: job.completed_at,
+            total_files: job.total_files,
+            total_violations: job.total_matches,
+            rules: rule_counts.map { |rule_name, count| { rule_name: rule_name, violations_count: count } }
+          }
+        end
+
+        render json: {
+          data: history_data.reverse, # Reverse to show oldest first
+          meta: {
+            project_id: project_id.to_i,
+            total_jobs: history_data.length
+          }
+        }
       end
 
       private

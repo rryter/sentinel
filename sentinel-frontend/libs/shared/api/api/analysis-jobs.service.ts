@@ -24,6 +24,8 @@ import { ApiV1AnalysisJobsIdProcessResultsPost200Response } from '../model/api-v
 import { ApiV1AnalysisJobsPost201Response } from '../model/api-v1-analysis-jobs-post201-response';
 // @ts-ignore
 import { ApiV1AnalysisJobsPostRequest } from '../model/api-v1-analysis-jobs-post-request';
+// @ts-ignore
+import { ApiV1AnalysisJobsRuleHistoryGet200Response } from '../model/api-v1-analysis-jobs-rule-history-get200-response';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -33,7 +35,8 @@ import {
     AnalysisJobsServiceInterface,
     ApiV1AnalysisJobsIdGetRequestParams,
     ApiV1AnalysisJobsIdProcessResultsPostRequestParams,
-    ApiV1AnalysisJobsPostRequestParams
+    ApiV1AnalysisJobsPostRequestParams,
+    ApiV1AnalysisJobsRuleHistoryGetRequestParams
 } from './analysis-jobs.serviceInterface';
 
 
@@ -259,6 +262,69 @@ export class AnalysisJobsService extends BaseService implements AnalysisJobsServ
             {
                 context: localVarHttpContext,
                 body: apiV1AnalysisJobsPostRequest,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Gets historical rule violation data
+     * @param requestParameters
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public apiV1AnalysisJobsRuleHistoryGet(requestParameters: ApiV1AnalysisJobsRuleHistoryGetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<ApiV1AnalysisJobsRuleHistoryGet200Response>;
+    public apiV1AnalysisJobsRuleHistoryGet(requestParameters: ApiV1AnalysisJobsRuleHistoryGetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ApiV1AnalysisJobsRuleHistoryGet200Response>>;
+    public apiV1AnalysisJobsRuleHistoryGet(requestParameters: ApiV1AnalysisJobsRuleHistoryGetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ApiV1AnalysisJobsRuleHistoryGet200Response>>;
+    public apiV1AnalysisJobsRuleHistoryGet(requestParameters: ApiV1AnalysisJobsRuleHistoryGetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        const projectId = requestParameters?.projectId;
+        if (projectId === null || projectId === undefined) {
+            throw new Error('Required parameter projectId was null or undefined when calling apiV1AnalysisJobsRuleHistoryGet.');
+        }
+        const limit = requestParameters?.limit;
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>projectId, 'project_id');
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>limit, 'limit');
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/v1/analysis_jobs/rule_history`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<ApiV1AnalysisJobsRuleHistoryGet200Response>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

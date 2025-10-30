@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 import { LintCreateComponent } from './components/lint-create/lint-create.component';
-import { LintDetailComponent } from './components/lint-detail/lint-detail.component';
+import { LintHistoryComponent } from './components/lint-history/lint-history.component';
 import { LintListComponent } from './components/lint-list/lint-list.component';
 import { LintMetricsComponent } from './components/lint-metrics/lint-metrics.component';
 import { LintResultsComponent } from './components/lint-results/lint-results.component';
@@ -22,8 +22,8 @@ export const lintingRoutes: Route[] = [
     component: LintResultsComponent,
   },
   {
-    path: ':jobId/results/:violationId',
-    component: LintDetailComponent,
+    path: ':jobId/results/trends',
+    component: LintHistoryComponent,
   },
   {
     path: 'rules',
