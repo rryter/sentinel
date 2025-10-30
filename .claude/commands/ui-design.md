@@ -8,7 +8,12 @@ You are tasked with creating 3 different UI design variations based on this brie
 
 ### Step 1: Brainstorm Design Variations
 
-Analyze the brief and propose 3 distinct design approaches. Consider:
+First, analyze the brief and determine a consistent **feature-name** (e.g., "dashboard", "profile-editor", "analytics-view") that will be used for all 3 variations.
+
+**Feature Name:** [feature-name]
+
+Then propose 3 distinct design approaches. Consider:
+
 - Different layout patterns (e.g., dashboard grid, wizard flow, card-based, list-detail, kanban)
 - Different visual styles (e.g., minimal/clean, data-dense, illustrative, modern/bold)
 - Different user flows and interaction patterns
@@ -18,18 +23,21 @@ Analyze the brief and propose 3 distinct design approaches. Consider:
 Document your 3 design variations clearly:
 
 **Variation 1: [Name]**
+
 - Concept: [2-3 sentence description of the design philosophy]
 - Layout pattern: [e.g., grid-based dashboard, vertical timeline, card carousel]
 - Key features: [Main UI elements and interactions]
 - Best for: [User scenario or use case this excels at]
 
 **Variation 2: [Name]**
+
 - Concept: [2-3 sentence description]
 - Layout pattern: [Different from variation 1]
 - Key features: [Main UI elements and interactions]
 - Best for: [Different user scenario]
 
 **Variation 3: [Name]**
+
 - Concept: [2-3 sentence description]
 - Layout pattern: [Different from variations 1 & 2]
 - Key features: [Main UI elements and interactions]
@@ -48,6 +56,8 @@ Implement UI Design Variation [1/2/3]: [Variation Name]
 
 Original Brief: {{arg}}
 
+**Feature Name (use exactly):** [feature-name from Step 1]
+
 Design Approach:
 - Concept: [concept from brainstorming]
 - Layout: [layout pattern]
@@ -58,14 +68,16 @@ Implementation Requirements:
 1. Create HTML and CSS representation in: ui-design/[feature-name]-variation-[1/2/3]/
 2. Use Tailwind 4
 3. Make the component immediately usable/demonstrable
+4. **IMPORTANT:** Use the exact feature name specified above for the directory structure
 
 File Structure:
-- [feature-name]-variation-[1/2/3]/
-  - [component-name].html
-  - [component-name].css (if needed)
+- ui-design/[feature-name]/variation-[1/2/3]/
+  - [feature-name].html
+  - styles.css (if needed beyond Tailwind)
 
 Deliverable:
 A HTML & CSS representation that demonstrates the design variation with realistic mock data.
+All 3 variations should use the SAME feature name, only the variation number differs.
 ```
 
 ### Step 3: Summary
