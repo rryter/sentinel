@@ -197,12 +197,14 @@ Run validation? (yes/no):
 **If user accepts or AUTO_VALIDATE=true:**
 
 1. **Check MCP Availability:**
-   - Verify `playwright-mcp` is available in MCP servers
-   - If not available: Inform user and skip to Step 4
-   - If available: Proceed with validation
+   - Look for MCP tools with names starting with `mcp__playwright` or `mcp__` prefix
+   - Check available tool list for Playwright-related MCP tools
+   - If Playwright MCP tools are available: Use them directly (preferred method)
+   - If not available: Fall back to using Playwright via npx (create Node.js script as backup)
+   - **IMPORTANT:** Always prefer MCP tools over npx when available
 
 2. **Run Validation Checks:**
-   For each variation (1 through VARIATION_COUNT), use Playwright MCP to:
+   For each variation (1 through VARIATION_COUNT), use **Playwright MCP tool** (if available) or create a Playwright script to:
 
    a. **Screenshot Capture:**
    - Open `ui-design/[feature-name]-variation-[N]/index.html` in browser
