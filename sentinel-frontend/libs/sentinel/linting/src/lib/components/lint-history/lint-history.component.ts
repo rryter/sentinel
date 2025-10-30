@@ -4,37 +4,21 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
+  input,
   OnInit,
   signal,
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import {
+  AnalysisJobsService,
+  ApiV1AnalysisJobsRuleHistoryGet200Response,
+} from '@sentinel/api';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
 Chart.register(...registerables);
-
-interface RuleViolation {
-  rule_name: string;
-  violations_count: number;
-}
-
-interface JobHistoryData {
-  job_id: number;
-  created_at: string;
-  completed_at: string;
-  total_files: number;
-  total_violations: number;
-  rules: RuleViolation[];
-}
-
-interface ApiResponse {
-  data: JobHistoryData[];
-  meta: {
-    project_id: string;
-    total_jobs: number;
-  };
-}
 
 interface RuleCategory {
   name: string;
@@ -58,9 +42,13 @@ export class LintHistoryComponent implements OnInit, AfterViewInit {
   @ViewChild('violationsChart', { static: false })
   chartCanvas!: ElementRef<HTMLCanvasElement>;
 
+  private readonly analysisJobsService = inject(AnalysisJobsService);
   private chart: Chart | null = null;
 
-  readonly apiData = signal<ApiResponse | null>(null);
+  readonly projectId = input.required<number>();
+  readonly apiData = signal<ApiV1AnalysisJobsRuleHistoryGet200Response | null>(
+    null,
+  );
   readonly searchTerm = signal<string>('');
   readonly selectedTimeRange = signal<string>('All');
 
@@ -97,117 +85,20 @@ export class LintHistoryComponent implements OnInit, AfterViewInit {
   }
 
   loadData() {
-    // Simulated API data based on the provided structure
-    const mockData: ApiResponse = {
-      data: [
-        {
-          job_id: 3,
-          created_at: '2025-05-06T17:14:27.642Z',
-          completed_at: '2025-05-06T17:14:30.036Z',
-          total_files: 1384,
-          total_violations: 1474,
-          rules: [
-            {
-              rule_name: 'angular-obsolete-standalone-true',
-              violations_count: 334,
-            },
-            { rule_name: 'angular-legacy-decorators', violations_count: 179 },
-            { rule_name: 'angular-input-count', violations_count: 10 },
-          ],
+    this.analysisJobsService
+      .apiV1AnalysisJobsRuleHistoryGet({ projectId: this.projectId() })
+      .subscribe({
+        next: (data) => {
+          this.apiData.set(data);
+          this.processRulesFromData(data);
         },
-        {
-          job_id: 4,
-          created_at: '2025-05-06T17:15:25.737Z',
-          completed_at: '2025-05-06T17:15:27.724Z',
-          total_files: 1384,
-          total_violations: 1474,
-          rules: [
-            {
-              rule_name: 'angular-obsolete-standalone-true',
-              violations_count: 334,
-            },
-            { rule_name: 'angular-legacy-decorators', violations_count: 179 },
-            { rule_name: 'angular-input-count', violations_count: 10 },
-          ],
+        error: (error) => {
+          console.error('Error loading rule history:', error);
         },
-        {
-          job_id: 5,
-          created_at: '2025-05-06T18:51:52.491Z',
-          completed_at: '2025-05-06T18:51:54.329Z',
-          total_files: 1384,
-          total_violations: 1474,
-          rules: [
-            {
-              rule_name: 'angular-obsolete-standalone-true',
-              violations_count: 334,
-            },
-            { rule_name: 'angular-legacy-decorators', violations_count: 179 },
-            { rule_name: 'angular-input-count', violations_count: 10 },
-          ],
-        },
-        {
-          job_id: 6,
-          created_at: '2025-05-06T18:54:26.280Z',
-          completed_at: '2025-05-06T18:54:28.076Z',
-          total_files: 1384,
-          total_violations: 1474,
-          rules: [
-            {
-              rule_name: 'angular-obsolete-standalone-true',
-              violations_count: 334,
-            },
-            { rule_name: 'angular-legacy-decorators', violations_count: 179 },
-            { rule_name: 'angular-input-count', violations_count: 10 },
-          ],
-        },
-        {
-          job_id: 7,
-          created_at: '2025-10-29T06:10:51.377Z',
-          completed_at: '2025-10-29T06:11:15.717Z',
-          total_files: 385,
-          total_violations: 79,
-          rules: [{ rule_name: 'parser', violations_count: 79 }],
-        },
-        {
-          job_id: 8,
-          created_at: '2025-10-29T19:37:01.283Z',
-          completed_at: '2025-10-29T19:37:06.252Z',
-          total_files: 3002,
-          total_violations: 6771,
-          rules: [
-            { rule_name: 'angular-legacy-decorators', violations_count: 2370 },
-            {
-              rule_name: 'angular-obsolete-standalone-true',
-              violations_count: 566,
-            },
-            { rule_name: 'typescript-type-assertion', violations_count: 3184 },
-            {
-              rule_name: 'angular-component-class-suffix',
-              violations_count: 1,
-            },
-            { rule_name: 'angular-input-count', violations_count: 58 },
-            {
-              rule_name: 'angular-directive-class-suffix',
-              violations_count: 1,
-            },
-            {
-              rule_name: 'typescript-non-null-assertion',
-              violations_count: 90,
-            },
-          ],
-        },
-      ],
-      meta: {
-        project_id: '2',
-        total_jobs: 6,
-      },
-    };
-
-    this.apiData.set(mockData);
-    this.processRulesFromData(mockData);
+      });
   }
 
-  processRulesFromData(data: ApiResponse) {
+  processRulesFromData(data: ApiV1AnalysisJobsRuleHistoryGet200Response) {
     // Aggregate all unique rules from all jobs
     const ruleMap = new Map<string, number>();
 
