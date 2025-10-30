@@ -6,6 +6,16 @@ You are tasked with creating 3 different UI design variations based on this brie
 
 ## Process:
 
+### Step 0: Check for Validation Flag
+
+First, check if the brief contains the `--validate` flag:
+- If `--validate` or `-v` is present: Set `AUTO_VALIDATE=true` and remove the flag from the brief before proceeding
+- Otherwise: Set `AUTO_VALIDATE=false` and prompt user later
+
+Examples:
+- Input: `"create a dashboard --validate"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=true
+- Input: `"create a dashboard"` → Brief: `"create a dashboard"`, AUTO_VALIDATE=false
+
 ### Step 1: Brainstorm Design Variations
 
 First, analyze the brief and determine a consistent **feature-name** following these rules:
@@ -115,10 +125,13 @@ After all agents complete, create a comparison page and summary.
 Create `ui-design/[feature-name]-comparison.html` that includes:
 - Title: "UI Design Comparison: [Feature Name]"
 - Brief description of the original brief
+- **If validation was run:** Link to validation report at the top
 - Side-by-side preview of all 3 variations (use iframes or embedded views)
+- **If validation was run:** Add validation badges/metrics below each variation preview
 - Links to each individual HTML file
 - Summary of each variation's approach
 - Recommendations from the summary below
+- **If validation was run:** Highlight best performer based on metrics
 
 #### 3.2: Update Design Catalog
 
@@ -149,6 +162,181 @@ Provide a markdown summary comparing the 3 variations with:
 - **Use Cases:** When to use each approach
 - **Recommendation:** For typical scenarios matching the brief
 
+### Step 3.5: Optional Validation (Playwright MCP)
+
+**Trigger Conditions:**
+- If `AUTO_VALIDATE=true`: Skip prompt and proceed directly to validation
+- If `AUTO_VALIDATE=false`: Prompt the user with this message:
+
+```
+All 3 design variations have been generated successfully!
+
+Would you like to run automated validation using Playwright MCP?
+This will:
+- Capture screenshots at multiple breakpoints (desktop 1920px, tablet 768px, mobile 375px)
+- Run accessibility audits using axe-core (WCAG 2.1 AA compliance)
+- Measure performance metrics (load time, DOM size, resource count)
+- Verify basic interactions (forms, buttons, navigation)
+
+Run validation? (yes/no):
+```
+
+**If user declines or Playwright MCP is not available:**
+- Log a note that validation was skipped
+- Proceed directly to Step 4
+
+**If user accepts or AUTO_VALIDATE=true:**
+
+1. **Check MCP Availability:**
+   - Verify `playwright-mcp` is available in MCP servers
+   - If not available: Inform user and skip to Step 4
+   - If available: Proceed with validation
+
+2. **Run Validation Checks:**
+   For each variation (1, 2, 3), use Playwright MCP to:
+
+   a. **Screenshot Capture:**
+   - Open `ui-design/[feature-name]-variation-[N]/index.html` in browser
+   - Capture full-page screenshots at:
+     - Desktop: 1920x1080px viewport
+     - Tablet: 768x1024px viewport
+     - Mobile: 375x667px viewport
+   - Save to: `ui-design/[feature-name]-variation-[N]/screenshots/`
+
+   b. **Accessibility Audit:**
+   - Run axe-core accessibility scan
+   - Report violations by severity (critical, serious, moderate, minor)
+   - Save report to: `ui-design/[feature-name]-variation-[N]/a11y-report.json`
+
+   c. **Performance Metrics:**
+   - Measure page load time
+   - Count DOM nodes
+   - List resource requests (CSS, JS, images)
+   - Save metrics to: `ui-design/[feature-name]-variation-[N]/performance.json`
+
+   d. **Basic Interaction Tests:**
+   - Verify all buttons are clickable
+   - Check form inputs accept keyboard input
+   - Confirm navigation links work
+   - Test responsive menu (if present)
+   - Log results
+
+3. **Generate Validation Report:**
+   Create `ui-design/[feature-name]-validation-report.html` with:
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+     <title>Validation Report: [Feature Name]</title>
+     <script src="https://cdn.tailwindcss.com"></script>
+   </head>
+   <body class="bg-gray-50 p-8">
+     <div class="max-w-7xl mx-auto">
+       <h1 class="text-3xl font-bold mb-6">Validation Report: [Feature Name]</h1>
+
+       <!-- Summary Dashboard -->
+       <div class="grid grid-cols-3 gap-6 mb-8">
+         <!-- Per-variation summary cards with pass/fail metrics -->
+       </div>
+
+       <!-- Detailed Results per Variation -->
+       <div class="space-y-8">
+         <!-- Variation 1 -->
+         <section class="bg-white rounded-lg shadow p-6">
+           <h2>Variation 1: [Name]</h2>
+
+           <!-- Screenshots Gallery -->
+           <div class="grid grid-cols-3 gap-4 my-4">
+             <img src="[feature-name]-variation-1/screenshots/desktop.png" />
+             <img src="[feature-name]-variation-1/screenshots/tablet.png" />
+             <img src="[feature-name]-variation-1/screenshots/mobile.png" />
+           </div>
+
+           <!-- Accessibility Results -->
+           <div class="my-4">
+             <h3>Accessibility Audit</h3>
+             <ul><!-- List violations --></ul>
+           </div>
+
+           <!-- Performance Metrics -->
+           <div class="my-4">
+             <h3>Performance</h3>
+             <table><!-- Metrics table --></table>
+           </div>
+
+           <!-- Interaction Tests -->
+           <div class="my-4">
+             <h3>Interaction Tests</h3>
+             <ul><!-- Test results --></ul>
+           </div>
+         </section>
+
+         <!-- Repeat for Variations 2 & 3 -->
+       </div>
+
+       <!-- Comparison Matrix -->
+       <section class="bg-white rounded-lg shadow p-6 mt-8">
+         <h2>Comparison Matrix</h2>
+         <table class="w-full">
+           <thead>
+             <tr>
+               <th>Metric</th>
+               <th>Variation 1</th>
+               <th>Variation 2</th>
+               <th>Variation 3</th>
+             </tr>
+           </thead>
+           <tbody>
+             <tr><td>A11y Score</td><td colspan="3"><!-- Scores --></td></tr>
+             <tr><td>Load Time</td><td colspan="3"><!-- Times --></td></tr>
+             <tr><td>DOM Nodes</td><td colspan="3"><!-- Counts --></td></tr>
+             <tr><td>Interactions</td><td colspan="3"><!-- Pass/Fail --></td></tr>
+           </tbody>
+         </table>
+       </section>
+
+       <!-- Recommendations -->
+       <section class="bg-blue-50 rounded-lg p-6 mt-8">
+         <h2>Recommendations</h2>
+         <ul><!-- Based on validation results --></ul>
+       </section>
+     </div>
+   </body>
+   </html>
+   ```
+
+4. **Analyze Results & Offer Adjustments:**
+
+   **Critical Issues Detected:**
+   - Broken layouts (elements overflow viewport)
+   - Severe accessibility violations (missing alt text, no keyboard navigation)
+   - Failed interactions (buttons don't respond)
+   - Performance issues (load time > 3s)
+
+   **If ANY critical issues found:**
+   ```
+   Validation found critical issues in [list affected variations]:
+   - [List specific issues]
+
+   Would you like me to automatically fix these issues and regenerate the affected variation(s)? (yes/no):
+   ```
+
+   **If user agrees:**
+   - Re-run the Task agent for affected variation(s) with additional instructions:
+     - "IMPORTANT: Fix these validation issues: [list issues]"
+     - Include specific guidance (e.g., "add alt text to all images", "ensure buttons have visible focus states")
+   - Re-run validation on fixed variation(s)
+   - Update validation report with new results
+
+   **If user declines or no critical issues:**
+   - Proceed to Step 4
+
+5. **Update Comparison Page:**
+   - Add link to validation report at top of comparison page
+   - Add validation summary badges to each variation preview
+   - Include best performer highlight based on metrics
+
 ### Step 4: User Output & Next Steps
 
 Provide the user with:
@@ -158,21 +346,32 @@ Provide the user with:
    - `ui-design/[feature-name]-variation-2/index.html`
    - `ui-design/[feature-name]-variation-3/index.html`
    - `ui-design/[feature-name]-comparison.html`
+   - **If validation was run:** `ui-design/[feature-name]-validation-report.html`
 
 2. **Viewing Instructions:**
    ```bash
    # Open comparison page to view all 3 variations side-by-side
    open ui-design/[feature-name]-comparison.html
 
+   # If validation was run, view the detailed validation report
+   open ui-design/[feature-name]-validation-report.html
+
    # Or open individual variations
    open ui-design/[feature-name]-variation-1/index.html
    ```
 
-3. **Next Steps Suggestions:**
+3. **Validation Summary** (if validation was run):
+   - Overall best performer based on combined metrics
+   - Key findings from accessibility audits
+   - Performance comparison highlights
+   - Critical issues fixed (if any)
+
+4. **Next Steps Suggestions:**
+   - **Run validation later:** Use `/ui-design [feature-name] --validate` on existing designs
    - **Refine a design:** Run `/ui-design [refined-brief focusing on chosen variation]`
    - **Implement in Angular:** Translate chosen design to Angular components using Spartan UI
    - **Share for feedback:** Send comparison page link to team members
    - **Iterate:** Make adjustments based on feedback and run command again
    - **Document decision:** Note which variation was chosen and why in project docs
 
-4. **Design Catalog:** Link to `ui-design/INDEX.md` to view all past design sessions
+5. **Design Catalog:** Link to `ui-design/INDEX.md` to view all past design sessions
