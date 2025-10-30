@@ -8,25 +8,24 @@ module Api
           Rails.application.credentials.github[:client_id],
           Rails.application.credentials.github[:client_secret]
         )
-        
         render json: { access_token: result.access_token }
       rescue Octokit::Error => e
         render json: { error: e.message }, status: :unprocessable_entity
       end
 
       def repositories
-        token = request.headers['Authorization']&.split(' ')&.last
-        return render json: { error: 'No authorization token provided' }, status: :unauthorized unless token
+        token = request.headers["Authorization"]&.split(" ")&.last
+        return render json: { error: "No authorization token provided" }, status: :unauthorized unless token
 
         begin
           client = Octokit::Client.new(access_token: token)
           # Verify the token by making a test request
           client.user
-          
+
           # Now fetch repositories
-          repos = client.repositories(nil, sort: :updated, type: 'all')
-          
-          render json: { 
+          repos = client.repositories(nil, sort: :updated, type: "all")
+
+          render json: {
             data: repos.map { |repo| {
               id: repo.id,
               name: repo.name,
@@ -37,11 +36,11 @@ module Api
             }}
           }
         rescue Octokit::Unauthorized
-          render json: { error: 'Invalid GitHub token' }, status: :unauthorized
+          render json: { error: "Invalid GitHub token" }, status: :unauthorized
         rescue Octokit::Error => e
           render json: { error: e.message }, status: :unprocessable_entity
         end
       end
     end
   end
-end 
+end
