@@ -1,0 +1,22 @@
+/* Custom status colors that extend Spartan UI badge */
+:host {
+  display: inline-block;
+}
+
+.badge-success {
+  background-color: rgb(220, 252, 231); /* green-100 */
+  color: rgb(22, 101, 52); /* green-800 */
+  border: 1px solid rgb(134, 239, 172); /* green-300 */
+}
+
+.badge-warning {
+  background-color: rgb(254, 249, 195); /* yellow-100 */
+  color: rgb(133, 77, 14); /* yellow-800 */
+  border: 1px solid rgb(253, 224, 71); /* yellow-300 */
+}
+
+.badge-error {
+  background-color: rgb(254, 226, 226); /* red-100 */
+  color: rgb(153, 27, 27); /* red-800 */
+  border: 1px solid rgb(252, 165, 165); /* red-300 */
+}

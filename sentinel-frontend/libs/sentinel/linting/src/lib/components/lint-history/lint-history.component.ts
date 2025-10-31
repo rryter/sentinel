@@ -80,8 +80,7 @@ export class LintHistoryComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Initialize chart after view is ready
-    setTimeout(() => this.updateChart(), 100);
+    setTimeout(() => this.updateChart(), 500);
   }
 
   loadData() {

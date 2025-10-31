@@ -1,0 +1,10 @@
+<span
+  hlmBadge
+  [class]="statusClass()"
+  class="inline-flex items-center gap-1"
+>
+  @if (showIcon()) {
+    <ng-icon [name]="iconName()" size="14" />
+  }
+  <ng-content />
+</span>
