@@ -1,12 +1,13 @@
 import { HlmButton } from '@spartan-ng/helm/button';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Rule, RulesService } from '../../services/rules.service';
+import { PageHeaderComponent } from '@sentinel/layouts';
 
 @Component({
   selector: 'sen-rule-list',
-  imports: [CommonModule, RouterModule, HlmButton],
+  imports: [CommonModule, RouterModule, HlmButton, PageHeaderComponent],
   providers: [RulesService],
   templateUrl: './rule-list.component.html',
   styleUrl: './rule-list.component.scss',
@@ -16,7 +17,7 @@ export class RuleListComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
 
-  constructor(private rulesService: RulesService) {}
+  private rulesService = inject(RulesService);
 
   ngOnInit(): void {
     this.rulesService.getRules().subscribe({

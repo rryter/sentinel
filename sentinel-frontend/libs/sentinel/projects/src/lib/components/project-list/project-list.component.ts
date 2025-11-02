@@ -7,10 +7,17 @@ import {
   ApiV1ProjectsGet200ResponseDataProjectsInner,
   ProjectsService,
 } from '@sentinel/api';
+import { PageHeaderComponent } from '@sentinel/layouts';
 
 @Component({
   selector: 'app-project-list',
-  imports: [CommonModule, RouterModule, HlmButton, HlmIcon],
+  imports: [
+    CommonModule,
+    RouterModule,
+    HlmButton,
+    HlmIcon,
+    PageHeaderComponent,
+  ],
   providers: [ProjectsService],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.scss'],

@@ -1,0 +1,93 @@
+<div
+  class="p-8 bg-white border-b border-gray-200 flex items-start justify-between gap-8"
+>
+  <!-- Page Header Content -->
+  <div class="flex-1">
+    <!-- Breadcrumb -->
+    @if (breadcrumbs() && breadcrumbs()!.length > 0) {
+      <div class="flex items-center gap-2 mb-3 text-sm">
+        @for (breadcrumb of breadcrumbs()!; track $index) {
+          @if ($index < breadcrumbs()!.length - 1) {
+            <a
+              [routerLink]="breadcrumb.route"
+              class="text-gray-600 no-underline transition-colors hover:text-indigo-600"
+            >
+              {{ breadcrumb.label }}
+            </a>
+            <svg
+              class="w-4 h-4 text-gray-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              />
+            </svg>
+          } @else {
+            <span class="text-gray-900 font-medium">{{
+              breadcrumb.label
+            }}</span>
+          }
+        }
+      </div>
+    }
+
+    <!-- Title -->
+    <h1
+      class="text-4xl font-bold leading-tight mb-2 tracking-tight text-gray-900"
+    >
+      {{ title() }}
+    </h1>
+
+    <!-- Description -->
+    @if (description()) {
+      <p class="text-base text-gray-600 leading-relaxed max-w-[65ch]">
+        {{ description() }}
+      </p>
+    }
+  </div>
+
+  <!-- Page Header Actions -->
+  @if (showActions()) {
+    <div class="flex gap-3 shrink-0">
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 h-11 px-5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 transition-all whitespace-nowrap hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 shadow-sm"
+      >
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+          />
+        </svg>
+        Filter
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 h-11 px-5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 transition-all whitespace-nowrap hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 shadow-sm"
+      >
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z"
+          />
+        </svg>
+        Sort
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 h-11 px-5 text-sm font-medium rounded-md border-0 bg-indigo-600 text-white transition-all whitespace-nowrap hover:bg-indigo-700 hover:shadow-md active:bg-indigo-800 active:shadow-none shadow-sm"
+      >
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+          />
+        </svg>
+        New Scan
+      </button>
+    </div>
+  }
+</div>

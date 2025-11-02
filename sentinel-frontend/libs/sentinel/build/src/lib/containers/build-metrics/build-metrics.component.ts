@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  input,
   OnInit,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +16,7 @@ import {
   BuildMetricsSelectorComponent,
   RoutingService,
 } from '@shared/ui-custom';
-
+import { PageHeaderComponent } from '@sentinel/layouts';
 import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../../../../../apps/sentinel/src/environments/environment';
 import { BuildMetricsChartComponent } from '../../components/build-metrics-chart/build-metrics-chart.component';
@@ -42,11 +43,21 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
     BuildMetricsSelectorComponent,
     BrnSelectImports,
     HlmSelectImports,
+    PageHeaderComponent,
   ],
   providers: [provideIcons({ lucideChevronDown })],
-  template: `
+  template: `<lib-page-header
+      [title]="'Build Metrics'"
+      [description]="
+        'Real-time build analytics and performance benchmarks for your codebase'
+      "
+      [showActions]="false"
+      [breadcrumbs]="[
+        { label: 'Projects', route: '/projects' },
+        { label: 'asd', route: '/projects/' + projectId() },
+      ]"
+    ></lib-page-header>
     <div class="p-4">
-      <h1 class="text-2xl font-bold mb-4">Build Metrics</h1>
       <div class="mb-4">
         <sen-build-metrics-selector
           [options]="intervalOptions"
@@ -63,12 +74,12 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
       } @else {
         <div class="text-center text-gray-500">Loading...</div>
       }
-    </div>
-  `,
+    </div> `,
   styles: [``],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BuildMetricsComponent implements OnInit {
+  projectId = input();
   metrics$: Observable<BuildMetricsResponse['metrics']> | undefined;
   intervalOptions: any[] = AVAILABLE_INTERVALS.map((interval) => ({
     id: interval,

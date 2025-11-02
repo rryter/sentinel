@@ -3,7 +3,7 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmToaster } from '@spartan-ng/helm/sonner';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   ApiV1ProjectsProjectIdRulesGet200ResponseRulesInner,
@@ -16,6 +16,7 @@ import { toast } from 'ngx-sonner';
 import { map, Subject } from 'rxjs';
 import { ObfuscatedPipe } from '../pipes/obfuscated.pipe';
 import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-api-token-dialog.component';
+import { PageHeaderComponent } from '@sentinel/layouts';
 
 @Component({
   selector: 'lib-settings',
@@ -25,6 +26,7 @@ import { UpdateApiTokenDialogComponent } from './update-api-token-dialog/update-
     HlmLabel,
     HlmSwitch,
     ObfuscatedPipe,
+    PageHeaderComponent,
     HlmToaster,
   ],
   templateUrl: './settings.component.html',
@@ -39,7 +41,7 @@ export class SettingsComponent {
   apiToken = 'a3e363b4ea23b0b17edb87a6609f9a0bf3b30f0515d4a52f1d093267bbf689d8';
 
   rules$ = this.rulesService.apiV1RulesGet();
-
+  projectId = input();
   toggleRule$ = new Subject();
 
   constructor() {

@@ -1,18 +1,18 @@
-import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, input, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   AnalysisJobsService,
   ApiV1AnalysisJobsGet200ResponseDataInner,
   ProjectsService,
 } from '@sentinel/api';
+import { PageHeaderComponent } from '@sentinel/layouts';
 
 import { map, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'sen-lint-list',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PageHeaderComponent],
   providers: [DatePipe],
   templateUrl: './lint-list.component.html',
   styleUrls: ['./lint-list.component.scss'],
@@ -25,12 +25,11 @@ export class LintListComponent implements OnInit {
   projectMap = new Map<number, string>();
   currentProjectName = 'sentinel';
   Math = Math;
+  projectId = input();
 
-  constructor(
-    private analysisService: AnalysisJobsService,
-    private projectsService: ProjectsService,
-    private datePipe: DatePipe,
-  ) {}
+  private analysisService = inject(AnalysisJobsService);
+  private projectsService = inject(ProjectsService);
+  private datePipe = inject(DatePipe);
 
   ngOnInit(): void {
     this.isLoading = true;

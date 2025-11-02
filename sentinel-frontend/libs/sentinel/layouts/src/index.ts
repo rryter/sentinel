@@ -2,3 +2,4 @@ export { AuthComponentComponent } from './lib/layouts/auth/auth-component.compon
 export { LayoutsComponent } from './lib/layouts/layouts.component';
 export { MainLayoutComponent } from './lib/layouts/main/main-layout.component';
 export { SidebarNavComponent } from './lib/components/sidebar-nav/sidebar-nav.component';
+export { PageHeaderComponent } from './lib/components/page-header/page-header.component';
