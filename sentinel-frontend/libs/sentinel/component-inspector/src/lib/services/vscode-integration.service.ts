@@ -19,11 +19,12 @@ export class VscodeIntegrationService {
   }
 
   /**
-   * Open component file in VS Code
+   * Open component file in code editor
+   * Supports VS Code, IntelliJ, Vim, Sublime, and 20+ other editors via auto-detection
    */
   async openInVSCode(componentInfo: ComponentInfo): Promise<void> {
     if (!this.config?.vscode.enabled) {
-      console.warn('[ComponentInspector] VS Code integration is disabled');
+      console.warn('[ComponentInspector] Editor integration is disabled');
       return;
     }
 
@@ -77,7 +78,7 @@ export class VscodeIntegrationService {
 
       if (response.success) {
         console.log(
-          `[ComponentInspector] Opened file in ${this.config.vscode.editorVariant}: ${filePath}:${line}`
+          `[ComponentInspector] Opened file in editor: ${filePath}:${line}`
         );
         return true;
       }

@@ -80,6 +80,7 @@
     "jiti": "2.6.1",
     "jsdom": "27.0.1",
     "jsonc-eslint-parser": "2.4.1",
+    "launch-editor-middleware": "^2.12.0",
     "ng-packagr": "^21.0.0-next.0",
     "nx": "22.0.1",
     "postcss": "8.5.6",

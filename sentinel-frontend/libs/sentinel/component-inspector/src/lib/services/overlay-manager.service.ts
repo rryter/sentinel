@@ -23,7 +23,7 @@ export class OverlayManagerService {
    */
   initialize(
     config: InspectorConfig,
-    onClickCallback: (info: ComponentInfo) => void
+    onClickCallback: (info: ComponentInfo) => void,
   ): void {
     this.config = config;
     this.onClickCallback = onClickCallback;
@@ -143,7 +143,8 @@ export class OverlayManagerService {
     badge.style.userSelect = 'none';
     badge.style.whiteSpace = 'nowrap';
     badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-    badge.style.transition = 'transform 0.15s ease, background-color 0.15s ease';
+    badge.style.transition =
+      'transform 0.15s ease, background-color 0.15s ease';
     badge.textContent = componentInfo.selector;
 
     // Hover effect
@@ -208,7 +209,7 @@ export class OverlayManagerService {
    */
   private positionOverlay(
     element: Element,
-    overlayElements: OverlayElements
+    overlayElements: OverlayElements,
   ): void {
     const rect = element.getBoundingClientRect();
 
@@ -304,7 +305,7 @@ export class OverlayManagerService {
       },
       {
         rootMargin: '50px', // Pre-render slightly off-screen
-      }
+      },
     );
   }
 }

@@ -43,7 +43,7 @@ export class ComponentDetectorService {
   /**
    * Initialize component detection
    */
-  initialize(throttleMs: number = 200): void {
+  initialize(throttleMs = 200): void {
     // Initial DOM scan
     this.scanForComponents(document.body);
 
