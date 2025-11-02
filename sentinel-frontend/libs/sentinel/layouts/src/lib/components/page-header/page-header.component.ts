@@ -4,10 +4,7 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'lib-page-header',
-  imports: [
-    CommonModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, RouterModule],
   templateUrl: './page-header.component.html',
   styleUrl: './page-header.component.scss',
 })

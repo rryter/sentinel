@@ -147,15 +147,24 @@ export class OverlayManagerService {
       'transform 0.15s ease, background-color 0.15s ease';
     badge.textContent = componentInfo.selector;
 
-    // Hover effect
+    // Hover effect - highlight both badge and container
     badge.addEventListener('mouseenter', () => {
       badge.style.transform = 'scale(1.05)';
       badge.style.backgroundColor = 'rgb(80, 150, 220)';
+      // Highlight the component container with red
+      container.style.backgroundColor = 'rgba(255, 0, 0, 0.15)';
+      container.style.borderColor = 'rgb(255, 0, 0)';
+      container.style.borderWidth = '3px';
     });
 
     badge.addEventListener('mouseleave', () => {
+      if (!this.config) return;
       badge.style.transform = 'scale(1)';
-      badge.style.backgroundColor = this.config!.overlay.borderColor;
+      badge.style.backgroundColor = this.config.overlay.borderColor;
+      // Reset the component container
+      container.style.backgroundColor = this.config.overlay.backgroundColor;
+      container.style.borderColor = this.config.overlay.borderColor;
+      container.style.borderWidth = `${this.config.overlay.borderWidth}px`;
     });
 
     // Click handler
