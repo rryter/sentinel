@@ -14,36 +14,22 @@ A zero-config Angular component inspector that overlays visual borders on render
 
 ## Quick Start
 
-### 1. Component Manifest (Auto-Generated)
+### 1. Start Development Environment
 
-The component manifest is **automatically generated** on every build and hot reload during development. No manual action needed!
-
-The manifest maps component classes to file paths and is regenerated automatically at `apps/sentinel/src/assets/component-manifest.json`.
-
-You can also manually trigger generation if needed:
-```bash
-npx nx run sentinel:generate-manifest
-```
-
-### 2. Start VS Code Opener Server (Optional but Recommended)
-
-In a separate terminal, run:
+Simply run:
 
 ```bash
-npm run vscode-opener
+npm run dev
 ```
 
-This starts a Node.js server on port 3001 that handles opening files in VS Code.
+This automatically starts:
+- ✅ **Angular dev server** (port 4200) with hot reload
+- ✅ **VS Code opener server** (port 3001) for file opening
+- ✅ **Component manifest** auto-regeneration on every build/hot reload
 
-### 3. Run the App
+Everything runs in parallel - no manual setup required!
 
-```bash
-npm start
-```
-
-The component manifest will be automatically regenerated on every hot reload as you develop.
-
-### 4. Toggle Inspector
+### 2. Toggle Inspector
 
 - Navigate to your app in the browser
 - Press `Ctrl+Shift+I` (Windows/Linux) or `Cmd+Shift+I` (Mac)
@@ -237,10 +223,13 @@ For more details, see [tools/README-component-manifest.md](../../../tools/README
 The inspector only works in development mode (`isDevMode() === true`).
 
 To test:
-1. Start the app: `npm start`
-2. Start VS Code opener: `npm run vscode-opener`
-3. Open browser DevTools console to see inspector logs
-4. Press `Ctrl+Shift+I` to toggle
+1. Start the dev environment: `npm run dev`
+2. Open browser DevTools console to see inspector logs
+3. Press `Ctrl+Shift+I` to toggle
+
+**Alternative commands:**
+- `npm start` - Dev server only (without VS Code opener)
+- `npm run vscode-opener` - VS Code opener only (if running separately)
 
 ## Troubleshooting
 

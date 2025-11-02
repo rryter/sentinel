@@ -21,9 +21,12 @@ cd sentinel-backend
 bundle install
 rails server
 
-# Frontend only (dev server on port 4200)
+# Frontend only (dev server on port 4200 + VS Code opener on port 3001)
 cd sentinel-frontend
 npm install
+npm run dev  # Recommended: Starts dev server + VS Code opener + auto-manifest generation
+
+# Alternative: Dev server only (without VS Code opener)
 npx nx serve sentinel
 
 # Analysis service

@@ -134,6 +134,24 @@
       "options": {
         "command": "ts-node tools/generate-component-manifest.ts"
       }
+    },
+    "vscode-opener": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/vscode-opener-server.js",
+        "color": true
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "npx nx serve sentinel",
+          "npx nx vscode-opener sentinel"
+        ],
+        "parallel": true,
+        "color": true
+      }
     }
   }
 }
