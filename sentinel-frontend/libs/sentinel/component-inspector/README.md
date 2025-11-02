@@ -14,15 +14,16 @@ A zero-config Angular component inspector that overlays visual borders on render
 
 ## Quick Start
 
-### 1. Generate Component Manifest
+### 1. Component Manifest (Auto-Generated)
 
-First, generate the component manifest (maps component classes to file paths):
+The component manifest is **automatically generated** on every build and hot reload during development. No manual action needed!
 
+The manifest maps component classes to file paths and is regenerated automatically at `apps/sentinel/src/assets/component-manifest.json`.
+
+You can also manually trigger generation if needed:
 ```bash
 npx nx run sentinel:generate-manifest
 ```
-
-This creates `apps/sentinel/src/assets/component-manifest.json` with metadata for all components.
 
 ### 2. Start VS Code Opener Server (Optional but Recommended)
 
@@ -39,6 +40,8 @@ This starts a Node.js server on port 3001 that handles opening files in VS Code.
 ```bash
 npm start
 ```
+
+The component manifest will be automatically regenerated on every hot reload as you develop.
 
 ### 4. Toggle Inspector
 
@@ -148,13 +151,16 @@ provideComponentInspector({
 
 ## How It Works
 
-### 1. Build-Time Manifest Generation
+### 1. Automatic Manifest Generation
 
-The `generate-component-manifest.ts` script:
-- Parses all `*.component.ts` files using TypeScript Compiler API
-- Extracts `@Component` decorator metadata (selector, class name)
-- Maps component classes to source file paths
-- Generates JSON manifest
+The manifest generation happens automatically via an esbuild plugin (`esbuild-component-manifest-plugin.ts`):
+- **Runs on every build**: Initial build, hot reloads, and full rebuilds
+- **TypeScript AST parsing**: Uses TypeScript Compiler API to parse `*.component.ts` files
+- **Metadata extraction**: Extracts `@Component` decorator metadata (selector, class name, file paths)
+- **JSON output**: Generates manifest at `apps/sentinel/src/assets/component-manifest.json`
+- **Performance**: Typically completes in 50-150ms for ~100 components
+
+The plugin is configured in [apps/sentinel/project.json](../../apps/sentinel/project.json) and runs seamlessly in the background.
 
 ### 2. Runtime Component Detection
 
@@ -214,13 +220,17 @@ tools/
 └── vscode-opener-server.js          # Node.js backend for VS Code
 ```
 
-### Regenerating Manifest
+### Manifest Generation
 
-Run after adding/removing components:
+The manifest is **automatically regenerated** on every build and hot reload. You don't need to manually regenerate it!
+
+If you need to manually trigger generation (e.g., in CI/CD):
 
 ```bash
 npx nx run sentinel:generate-manifest
 ```
+
+For more details, see [tools/README-component-manifest.md](../../../tools/README-component-manifest.md).
 
 ### Testing
 
@@ -262,13 +272,12 @@ To test:
 ## Limitations
 
 - **Development mode only**: Relies on `__ngContext__` which is removed in production
-- **File paths**: Requires build-time manifest generation
+- **File paths**: Requires build-time manifest generation (handled automatically)
 - **VS Code only**: Currently only supports VS Code (not other editors)
-- **Manifest staleness**: Must regenerate when components are added/removed
 
 ## Future Enhancements
 
-- [ ] Auto-regenerate manifest on file changes (watch mode)
+- [x] Auto-regenerate manifest on file changes (watch mode) ✅ **Implemented via esbuild plugin**
 - [ ] Support for other editors (WebStorm, Sublime, etc.)
 - [ ] Component hierarchy visualization
 - [ ] Input/output metadata display
