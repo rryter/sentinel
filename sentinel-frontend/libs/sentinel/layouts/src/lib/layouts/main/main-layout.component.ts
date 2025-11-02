@@ -6,6 +6,7 @@ import { Component, inject, input, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import { RoutingService } from '@shared/ui-custom';
+import { SidebarNavComponent } from '../../components/sidebar-nav/sidebar-nav.component';
 
 @Component({
   selector: 'lib-main-layout',
@@ -16,6 +17,7 @@ import { RoutingService } from '@shared/ui-custom';
     NgIcon,
     HlmIcon,
     HlmSeparator,
+    SidebarNavComponent,
   ],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
