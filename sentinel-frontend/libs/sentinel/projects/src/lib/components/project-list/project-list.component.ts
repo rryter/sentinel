@@ -1,7 +1,7 @@
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   ApiV1ProjectsGet200ResponseDataProjectsInner,
@@ -27,7 +27,7 @@ export class ProjectListComponent implements OnInit {
   errorMessage = '';
   projects: ApiV1ProjectsGet200ResponseDataProjectsInner[] = [];
 
-  constructor(private projectsService: ProjectsService) {}
+  private projectsService = inject(ProjectsService);
 
   ngOnInit() {
     this.loadProjects();
