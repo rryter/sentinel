@@ -10,15 +10,7 @@ import { SidebarNavComponent } from '../../components/sidebar-nav/sidebar-nav.co
 
 @Component({
   selector: 'lib-main-layout',
-  imports: [
-    CommonModule,
-    RouterModule,
-    HlmButton,
-    NgIcon,
-    HlmIcon,
-    HlmSeparator,
-    SidebarNavComponent,
-  ],
+  imports: [CommonModule, RouterModule, HlmButton, SidebarNavComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
 })
