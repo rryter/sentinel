@@ -55,17 +55,16 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
         { label: 'Projects', route: '/projects' },
         { label: 'asd', route: '/projects/' + projectId() },
       ]"
+    >
+      <sen-build-metrics-selector
+        [options]="intervalOptions"
+        [selectedValue]="selectedInterval"
+        (valueChange)="onIntervalChange($event)"
+        label="Select Interval"
+        placeholder="Choose an interval"
+      ></sen-build-metrics-selector
     ></lib-page-header>
-    <div class="p-4">
-      <div class="mb-4">
-        <sen-build-metrics-selector
-          [options]="intervalOptions"
-          [selectedValue]="selectedInterval"
-          (valueChange)="onIntervalChange($event)"
-          label="Select Interval"
-          placeholder="Choose an interval"
-        ></sen-build-metrics-selector>
-      </div>
+    <div class="p-8">
       @if (metrics$ | async; as metrics) {
         <sentinel-build-metrics-chart
           [metrics]="metrics"

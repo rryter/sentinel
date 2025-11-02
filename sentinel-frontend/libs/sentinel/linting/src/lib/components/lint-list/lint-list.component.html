@@ -10,27 +10,6 @@
   ]"
 ></lib-page-header>
 
-<header class="sm:flex sm:items-center mb-8">
-  <div class="sm:flex-auto">
-    <p class="mt-2 text-sm text-gray-700">Project: {{ currentProjectName }}</p>
-  </div>
-
-  <div class="mt-4 sm:mt-0 sm:ml-16">
-    <div
-      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
-    >
-      <svg class="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-        <path
-          fill-rule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clip-rule="evenodd"
-        />
-      </svg>
-      All scans completed
-    </div>
-  </div>
-</header>
-
 <!-- Loading State -->
 <div class="flex justify-center py-8" *ngIf="isLoading">
   <div
@@ -92,7 +71,7 @@
 
 <!-- Performance Analysis Table -->
 <div
-  class="overflow-hidden rounded-lg border border-gray-200"
+  class="overflow-hidden rounded-lg border border-gray-200 p-8"
   *ngIf="!isLoading && !errorMessage && jobs.length > 0"
 >
   <table class="min-w-full divide-y divide-gray-200">
