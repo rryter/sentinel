@@ -51,7 +51,6 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
       [description]="
         'Real-time build analytics and performance benchmarks for your codebase'
       "
-      [showActions]="false"
       [breadcrumbs]="[
         { label: 'Projects', route: '/projects' },
         { label: 'asd', route: '/projects/' + projectId() },

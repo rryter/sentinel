@@ -15,5 +15,4 @@ export class PageHeaderComponent {
   title = input.required<string>();
   description = input<string>();
   breadcrumbs = input<Array<{ label: string; route?: string }>>();
-  showActions = input<boolean>(true);
 }
