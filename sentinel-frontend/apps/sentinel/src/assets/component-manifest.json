@@ -1,0 +1,373 @@
+{
+  "generated": "2025-11-02T19:23:49.648Z",
+  "components": [
+    {
+      "className": "BuildListComponent",
+      "selector": "app-build-list",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/build/src/lib/build/components/build-list/build-list.component.ts",
+      "relativePath": "libs/sentinel/build/src/lib/build/components/build-list/build-list.component.ts",
+      "library": "sentinel/build",
+      "line": 6
+    },
+    {
+      "className": "ContentTileComponent",
+      "selector": "app-content-tile",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/content-tile/content-tile.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/content-tile/content-tile.component.ts",
+      "library": "shared/ui-custom",
+      "line": 6
+    },
+    {
+      "className": "DetailsContainerComponent",
+      "selector": "app-details-container",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/content-tile/details-container/details-container.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/content-tile/details-container/details-container.component.ts",
+      "library": "shared/ui-custom",
+      "line": 4
+    },
+    {
+      "className": "GitHubCallbackComponent",
+      "selector": "app-github-callback",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/apps/sentinel/src/app/auth/github-callback/github-callback.component.ts",
+      "relativePath": "apps/sentinel/src/app/auth/github-callback/github-callback.component.ts",
+      "library": "apps/sentinel",
+      "line": 5
+    },
+    {
+      "className": "LoginComponent",
+      "selector": "app-login",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/apps/sentinel/src/app/auth/login/login.component.ts",
+      "relativePath": "apps/sentinel/src/app/auth/login/login.component.ts",
+      "library": "apps/sentinel",
+      "line": 9
+    },
+    {
+      "className": "PaginationComponent",
+      "selector": "app-pagination",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/pagination/pagination.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/pagination/pagination.component.ts",
+      "library": "shared/ui-custom",
+      "line": 23
+    },
+    {
+      "className": "ProjectCreateComponent",
+      "selector": "app-project-create",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/projects/src/lib/components/project-create/project-create.component.ts",
+      "relativePath": "libs/sentinel/projects/src/lib/components/project-create/project-create.component.ts",
+      "library": "sentinel/projects",
+      "line": 22
+    },
+    {
+      "className": "ProjectDetailComponent",
+      "selector": "app-project-detail",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/projects/src/lib/components/project-detail/project-detail.component.ts",
+      "relativePath": "libs/sentinel/projects/src/lib/components/project-detail/project-detail.component.ts",
+      "library": "sentinel/projects",
+      "line": 11
+    },
+    {
+      "className": "ProjectListComponent",
+      "selector": "app-project-list",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/projects/src/lib/components/project-list/project-list.component.ts",
+      "relativePath": "libs/sentinel/projects/src/lib/components/project-list/project-list.component.ts",
+      "library": "sentinel/projects",
+      "line": 12
+    },
+    {
+      "className": "RegistrationPageComponent",
+      "selector": "app-registration",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/apps/sentinel/src/app/auth/registration/registration.component.ts",
+      "relativePath": "apps/sentinel/src/app/auth/registration/registration.component.ts",
+      "library": "apps/sentinel",
+      "line": 3
+    },
+    {
+      "className": "AppComponent",
+      "selector": "app-root",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/apps/sentinel/src/app/app.component.ts",
+      "relativePath": "apps/sentinel/src/app/app.component.ts",
+      "library": "apps/sentinel",
+      "line": 10
+    },
+    {
+      "className": "TestBadgeComponent",
+      "selector": "app-test-badge",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/test-badge/test-badge.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/test-badge/test-badge.component.ts",
+      "library": "shared/ui-custom",
+      "line": 18
+    },
+    {
+      "className": "TileDetailComponent",
+      "selector": "app-tile-detail",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/content-tile/tile-detail/tile-detail.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/content-tile/tile-detail/tile-detail.component.ts",
+      "library": "shared/ui-custom",
+      "line": 6
+    },
+    {
+      "className": "TileDividerComponent",
+      "selector": "app-tile-divider",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/content-tile/tile-divider/tile-divider.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/content-tile/tile-divider/tile-divider.component.ts",
+      "library": "shared/ui-custom",
+      "line": 4
+    },
+    {
+      "className": "AuthComponentComponent",
+      "selector": "lib-auth-component",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/layouts/auth/auth-component.component.ts",
+      "relativePath": "libs/sentinel/layouts/src/lib/layouts/auth/auth-component.component.ts",
+      "library": "sentinel/layouts",
+      "line": 5
+    },
+    {
+      "className": "ComponentInspectorComponent",
+      "selector": "lib-component-inspector",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/component-inspector/src/lib/component-inspector/component-inspector.component.ts",
+      "relativePath": "libs/sentinel/component-inspector/src/lib/component-inspector/component-inspector.component.ts",
+      "library": "sentinel/component-inspector",
+      "line": 3
+    },
+    {
+      "className": "DevelopmentComponent",
+      "selector": "lib-development",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/development/development.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/development/development.component.ts",
+      "library": "shared/ui-custom",
+      "line": 4
+    },
+    {
+      "className": "LayoutsComponent",
+      "selector": "lib-layouts",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/layouts/layouts.component.ts",
+      "relativePath": "libs/sentinel/layouts/src/lib/layouts/layouts.component.ts",
+      "library": "sentinel/layouts",
+      "line": 4
+    },
+    {
+      "className": "LintDetailComponent",
+      "selector": "lib-lint-detail",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-detail/lint-detail.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-detail/lint-detail.component.ts",
+      "library": "sentinel/linting",
+      "line": 5
+    },
+    {
+      "className": "LintHistoryComponent",
+      "selector": "lib-lint-history",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-history/lint-history.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-history/lint-history.component.ts",
+      "library": "sentinel/linting",
+      "line": 35
+    },
+    {
+      "className": "LintMetricsComponent",
+      "selector": "lib-lint-metrics",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-metrics/lint-metrics.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-metrics/lint-metrics.component.ts",
+      "library": "sentinel/linting",
+      "line": 3
+    },
+    {
+      "className": "LoginComponent",
+      "selector": "lib-login",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/login/src/lib/login/login.component.ts",
+      "relativePath": "libs/shared/login/src/lib/login/login.component.ts",
+      "library": "shared/login",
+      "line": 11
+    },
+    {
+      "className": "MainLayoutComponent",
+      "selector": "lib-main-layout",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/layouts/main/main-layout.component.ts",
+      "relativePath": "libs/sentinel/layouts/src/lib/layouts/main/main-layout.component.ts",
+      "library": "sentinel/layouts",
+      "line": 8
+    },
+    {
+      "className": "PageHeaderComponent",
+      "selector": "lib-page-header",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/components/page-header/page-header.component.ts",
+      "relativePath": "libs/sentinel/layouts/src/lib/components/page-header/page-header.component.ts",
+      "library": "sentinel/layouts",
+      "line": 5
+    },
+    {
+      "className": "RegistrationComponent",
+      "selector": "lib-registration",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/login/src/lib/registration/registration.component.ts",
+      "relativePath": "libs/shared/login/src/lib/registration/registration.component.ts",
+      "library": "shared/login",
+      "line": 23
+    },
+    {
+      "className": "SettingsComponent",
+      "selector": "lib-settings",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/settings/src/lib/settings/settings.component.ts",
+      "relativePath": "libs/sentinel/settings/src/lib/settings/settings.component.ts",
+      "library": "sentinel/settings",
+      "line": 21
+    },
+    {
+      "className": "SidebarNavComponent",
+      "selector": "lib-sidebar-nav",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/components/sidebar-nav/sidebar-nav.component.ts",
+      "relativePath": "libs/sentinel/layouts/src/lib/components/sidebar-nav/sidebar-nav.component.ts",
+      "library": "sentinel/layouts",
+      "line": 5
+    },
+    {
+      "className": "UpdateApiTokenDialogComponent",
+      "selector": "lib-update-api-token-dialog",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/settings/src/lib/settings/update-api-token-dialog/update-api-token-dialog.component.ts",
+      "relativePath": "libs/sentinel/settings/src/lib/settings/update-api-token-dialog/update-api-token-dialog.component.ts",
+      "library": "sentinel/settings",
+      "line": 17
+    },
+    {
+      "className": "DialogComponent",
+      "selector": "saas-dialog",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/dialog/dialog.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/dialog/dialog.component.ts",
+      "library": "shared/ui-custom",
+      "line": 4
+    },
+    {
+      "className": "ErrorDisplayComponent",
+      "selector": "saas-error-display",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/error/display/error-display.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/error/display/error-display.component.ts",
+      "library": "shared/ui-custom",
+      "line": 6
+    },
+    {
+      "className": "NotFound404Component",
+      "selector": "saas-not-found-404",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/not-found-404/not-found-404.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/not-found-404/not-found-404.component.ts",
+      "library": "shared/ui-custom",
+      "line": 6
+    },
+    {
+      "className": "AnalysisRunChartComponent",
+      "selector": "sen-analysis-run-chart",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/rules/components/details/analysis-run-chart/analysis-run-chart.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/rules/components/details/analysis-run-chart/analysis-run-chart.component.ts",
+      "library": "sentinel/linting",
+      "line": 59
+    },
+    {
+      "className": "BuildMetricsSelectorComponent",
+      "selector": "sen-build-metrics-selector",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/build-metrics-selector/build-metrics-selector.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/build-metrics-selector/build-metrics-selector.component.ts",
+      "library": "shared/ui-custom",
+      "line": 21
+    },
+    {
+      "className": "LintCreateComponent",
+      "selector": "sen-lint-create",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-create/lint-create.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-create/lint-create.component.ts",
+      "library": "sentinel/linting",
+      "line": 39
+    },
+    {
+      "className": "LintListComponent",
+      "selector": "sen-lint-list",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-list/lint-list.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-list/lint-list.component.ts",
+      "library": "sentinel/linting",
+      "line": 13
+    },
+    {
+      "className": "LintResultsComponent",
+      "selector": "sen-lint-results",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-results/lint-results.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-results/lint-results.component.ts",
+      "library": "sentinel/linting",
+      "line": 31
+    },
+    {
+      "className": "LintStatusComponent",
+      "selector": "sen-lint-status",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-status/lint-status.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-status/lint-status.component.ts",
+      "library": "sentinel/linting",
+      "line": 18
+    },
+    {
+      "className": "LintSummaryItemComponent",
+      "selector": "sen-lint-summary-item",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-summary-item/lint-summary-item.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/lint-summary-item/lint-summary-item.component.ts",
+      "library": "sentinel/linting",
+      "line": 6
+    },
+    {
+      "className": "MarkdownRendererComponent",
+      "selector": "sen-markdown-renderer",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/markdown/markdown-renderer.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/markdown/markdown-renderer.component.ts",
+      "library": "shared/ui-custom",
+      "line": 5
+    },
+    {
+      "className": "PerformanceMetricsComponent",
+      "selector": "sen-performance-metrics",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/rules/components/details/performance-metrics/performance-metrics.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/rules/components/details/performance-metrics/performance-metrics.component.ts",
+      "library": "sentinel/linting",
+      "line": 32
+    },
+    {
+      "className": "ProjectSelectorComponent",
+      "selector": "sen-project-selector",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/project-selector/project-selector.component.ts",
+      "relativePath": "libs/shared/ui-custom/src/lib/components/project-selector/project-selector.component.ts",
+      "library": "shared/ui-custom",
+      "line": 8
+    },
+    {
+      "className": "RuleDetailsComponent",
+      "selector": "sen-rule-details",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/rules/components/details/details.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/rules/components/details/details.component.ts",
+      "library": "sentinel/linting",
+      "line": 26
+    },
+    {
+      "className": "RuleListComponent",
+      "selector": "sen-rule-list",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/rules/components/list/rule-list.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/rules/components/list/rule-list.component.ts",
+      "library": "sentinel/linting",
+      "line": 8
+    },
+    {
+      "className": "UploaderComponent",
+      "selector": "sen-uploader",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/rules/components/uploader/uploader.component.ts",
+      "relativePath": "libs/sentinel/linting/src/lib/components/rules/components/uploader/uploader.component.ts",
+      "library": "sentinel/linting",
+      "line": 13
+    },
+    {
+      "className": "BuildMetricsComponent",
+      "selector": "sentinel-build-metrics",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/build/src/lib/containers/build-metrics/build-metrics.component.ts",
+      "relativePath": "libs/sentinel/build/src/lib/containers/build-metrics/build-metrics.component.ts",
+      "library": "sentinel/build",
+      "line": 37
+    },
+    {
+      "className": "BuildMetricsChartComponent",
+      "selector": "sentinel-build-metrics-chart",
+      "filePath": "/Users/rryter/Projects/sentinel/sentinel-frontend/libs/sentinel/build/src/lib/components/build-metrics-chart/build-metrics-chart.component.ts",
+      "relativePath": "libs/sentinel/build/src/lib/components/build-metrics-chart/build-metrics-chart.component.ts",
+      "library": "sentinel/build",
+      "line": 31
+    }
+  ]
+}

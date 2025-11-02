@@ -101,7 +101,10 @@
       "@spartan-ng/helm/typography": [
         "libs/ui/ui-typography-helm/src/index.ts"
       ],
-      "@spartan-ng/helm/utils": ["libs/ui/ui-utils-helm/src/index.ts"]
+      "@spartan-ng/helm/utils": ["libs/ui/ui-utils-helm/src/index.ts"],
+      "@sentinel/component-inspector": [
+        "libs/sentinel/component-inspector/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -32,6 +32,11 @@
           {
             "glob": "**/*",
             "input": "apps/sentinel/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "apps/sentinel/src/assets",
+            "output": "/assets"
           }
         ],
         "styles": [
@@ -115,6 +120,12 @@
         "buildTarget": "sentinel:build",
         "staticFilePath": "dist/apps/sentinel/browser",
         "spa": true
+      }
+    },
+    "generate-manifest": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "ts-node tools/generate-component-manifest.ts"
       }
     }
   }

@@ -1,5 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideZoneChangeDetection,
+  isDevMode,
+} from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import {
   provideRouter,
@@ -9,6 +13,7 @@ import {
 } from '@angular/router';
 
 import { provideIcons } from '@shared/ui-custom';
+import { provideComponentInspector } from '@sentinel/component-inspector';
 import { BarController, Colors, Legend } from 'chart.js';
 import { provideCharts } from 'ng2-charts';
 import { provideMarkdown } from 'ngx-markdown';
@@ -30,5 +35,17 @@ export const appConfig: ApplicationConfig = {
     provideMarkdown(),
     provideIcons(),
     provideAnimations(),
+    // Component Inspector (dev mode only)
+    ...(isDevMode()
+      ? provideComponentInspector({
+          filter: {
+            include: ['app-*', 'lib-*', 'saas-*', 'sen-*', 'sentinel-*'],
+            exclude: ['hlm-*', 'brn-*'], // Exclude Spartan UI
+          },
+          vscode: {
+            editorVariant: 'vscode-insiders',
+          },
+        })
+      : []),
   ],
 };
