@@ -13,6 +13,7 @@ import { ProjectsService } from '@sentinel/api';
 
 import { firstValueFrom } from 'rxjs';
 import { GitHubRepository, GitHubService } from '../../services/github.service';
+import { PageHeaderComponent } from '@sentinel/layouts';
 
 interface GroupedRepositories {
   [owner: string]: GitHubRepository[];
@@ -20,30 +21,25 @@ interface GroupedRepositories {
 
 @Component({
   selector: 'app-project-create',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, HlmButton],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    HlmButton,
+    PageHeaderComponent,
+  ],
   template: `
+    <lib-page-header
+      [title]="'Create New Project'"
+      [description]="
+        'Select a repository from GitHub or enter details manually.'
+      "
+    >
+      <button [routerLink]="'/projects'" type="button" hlmBtn variant="outline">
+        Back to Projects
+      </button>
+    </lib-page-header>
     <div class="px-4 sm:px-6 lg:px-8">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h1 class="text-base/7 font-semibold text-gray-900">
-            Project Information
-          </h1>
-          <p class="mt-1 text-sm/6 text-gray-600">
-            Select a repository from GitHub or enter details manually.
-          </p>
-        </div>
-        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button
-            [routerLink]="'/projects'"
-            type="button"
-            hlmBtn
-            variant="outline"
-          >
-            Back to Projects
-          </button>
-        </div>
-      </div>
-
       @if (!githubService.isAuthenticated()) {
         <div class="mt-8">
           <button

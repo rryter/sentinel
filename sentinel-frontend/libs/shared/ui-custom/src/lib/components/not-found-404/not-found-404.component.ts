@@ -1,6 +1,6 @@
 import { HlmButton } from '@spartan-ng/helm/button';
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -9,4 +9,10 @@ import { RouterLink } from '@angular/router';
   templateUrl: './not-found-404.component.html',
   styleUrl: './not-found-404.component.css',
 })
-export class NotFound404Component {}
+export class NotFound404Component {
+  private readonly location = inject(Location);
+
+  goBack(): void {
+    this.location.back();
+  }
+}
