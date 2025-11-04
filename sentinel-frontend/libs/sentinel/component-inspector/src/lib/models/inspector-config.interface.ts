@@ -34,6 +34,8 @@ export interface InspectorConfig {
     exclude?: string[];
     /** Hide standalone components */
     hideStandalone?: boolean;
+    /** Library filter: map of library name to visibility state */
+    libraries?: Record<string, boolean>;
   };
 
   /** Performance optimization settings */

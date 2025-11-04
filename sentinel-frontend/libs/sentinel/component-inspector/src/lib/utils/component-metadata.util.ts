@@ -86,8 +86,18 @@ export function shouldShowComponent(
     include?: string[];
     exclude?: string[];
     hideStandalone?: boolean;
+    libraries?: Record<string, boolean>;
   }
 ): boolean {
+  // Check library filter first (highest priority)
+  if (filter.libraries && info.library) {
+    const isLibraryEnabled = filter.libraries[info.library];
+    // If library is explicitly set to false, hide component
+    if (isLibraryEnabled === false) {
+      return false;
+    }
+  }
+
   // Hide standalone if configured
   if (filter.hideStandalone && info.isStandalone) {
     return false;

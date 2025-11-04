@@ -86,6 +86,20 @@ export class ComponentDetectorService {
   }
 
   /**
+   * Get the loaded component manifest
+   */
+  getManifest(): ComponentManifest | null {
+    return this.manifest;
+  }
+
+  /**
+   * Get color for a library name (public method for config panel)
+   */
+  getColorForLibrary(libraryName: string): string {
+    return this.getLibraryColor(libraryName);
+  }
+
+  /**
    * Generate a deterministic color for a library name
    */
   private getLibraryColor(libraryName: string): string {

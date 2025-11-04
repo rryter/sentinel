@@ -1,0 +1,40 @@
+@if (isVisible()) {
+  <div class="inspector-config-panel">
+    <div class="panel-header">
+      <h3>Component Inspector Settings</h3>
+      <button class="close-btn" (click)="hide()" aria-label="Close">×</button>
+    </div>
+
+    <div class="panel-content">
+      <div class="section">
+        <div class="section-header">
+          <h4>Library Filters</h4>
+          <div class="bulk-actions">
+            <button class="btn-small" (click)="toggleAll(true)">Show All</button>
+            <button class="btn-small" (click)="toggleAll(false)">Hide All</button>
+          </div>
+        </div>
+
+        <div class="library-list">
+          @for (library of libraries(); track library.name) {
+            <div class="library-item">
+              <label class="library-label">
+                <input
+                  type="checkbox"
+                  [checked]="library.enabled"
+                  (change)="toggleLibrary(library.name)"
+                />
+                <span
+                  class="library-color-indicator"
+                  [style.background-color]="library.color"
+                ></span>
+                <span class="library-name">{{ library.name }}</span>
+                <span class="library-count">({{ library.componentCount }})</span>
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,4 +1,14 @@
-import { Injectable, inject, signal, effect, isDevMode } from '@angular/core';
+import {
+  Injectable,
+  inject,
+  signal,
+  effect,
+  isDevMode,
+  ComponentRef,
+  ApplicationRef,
+  createComponent,
+  EnvironmentInjector,
+} from '@angular/core';
 import { fromEvent } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ComponentDetectorService } from './component-detector.service';
@@ -8,6 +18,7 @@ import type { ComponentInfo } from '../models/component-info.interface';
 import type { InspectorConfig, DeepPartial } from '../models/inspector-config.interface';
 import { DEFAULT_INSPECTOR_CONFIG } from '../models/inspector-config.interface';
 import { shouldShowComponent } from '../utils/component-metadata.util';
+import { InspectorConfigPanelComponent } from '../components/inspector-config-panel/inspector-config-panel.component';
 
 @Injectable({
   providedIn: 'root',
@@ -16,10 +27,13 @@ export class ComponentInspectorService {
   private detector = inject(ComponentDetectorService);
   private overlayManager = inject(OverlayManagerService);
   private vscodeIntegration = inject(VscodeIntegrationService);
+  private appRef = inject(ApplicationRef);
+  private injector = inject(EnvironmentInjector);
 
   private isActive = signal(false);
   private config = signal<InspectorConfig>(DEFAULT_INSPECTOR_CONFIG);
   private initialized = false;
+  private configPanelRef: ComponentRef<InspectorConfigPanelComponent> | null = null;
 
   constructor() {
     // Only initialize in development mode
@@ -88,8 +102,12 @@ export class ComponentInspectorService {
     // Initialize component detector
     this.detector.initialize(fullConfig.performance.throttleMs);
 
-    // Setup keyboard shortcut
+    // Setup keyboard shortcuts
     this.setupKeyboardShortcut();
+    this.setupConfigPanelShortcut();
+
+    // Create config panel component
+    this.createConfigPanel();
 
     this.initialized = true;
 
@@ -97,6 +115,7 @@ export class ComponentInspectorService {
     console.log(
       `[ComponentInspector] Press ${this.getShortcutDescription()} to toggle inspector mode`
     );
+    console.log('[ComponentInspector] Press Ctrl+Shift+C to toggle config panel');
   }
 
   /**
@@ -166,6 +185,11 @@ export class ComponentInspectorService {
       filter: {
         ...currentConfig.filter,
         ...config?.filter,
+        // Deep merge libraries object
+        libraries: {
+          ...currentConfig.filter.libraries,
+          ...config?.filter?.libraries,
+        },
       },
       performance: {
         ...currentConfig.performance,
@@ -196,7 +220,17 @@ export class ComponentInspectorService {
     this.disable();
     this.detector.destroy();
     this.overlayManager.destroy();
+    this.destroyConfigPanel();
     this.initialized = false;
+  }
+
+  /**
+   * Toggle config panel visibility
+   */
+  toggleConfigPanel(): void {
+    if (this.configPanelRef) {
+      this.configPanelRef.instance.toggle();
+    }
   }
 
   /**
@@ -205,21 +239,28 @@ export class ComponentInspectorService {
   private updateOverlays(components: Map<Element, ComponentInfo>): void {
     const config = this.config();
 
-    // Remove overlays for components that are no longer detected
-    const currentOverlays = new Set<Element>();
-    this.overlayManager['overlays'].forEach((_, element) => {
-      if (!components.has(element)) {
-        this.overlayManager.removeOverlay(element);
-      } else {
-        currentOverlays.add(element);
+    // Track which elements should have overlays
+    const shouldHaveOverlay = new Set<Element>();
+
+    // Determine which components should be visible
+    components.forEach((info, element) => {
+      if (shouldShowComponent(info, config.filter)) {
+        shouldHaveOverlay.add(element);
       }
     });
 
-    // Create overlays for new components (filtered)
-    components.forEach((info, element) => {
-      if (!currentOverlays.has(element)) {
-        // Check if component should be shown based on filter
-        if (shouldShowComponent(info, config.filter)) {
+    // Remove overlays that should no longer be shown
+    this.overlayManager['overlays'].forEach((_, element) => {
+      if (!shouldHaveOverlay.has(element)) {
+        this.overlayManager.removeOverlay(element);
+      }
+    });
+
+    // Create overlays for components that should be shown but don't have one yet
+    shouldHaveOverlay.forEach((element) => {
+      if (!this.overlayManager['overlays'].has(element)) {
+        const info = components.get(element);
+        if (info) {
           this.overlayManager.createOverlay(info);
         }
       }
@@ -278,5 +319,52 @@ export class ComponentInspectorService {
     parts.push(config.shortcut.key.toUpperCase());
 
     return parts.join('+');
+  }
+
+  /**
+   * Setup config panel keyboard shortcut (Ctrl+Shift+C)
+   */
+  private setupConfigPanelShortcut(): void {
+    fromEvent<KeyboardEvent>(window, 'keydown')
+      .pipe(
+        filter((event) => {
+          return (
+            event.ctrlKey &&
+            event.shiftKey &&
+            event.key.toUpperCase() === 'C'
+          );
+        })
+      )
+      .subscribe((event) => {
+        event.preventDefault();
+        this.toggleConfigPanel();
+      });
+  }
+
+  /**
+   * Create config panel component
+   */
+  private createConfigPanel(): void {
+    if (this.configPanelRef) {
+      return;
+    }
+
+    this.configPanelRef = createComponent(InspectorConfigPanelComponent, {
+      environmentInjector: this.injector,
+    });
+
+    document.body.appendChild(this.configPanelRef.location.nativeElement);
+    this.appRef.attachView(this.configPanelRef.hostView);
+  }
+
+  /**
+   * Destroy config panel component
+   */
+  private destroyConfigPanel(): void {
+    if (this.configPanelRef) {
+      this.appRef.detachView(this.configPanelRef.hostView);
+      this.configPanelRef.destroy();
+      this.configPanelRef = null;
+    }
   }
 }
