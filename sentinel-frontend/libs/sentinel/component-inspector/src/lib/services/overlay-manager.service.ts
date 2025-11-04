@@ -149,8 +149,7 @@ export class OverlayManagerService {
     badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
     badge.style.transition =
       'transform 0.15s ease, background-color 0.15s ease';
-    badge.textContent =
-      '<' + componentInfo.selector + ' />@' + componentInfo.library;
+    badge.textContent = componentInfo.selector;
 
     // Hover effect - highlight both badge and container
     badge.addEventListener('mouseenter', () => {
