@@ -116,12 +116,16 @@ export class OverlayManagerService {
       throw new Error('OverlayManager not initialized');
     }
 
+    // Use library color if available, otherwise use default
+    const borderColor =
+      componentInfo.libraryColor || this.config.overlay.borderColor;
+
     // Container (the border overlay)
     const container = document.createElement('div');
     container.className = 'ng-component-inspector-overlay';
     container.style.position = 'absolute';
     container.style.backgroundColor = this.config.overlay.backgroundColor;
-    container.style.border = `${this.config.overlay.borderWidth}px solid ${this.config.overlay.borderColor}`;
+    container.style.border = `${this.config.overlay.borderWidth}px solid ${borderColor}`;
     container.style.zIndex = this.config.overlay.zIndex.toString();
     container.style.pointerEvents = 'none';
     container.style.boxSizing = 'border-box';
@@ -134,7 +138,7 @@ export class OverlayManagerService {
     badge.style.fontFamily = 'monospace';
     badge.style.fontSize = '11px';
     badge.style.fontWeight = '600';
-    badge.style.backgroundColor = this.config.overlay.borderColor;
+    badge.style.backgroundColor = borderColor;
     badge.style.color = '#fff';
     badge.style.padding = '4px 8px';
     badge.style.borderRadius = '4px';
@@ -145,7 +149,8 @@ export class OverlayManagerService {
     badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
     badge.style.transition =
       'transform 0.15s ease, background-color 0.15s ease';
-    badge.textContent = componentInfo.selector;
+    badge.textContent =
+      '<' + componentInfo.selector + ' />@' + componentInfo.library;
 
     // Hover effect - highlight both badge and container
     badge.addEventListener('mouseenter', () => {
@@ -160,10 +165,10 @@ export class OverlayManagerService {
     badge.addEventListener('mouseleave', () => {
       if (!this.config) return;
       badge.style.transform = 'scale(1)';
-      badge.style.backgroundColor = this.config.overlay.borderColor;
+      badge.style.backgroundColor = borderColor;
       // Reset the component container
       container.style.backgroundColor = this.config.overlay.backgroundColor;
-      container.style.borderColor = this.config.overlay.borderColor;
+      container.style.borderColor = borderColor;
       container.style.borderWidth = `${this.config.overlay.borderWidth}px`;
     });
 

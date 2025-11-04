@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { Plugin } from 'esbuild';
-import * as ts from 'typescript';
 import * as fs from 'fs';
-import * as path from 'path';
 import { glob } from 'glob';
+import * as path from 'path';
+import * as ts from 'typescript';
 
 interface ComponentMetadata {
   className: string;
@@ -44,7 +44,7 @@ interface PluginOptions {
  */
 function parseComponentFile(
   filePath: string,
-  rootDir: string
+  rootDir: string,
 ): ComponentMetadata | null {
   try {
     const sourceCode = fs.readFileSync(filePath, 'utf-8');
@@ -52,7 +52,7 @@ function parseComponentFile(
       filePath,
       sourceCode,
       ts.ScriptTarget.Latest,
-      true
+      true,
     );
 
     let componentMetadata: ComponentMetadata | null = null;
@@ -73,7 +73,13 @@ function parseComponentFile(
               if (selector) {
                 const relativePath = path.relative(rootDir, filePath);
                 const library = extractLibraryName(relativePath);
-                const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+                // Get line after decorator ends (the "export class ComponentName {" line)
+                const decoratorEndPos = decorator.getEnd();
+                const decoratorEndLine =
+                  sourceFile.getLineAndCharacterOfPosition(
+                    decoratorEndPos,
+                  ).line;
+                const line = decoratorEndLine + 2;
 
                 componentMetadata = {
                   className,
@@ -104,7 +110,7 @@ function parseComponentFile(
  * Find @Component decorator in class modifiers
  */
 function findComponentDecorator(
-  modifiers: ts.NodeArray<ts.ModifierLike>
+  modifiers: ts.NodeArray<ts.ModifierLike>,
 ): ts.Decorator | undefined {
   return modifiers.find((modifier): modifier is ts.Decorator => {
     if (!ts.isDecorator(modifier)) return false;
@@ -122,13 +128,13 @@ function findComponentDecorator(
  * Extract selector from @Component metadata object
  */
 function extractSelectorFromMetadata(
-  metadata: ts.ObjectLiteralExpression
+  metadata: ts.ObjectLiteralExpression,
 ): string | null {
   const selectorProp = metadata.properties.find(
     (prop): prop is ts.PropertyAssignment =>
       ts.isPropertyAssignment(prop) &&
       ts.isIdentifier(prop.name) &&
-      prop.name.text === 'selector'
+      prop.name.text === 'selector',
   );
 
   if (selectorProp && ts.isStringLiteral(selectorProp.initializer)) {
@@ -160,7 +166,9 @@ function extractLibraryName(relativePath: string): string | undefined {
 /**
  * Generate component manifest by parsing all *.component.ts files
  */
-async function generateComponentManifest(options: Required<PluginOptions>): Promise<void> {
+async function generateComponentManifest(
+  options: Required<PluginOptions>,
+): Promise<void> {
   const startTime = performance.now();
 
   if (options.logToConsole) {
@@ -199,7 +207,9 @@ async function generateComponentManifest(options: Required<PluginOptions>): Prom
   const relativePath = path.relative(options.rootDir, options.outputPath);
 
   if (options.logToConsole) {
-    console.log(`[ComponentManifest] ✅ Generated ${components.length} components in ${duration}ms`);
+    console.log(
+      `[ComponentManifest] ✅ Generated ${components.length} components in ${duration}ms`,
+    );
     console.log(`[ComponentManifest] 📄 ${relativePath}`);
   }
 }
@@ -208,12 +218,17 @@ async function generateComponentManifest(options: Required<PluginOptions>): Prom
  * Creates an esbuild plugin that automatically generates the component manifest
  * on every build (including hot reloads)
  */
-export const componentManifestPlugin = (options: PluginOptions = {}): Plugin => {
+export const componentManifestPlugin = (
+  options: PluginOptions = {},
+): Plugin => {
   const {
     enabled = true,
     logToConsole = true,
     rootDir = process.cwd(),
-    outputPath = path.join(process.cwd(), 'apps/sentinel/src/assets/component-manifest.json'),
+    outputPath = path.join(
+      process.cwd(),
+      'apps/sentinel/src/assets/component-manifest.json',
+    ),
     componentPattern = '**/*.component.ts',
     ignorePatterns = ['**/node_modules/**', '**/dist/**', '**/tmp/**'],
   } = options;
@@ -245,7 +260,10 @@ export const componentManifestPlugin = (options: PluginOptions = {}): Plugin => 
         try {
           await generateComponentManifest(fullOptions);
         } catch (error) {
-          console.error('[ComponentManifest] ❌ Error generating manifest:', error);
+          console.error(
+            '[ComponentManifest] ❌ Error generating manifest:',
+            error,
+          );
           // Don't fail the build, just log the error
         }
       });

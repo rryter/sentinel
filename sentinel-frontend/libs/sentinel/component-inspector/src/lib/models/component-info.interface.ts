@@ -5,6 +5,7 @@ export interface ComponentInfo {
   filePath?: string;
   relativePath?: string;
   library?: string;
+  libraryColor?: string;
   isStandalone?: boolean;
   line?: number;
 }

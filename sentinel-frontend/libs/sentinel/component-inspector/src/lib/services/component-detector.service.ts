@@ -20,6 +20,15 @@ export class ComponentDetectorService {
     | ((mutations: MutationRecord[]) => void)
     | null = null;
 
+  // Color palette for library grouping
+  private readonly LIBRARY_COLORS = [
+    '#264653',
+    '#F4A261',
+    '#2A9D8F',
+    '#E76F51',
+    '#E9C46A',
+  ];
+
   /**
    * Load component manifest for file path lookups
    */
@@ -77,6 +86,22 @@ export class ComponentDetectorService {
   }
 
   /**
+   * Generate a deterministic color for a library name
+   */
+  private getLibraryColor(libraryName: string): string {
+    // Better hash function for deterministic color assignment
+    // Uses a polynomial rolling hash for better distribution
+    let hash = 0;
+    const prime = 31;
+    for (let i = 0; i < libraryName.length; i++) {
+      hash = (hash * prime + libraryName.charCodeAt(i)) | 0;
+    }
+    // Use unsigned right shift to ensure positive number
+    const index = (hash >>> 0) % this.LIBRARY_COLORS.length;
+    return this.LIBRARY_COLORS[index];
+  }
+
+  /**
    * Scan DOM tree for component hosts
    */
   private scanForComponents(root: Node): void {
@@ -125,11 +150,15 @@ export class ComponentDetectorService {
         entry.className === normalizedClassName,
     );
 
+    const library = manifestEntry?.library;
+    const libraryColor = library ? this.getLibraryColor(library) : undefined;
+
     return {
       ...basicInfo,
       filePath: manifestEntry?.filePath,
       relativePath: manifestEntry?.relativePath,
-      library: manifestEntry?.library,
+      library,
+      libraryColor,
       line: manifestEntry?.line,
     };
   }
