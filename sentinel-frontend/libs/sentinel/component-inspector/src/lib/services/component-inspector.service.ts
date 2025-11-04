@@ -27,6 +27,8 @@ import { VscodeIntegrationService } from './vscode-integration.service';
   providedIn: 'root',
 })
 export class ComponentInspectorService {
+  private static readonly STORAGE_KEY = 'component-inspector-config';
+
   private detector = inject(ComponentDetectorService);
   private overlayManager = inject(OverlayManagerService);
   private vscodeIntegration = inject(VscodeIntegrationService);
@@ -68,29 +70,43 @@ export class ComponentInspectorService {
       return;
     }
 
-    // Merge config with defaults
+    // Load saved config from localStorage
+    const savedConfig = this.loadConfig();
+
+    // Merge config with defaults and saved config
     const fullConfig: InspectorConfig = {
       ...DEFAULT_INSPECTOR_CONFIG,
       ...config,
+      ...savedConfig,
       shortcut: {
         ...DEFAULT_INSPECTOR_CONFIG.shortcut,
         ...config?.shortcut,
+        ...savedConfig?.shortcut,
       },
       overlay: {
         ...DEFAULT_INSPECTOR_CONFIG.overlay,
         ...config?.overlay,
+        ...savedConfig?.overlay,
       },
       filter: {
         ...DEFAULT_INSPECTOR_CONFIG.filter,
         ...config?.filter,
+        ...savedConfig?.filter,
+        libraries: {
+          ...DEFAULT_INSPECTOR_CONFIG.filter.libraries,
+          ...config?.filter?.libraries,
+          ...savedConfig?.filter?.libraries,
+        },
       },
       performance: {
         ...DEFAULT_INSPECTOR_CONFIG.performance,
         ...config?.performance,
+        ...savedConfig?.performance,
       },
       vscode: {
         ...DEFAULT_INSPECTOR_CONFIG.vscode,
         ...config?.vscode,
+        ...savedConfig?.vscode,
       },
     };
 
@@ -209,6 +225,9 @@ export class ComponentInspectorService {
       },
     };
     this.config.set(updatedConfig);
+
+    // Save config to localStorage
+    this.saveConfig(updatedConfig);
 
     // Re-initialize services with new config
     this.vscodeIntegration.initialize(updatedConfig);
@@ -372,6 +391,42 @@ export class ComponentInspectorService {
       this.appRef.detachView(this.configPanelRef.hostView);
       this.configPanelRef.destroy();
       this.configPanelRef = null;
+    }
+  }
+
+  /**
+   * Load configuration from localStorage
+   */
+  private loadConfig(): DeepPartial<InspectorConfig> | null {
+    try {
+      const stored = localStorage.getItem(ComponentInspectorService.STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored) as DeepPartial<InspectorConfig>;
+      }
+    } catch (error) {
+      console.warn('[ComponentInspector] Failed to load config from localStorage:', error);
+    }
+    return null;
+  }
+
+  /**
+   * Save configuration to localStorage
+   */
+  private saveConfig(config: InspectorConfig): void {
+    try {
+      // Only save the filter settings (library toggles)
+      // Don't save shortcuts, overlay settings, etc.
+      const configToSave: DeepPartial<InspectorConfig> = {
+        filter: {
+          libraries: config.filter.libraries,
+        },
+      };
+      localStorage.setItem(
+        ComponentInspectorService.STORAGE_KEY,
+        JSON.stringify(configToSave)
+      );
+    } catch (error) {
+      console.warn('[ComponentInspector] Failed to save config to localStorage:', error);
     }
   }
 }
