@@ -1,6 +1,6 @@
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 export interface SelectOption {
   label: string;
@@ -25,18 +25,18 @@ export const TIME_INTERVALS: SelectOption[] = [
   template: `
     <brn-select
       class="inline-block"
-      [placeholder]="placeholder"
-      [disabled]="disabled"
-      [value]="selectedValue"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [value]="selectedValue()"
       (valueChange)="onValueChange($event)"
     >
-      <hlm-select-trigger [class]="triggerClass">
+      <hlm-select-trigger [class]="triggerClass()">
         <hlm-select-value>
-          {{ getSelectedLabel() }}
+          {{ selectedLabel() }}
         </hlm-select-value>
       </hlm-select-trigger>
       <hlm-select-content>
-        @for (option of options; track option.value) {
+        @for (option of options(); track option.value) {
           <hlm-option [value]="option.value">{{ option.label }}</hlm-option>
         }
       </hlm-select-content>
@@ -44,23 +44,22 @@ export const TIME_INTERVALS: SelectOption[] = [
   `,
 })
 export class BuildMetricsSelectorComponent {
-  @Input() options: SelectOption[] = TIME_INTERVALS;
-  @Input() disabled = false;
-  @Input() label = '';
-  @Input() placeholder = 'Select time interval';
-  @Input() triggerClass = 'w-56';
-  @Input() selectedValue?: string;
-  @Output() valueChange = new EventEmitter<string>();
+  options = input<SelectOption[]>(TIME_INTERVALS);
+  disabled = input(false);
+  label = input('');
+  placeholder = input('Select time interval');
+  triggerClass = input('w-56');
+  selectedValue = input<string | undefined>(undefined);
+  valueChange = output<string>();
 
-  onValueChange(value: any): void {
-    this.selectedValue = value;
-    this.valueChange.emit(value);
-  }
-
-  getSelectedLabel(): string {
-    const selected = this.options.find(
-      (opt) => opt.value === this.selectedValue,
+  selectedLabel = computed(() => {
+    const selected = this.options().find(
+      (opt) => opt.value === this.selectedValue(),
     );
     return selected?.label || '';
+  });
+
+  onValueChange(value: string): void {
+    this.valueChange.emit(value);
   }
 }
