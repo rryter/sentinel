@@ -15,22 +15,44 @@
           </div>
         </div>
 
-        <div class="library-list">
-          @for (library of libraries(); track library.name) {
-            <div class="library-item">
-              <label class="library-label">
-                <input
-                  type="checkbox"
-                  [checked]="library.enabled"
-                  (change)="toggleLibrary(library.name)"
-                />
-                <span
-                  class="library-color-indicator"
-                  [style.background-color]="library.color"
-                ></span>
-                <span class="library-name">{{ library.name }}</span>
-                <span class="library-count">({{ library.componentCount }})</span>
-              </label>
+        <div class="namespace-list">
+          @for (group of namespaceGroups(); track group.namespace) {
+            <div class="namespace-group">
+              <div class="namespace-header">
+                <label class="namespace-label">
+                  <input
+                    type="checkbox"
+                    [checked]="group.enabled"
+                    (change)="toggleNamespace(group.namespace)"
+                  />
+                  <span
+                    class="namespace-color-indicator"
+                    [style.background-color]="group.baseColor"
+                  ></span>
+                  <span class="namespace-name">{{ group.namespace }}</span>
+                  <span class="namespace-count">({{ group.totalComponents }})</span>
+                </label>
+              </div>
+
+              <div class="library-list">
+                @for (library of group.libraryInfos; track library.name) {
+                  <div class="library-item">
+                    <label class="library-label">
+                      <input
+                        type="checkbox"
+                        [checked]="library.enabled"
+                        (change)="toggleLibrary(library.name)"
+                      />
+                      <span
+                        class="library-color-indicator"
+                        [style.background-color]="library.color"
+                      ></span>
+                      <span class="library-name">{{ library.name }}</span>
+                      <span class="library-count">({{ library.componentCount }})</span>
+                    </label>
+                  </div>
+                }
+              </div>
             </div>
           }
         </div>

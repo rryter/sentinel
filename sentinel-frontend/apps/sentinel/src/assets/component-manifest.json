@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-04T16:45:13.652Z",
+  "generated": "2025-11-04T16:56:20.833Z",
   "components": [
     {
       "className": "BuildListComponent",
@@ -143,7 +143,7 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/component-inspector/src/lib/components/inspector-config-panel/inspector-config-panel.component.ts",
       "relativePath": "libs/sentinel/component-inspector/src/lib/components/inspector-config-panel/inspector-config-panel.component.ts",
       "library": "sentinel/component-inspector",
-      "line": 19
+      "line": 26
     },
     {
       "className": "LayoutsComponent",

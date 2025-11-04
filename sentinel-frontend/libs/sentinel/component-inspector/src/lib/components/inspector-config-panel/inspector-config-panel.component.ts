@@ -2,12 +2,19 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ComponentInspectorService } from '../../services/component-inspector.service';
 import { ComponentDetectorService } from '../../services/component-detector.service';
+import { groupLibrariesByNamespace, extractNamespace, type NamespaceGroup } from '../../utils/library-color.util';
 
 interface LibraryInfo {
   name: string;
   color: string;
   enabled: boolean;
   componentCount: number;
+}
+
+interface NamespaceGroupInfo extends NamespaceGroup {
+  enabled: boolean;
+  totalComponents: number;
+  libraryInfos: LibraryInfo[];
 }
 
 @Component({
@@ -22,7 +29,7 @@ export class InspectorConfigPanelComponent {
 
   isVisible = signal(false);
 
-  libraries = computed<LibraryInfo[]>(() => {
+  namespaceGroups = computed<NamespaceGroupInfo[]>(() => {
     const config = this.inspectorService.getConfig();
     const manifest = this.detectorService.getManifest();
 
@@ -46,15 +53,31 @@ export class InspectorConfigPanelComponent {
       }
     });
 
-    // Convert to array and sort by name
-    return Array.from(libraryMap.entries())
-      .map(([name, { count, color }]) => ({
-        name,
-        color,
-        enabled: config.filter.libraries?.[name] ?? true,
-        componentCount: count,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // Get all library names
+    const allLibraries = Array.from(libraryMap.keys());
+
+    // Group by namespace
+    const namespaceGroups = groupLibrariesByNamespace(allLibraries);
+
+    // Build namespace group info
+    return namespaceGroups.map(group => {
+      const libraryInfos = group.libraries.map(libName => ({
+        name: libName,
+        color: libraryMap.get(libName)!.color,
+        enabled: config.filter.libraries?.[libName] ?? true,
+        componentCount: libraryMap.get(libName)!.count,
+      }));
+
+      const totalComponents = libraryInfos.reduce((sum, lib) => sum + lib.componentCount, 0);
+      const enabled = libraryInfos.some(lib => lib.enabled);
+
+      return {
+        ...group,
+        enabled,
+        totalComponents,
+        libraryInfos,
+      };
+    });
   });
 
   toggle(): void {
@@ -84,13 +107,37 @@ export class InspectorConfigPanelComponent {
     });
   }
 
-  toggleAll(enabled: boolean): void {
+  toggleNamespace(namespace: string): void {
     const config = this.inspectorService.getConfig();
-    const libraries = this.libraries();
+    const currentLibraries = config.filter.libraries || {};
+    const groups = this.namespaceGroups();
+    const group = groups.find(g => g.namespace === namespace);
+
+    if (!group) return;
+
+    // Toggle all libraries in this namespace to the opposite of the current state
+    const newState = !group.enabled;
+    const libraryMap: Record<string, boolean> = { ...currentLibraries };
+
+    group.libraries.forEach(libName => {
+      libraryMap[libName] = newState;
+    });
+
+    this.inspectorService.updateConfig({
+      filter: {
+        libraries: libraryMap,
+      },
+    });
+  }
+
+  toggleAll(enabled: boolean): void {
+    const groups = this.namespaceGroups();
     const libraryMap: Record<string, boolean> = {};
 
-    libraries.forEach(lib => {
-      libraryMap[lib.name] = enabled;
+    groups.forEach(group => {
+      group.libraries.forEach(libName => {
+        libraryMap[libName] = enabled;
+      });
     });
 
     this.inspectorService.updateConfig({

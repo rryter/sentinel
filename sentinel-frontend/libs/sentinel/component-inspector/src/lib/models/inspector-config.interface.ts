@@ -73,7 +73,7 @@ export const DEFAULT_INSPECTOR_CONFIG: InspectorConfig = {
     borderColor: 'rgb(104, 182, 255)',
     backgroundColor: 'rgba(104, 182, 255, 0.15)',
     borderWidth: 2,
-    zIndex: 2147483647,
+    zIndex: 2147483646,
   },
   filter: {
     include: ['@sentinel/**', '@shared/**', 'app-*', 'lib-*', 'saas-*'],

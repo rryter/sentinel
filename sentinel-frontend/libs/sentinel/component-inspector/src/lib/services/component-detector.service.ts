@@ -8,6 +8,7 @@ import {
   isComponentHost,
 } from '../utils/component-metadata.util';
 import { throttle } from '../utils/throttle.util';
+import { getLibraryColor } from '../utils/library-color.util';
 
 @Injectable({
   providedIn: 'root',
@@ -20,14 +21,8 @@ export class ComponentDetectorService {
     | ((mutations: MutationRecord[]) => void)
     | null = null;
 
-  // Color palette for library grouping
-  private readonly LIBRARY_COLORS = [
-    '#264653',
-    '#F4A261',
-    '#2A9D8F',
-    '#E76F51',
-    '#E9C46A',
-  ];
+  // Cache for all library names (for color calculation)
+  private allLibraries: string[] = [];
 
   /**
    * Load component manifest for file path lookups
@@ -37,6 +32,16 @@ export class ComponentDetectorService {
       const response = await fetch(manifestUrl);
       if (response.ok) {
         this.manifest = await response.json();
+
+        // Extract all unique library names for color calculation
+        const librarySet = new Set<string>();
+        this.manifest?.components.forEach(component => {
+          if (component.library) {
+            librarySet.add(component.library);
+          }
+        });
+        this.allLibraries = Array.from(librarySet).sort();
+
         console.log(
           `[ComponentInspector] Loaded manifest with ${this.manifest?.components.length ?? 0} components`,
         );
@@ -96,23 +101,7 @@ export class ComponentDetectorService {
    * Get color for a library name (public method for config panel)
    */
   getColorForLibrary(libraryName: string): string {
-    return this.getLibraryColor(libraryName);
-  }
-
-  /**
-   * Generate a deterministic color for a library name
-   */
-  private getLibraryColor(libraryName: string): string {
-    // Better hash function for deterministic color assignment
-    // Uses a polynomial rolling hash for better distribution
-    let hash = 0;
-    const prime = 31;
-    for (let i = 0; i < libraryName.length; i++) {
-      hash = (hash * prime + libraryName.charCodeAt(i)) | 0;
-    }
-    // Use unsigned right shift to ensure positive number
-    const index = (hash >>> 0) % this.LIBRARY_COLORS.length;
-    return this.LIBRARY_COLORS[index];
+    return getLibraryColor(libraryName, this.allLibraries);
   }
 
   /**
@@ -165,7 +154,7 @@ export class ComponentDetectorService {
     );
 
     const library = manifestEntry?.library;
-    const libraryColor = library ? this.getLibraryColor(library) : undefined;
+    const libraryColor = library ? getLibraryColor(library, this.allLibraries) : undefined;
 
     return {
       ...basicInfo,
