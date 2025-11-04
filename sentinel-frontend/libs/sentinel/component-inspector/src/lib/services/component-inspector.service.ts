@@ -399,12 +399,17 @@ export class ComponentInspectorService {
    */
   private loadConfig(): DeepPartial<InspectorConfig> | null {
     try {
-      const stored = localStorage.getItem(ComponentInspectorService.STORAGE_KEY);
+      const stored = localStorage.getItem(
+        ComponentInspectorService.STORAGE_KEY,
+      );
       if (stored) {
         return JSON.parse(stored) as DeepPartial<InspectorConfig>;
       }
     } catch (error) {
-      console.warn('[ComponentInspector] Failed to load config from localStorage:', error);
+      console.warn(
+        '[ComponentInspector] Failed to load config from localStorage:',
+        error,
+      );
     }
     return null;
   }
@@ -423,10 +428,13 @@ export class ComponentInspectorService {
       };
       localStorage.setItem(
         ComponentInspectorService.STORAGE_KEY,
-        JSON.stringify(configToSave)
+        JSON.stringify(configToSave),
       );
     } catch (error) {
-      console.warn('[ComponentInspector] Failed to save config to localStorage:', error);
+      console.warn(
+        '[ComponentInspector] Failed to save config to localStorage:',
+        error,
+      );
     }
   }
 }
