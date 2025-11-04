@@ -1,7 +1,7 @@
-import { HlmIcon } from '@spartan-ng/helm/icon';
-import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, input } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
+import { HlmIcon } from '@spartan-ng/helm/icon';
 
 @Component({
   selector: 'app-content-tile',
@@ -10,7 +10,7 @@ import { NgIcon } from '@ng-icons/core';
   styleUrls: ['./content-tile.component.scss'],
 })
 export class ContentTileComponent {
-  @Input() title: string = '';
-  @Input() iconName: string = 'lucideInfo';
-  @Input() iconClass: string = 'text-gray-400';
+  title = input<string>('');
+  iconName = input<string>('lucideInfo');
+  iconClass = input<string>('text-gray-400');
 }

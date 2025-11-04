@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-04T19:08:54.227Z",
+  "generated": "2025-11-04T20:41:07.997Z",
   "components": [
     {
       "className": "BuildListComponent",
@@ -311,7 +311,7 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-summary-item/lint-summary-item.component.ts",
       "relativePath": "libs/sentinel/linting/src/lib/components/lint-summary-item/lint-summary-item.component.ts",
       "library": "sentinel/linting",
-      "line": 13
+      "line": 18
     },
     {
       "className": "MarkdownRendererComponent",
