@@ -1,5 +1,5 @@
-import { Component, Input, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { Component, computed, input } from '@angular/core';
 
 interface AnalysisJob {
   id: number;
@@ -24,25 +24,27 @@ enum AnalysisJobStatus {
       <h3 class="text-lg font-medium text-gray-900">Job Status</h3>
       <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <div class="text-gray-500">ID:</div>
-        <div class="text-gray-900">{{ job?.id }}</div>
+        <div class="text-gray-900">{{ job()?.id }}</div>
 
         <div class="text-gray-500">Status:</div>
         <div class="text-gray-900">
-          <span [class]="getStatusClass(job?.status)">
-            {{ getStatusText(job?.status) }}
+          <span [class]="statusClass()">
+            {{ statusText() }}
             @if (isRunning()) {
-              ({{ formatTime(runningTimeSeconds) }})
+              ({{ formattedTime() }})
             }
           </span>
         </div>
 
         <div class="text-gray-500">Started:</div>
-        <div class="text-gray-900">{{ job?.created_at | date: 'medium' }}</div>
+        <div class="text-gray-900">
+          {{ job()?.created_at | date: 'medium' }}
+        </div>
 
-        @if (job?.completed_at) {
+        @if (job()?.completed_at) {
           <div class="text-gray-500">Completed:</div>
           <div class="text-gray-900">
-            {{ job?.completed_at | date: 'medium' }}
+            {{ job()?.completed_at | date: 'medium' }}
           </div>
         }
       </div>
@@ -50,14 +52,15 @@ enum AnalysisJobStatus {
   `,
 })
 export class LintStatusComponent {
-  @Input() job: AnalysisJob | null = null;
-  @Input() runningTimeSeconds = 0;
+  job = input<AnalysisJob | null>(null);
+  runningTimeSeconds = input<number>(0);
 
   readonly isRunning = computed(
-    () => this.job?.status === AnalysisJobStatus.RUNNING,
+    () => this.job()?.status === AnalysisJobStatus.RUNNING,
   );
 
-  getStatusClass(status: string | undefined): string {
+  readonly statusClass = computed(() => {
+    const status = this.job()?.status;
     switch (status?.toLowerCase()) {
       case 'completed':
         return 'text-green-600';
@@ -70,9 +73,10 @@ export class LintStatusComponent {
       default:
         return 'text-gray-600';
     }
-  }
+  });
 
-  getStatusText(status: string | undefined): string {
+  readonly statusText = computed(() => {
+    const status = this.job()?.status;
     switch (status?.toLowerCase()) {
       case 'completed':
         return 'Completed';
@@ -85,11 +89,12 @@ export class LintStatusComponent {
       default:
         return 'Unknown';
     }
-  }
+  });
 
-  formatTime(seconds: number): string {
+  readonly formattedTime = computed(() => {
+    const seconds = this.runningTimeSeconds();
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
+  });
 }

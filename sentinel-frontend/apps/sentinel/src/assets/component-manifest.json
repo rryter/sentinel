@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-04T20:41:07.997Z",
+  "generated": "2025-11-04T20:46:52.200Z",
   "components": [
     {
       "className": "BuildListComponent",
@@ -303,7 +303,7 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/linting/src/lib/components/lint-status/lint-status.component.ts",
       "relativePath": "libs/sentinel/linting/src/lib/components/lint-status/lint-status.component.ts",
       "library": "sentinel/linting",
-      "line": 52
+      "line": 54
     },
     {
       "className": "LintSummaryItemComponent",
