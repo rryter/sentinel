@@ -7,14 +7,14 @@ import {
   extractComponentMetadata,
   isComponentHost,
 } from '../utils/component-metadata.util';
-import { throttle } from '../utils/throttle.util';
 import { getLibraryColor } from '../utils/library-color.util';
+import { throttle } from '../utils/throttle.util';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComponentDetectorService {
-  private components = signal<Map<Element, ComponentInfo>>(new Map());
+  public components = signal<Map<Element, ComponentInfo>>(new Map());
   private mutationObserver: MutationObserver | null = null;
   private manifest: ComponentManifest | null = null;
   private throttledMutationHandler:
@@ -35,7 +35,7 @@ export class ComponentDetectorService {
 
         // Extract all unique library names for color calculation
         const librarySet = new Set<string>();
-        this.manifest?.components.forEach(component => {
+        this.manifest?.components.forEach((component) => {
           if (component.library) {
             librarySet.add(component.library);
           }
@@ -74,20 +74,6 @@ export class ComponentDetectorService {
       this.mutationObserver = null;
     }
     this.components.set(new Map());
-  }
-
-  /**
-   * Get all detected components
-   */
-  getComponents(): Map<Element, ComponentInfo> {
-    return this.components();
-  }
-
-  /**
-   * Get component info for a specific element
-   */
-  getComponentInfo(element: Element): ComponentInfo | undefined {
-    return this.components().get(element);
   }
 
   /**
@@ -154,7 +140,9 @@ export class ComponentDetectorService {
     );
 
     const library = manifestEntry?.library;
-    const libraryColor = library ? getLibraryColor(library, this.allLibraries) : undefined;
+    const libraryColor = library
+      ? getLibraryColor(library, this.allLibraries)
+      : undefined;
 
     return {
       ...basicInfo,

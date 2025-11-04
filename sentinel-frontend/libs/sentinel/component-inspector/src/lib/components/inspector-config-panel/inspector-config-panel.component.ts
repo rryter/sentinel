@@ -1,8 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ComponentInspectorService } from '../../services/component-inspector.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ComponentDetectorService } from '../../services/component-detector.service';
-import { groupLibrariesByNamespace, extractNamespace, type NamespaceGroup } from '../../utils/library-color.util';
+import { ComponentInspectorService } from '../../services/component-inspector.service';
+import {
+  groupLibrariesByNamespace,
+  type NamespaceGroup,
+} from '../../utils/library-color.util';
 
 interface LibraryInfo {
   name: string;
@@ -31,45 +34,50 @@ export class InspectorConfigPanelComponent {
 
   namespaceGroups = computed<NamespaceGroupInfo[]>(() => {
     const config = this.inspectorService.getConfig();
-    const manifest = this.detectorService.getManifest();
+    const detectedComponents = this.detectorService.components();
 
-    if (!manifest) {
+    if (!detectedComponents || detectedComponents.size === 0) {
       return [];
     }
 
-    // Count components per library and get colors
+    // Count only components that are currently detected on the page
     const libraryMap = new Map<string, { count: number; color: string }>();
 
-    manifest.components.forEach(component => {
-      if (component.library) {
-        const existing = libraryMap.get(component.library);
-        const color = this.detectorService.getColorForLibrary(component.library);
+    detectedComponents.forEach((componentInfo) => {
+      if (componentInfo.library) {
+        const existing = libraryMap.get(componentInfo.library);
+        const color =
+          componentInfo.libraryColor ||
+          this.detectorService.getColorForLibrary(componentInfo.library);
 
         if (existing) {
           existing.count++;
         } else {
-          libraryMap.set(component.library, { count: 1, color });
+          libraryMap.set(componentInfo.library, { count: 1, color });
         }
       }
     });
 
-    // Get all library names
+    // Get all library names that are currently on the page
     const allLibraries = Array.from(libraryMap.keys());
 
     // Group by namespace
     const namespaceGroups = groupLibrariesByNamespace(allLibraries);
 
     // Build namespace group info
-    return namespaceGroups.map(group => {
-      const libraryInfos = group.libraries.map(libName => ({
+    return namespaceGroups.map((group) => {
+      const libraryInfos = group.libraries.map((libName) => ({
         name: libName,
         color: libraryMap.get(libName)!.color,
         enabled: config.filter.libraries?.[libName] ?? true,
         componentCount: libraryMap.get(libName)!.count,
       }));
 
-      const totalComponents = libraryInfos.reduce((sum, lib) => sum + lib.componentCount, 0);
-      const enabled = libraryInfos.some(lib => lib.enabled);
+      const totalComponents = libraryInfos.reduce(
+        (sum, lib) => sum + lib.componentCount,
+        0,
+      );
+      const enabled = libraryInfos.some((lib) => lib.enabled);
 
       return {
         ...group,
@@ -81,7 +89,7 @@ export class InspectorConfigPanelComponent {
   });
 
   toggle(): void {
-    this.isVisible.update(v => !v);
+    this.isVisible.update((v) => !v);
   }
 
   show(): void {
@@ -111,7 +119,7 @@ export class InspectorConfigPanelComponent {
     const config = this.inspectorService.getConfig();
     const currentLibraries = config.filter.libraries || {};
     const groups = this.namespaceGroups();
-    const group = groups.find(g => g.namespace === namespace);
+    const group = groups.find((g) => g.namespace === namespace);
 
     if (!group) return;
 
@@ -119,7 +127,7 @@ export class InspectorConfigPanelComponent {
     const newState = !group.enabled;
     const libraryMap: Record<string, boolean> = { ...currentLibraries };
 
-    group.libraries.forEach(libName => {
+    group.libraries.forEach((libName) => {
       libraryMap[libName] = newState;
     });
 
@@ -134,8 +142,8 @@ export class InspectorConfigPanelComponent {
     const groups = this.namespaceGroups();
     const libraryMap: Record<string, boolean> = {};
 
-    groups.forEach(group => {
-      group.libraries.forEach(libName => {
+    groups.forEach((group) => {
+      group.libraries.forEach((libName) => {
         libraryMap[libName] = enabled;
       });
     });

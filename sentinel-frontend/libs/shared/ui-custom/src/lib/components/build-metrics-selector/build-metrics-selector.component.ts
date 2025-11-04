@@ -1,6 +1,6 @@
+import { Component, computed, input, output } from '@angular/core';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { Component, computed, input, output } from '@angular/core';
 
 export interface SelectOption {
   label: string;
@@ -59,7 +59,9 @@ export class BuildMetricsSelectorComponent {
     return selected?.label || '';
   });
 
-  onValueChange(value: string): void {
-    this.valueChange.emit(value);
+  onValueChange(value: string | string[] | undefined): void {
+    if (typeof value === 'string') {
+      this.valueChange.emit(value);
+    }
   }
 }

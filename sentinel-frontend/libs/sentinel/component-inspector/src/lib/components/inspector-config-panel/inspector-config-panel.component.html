@@ -10,8 +10,12 @@
         <div class="section-header">
           <h4>Library Filters</h4>
           <div class="bulk-actions">
-            <button class="btn-small" (click)="toggleAll(true)">Show All</button>
-            <button class="btn-small" (click)="toggleAll(false)">Hide All</button>
+            <button class="btn-small" (click)="toggleAll(true)">
+              Show All
+            </button>
+            <button class="btn-small" (click)="toggleAll(false)">
+              Hide All
+            </button>
           </div>
         </div>
 
@@ -30,7 +34,9 @@
                     [style.background-color]="group.baseColor"
                   ></span>
                   <span class="namespace-name">{{ group.namespace }}</span>
-                  <span class="namespace-count">({{ group.totalComponents }})</span>
+                  <span class="namespace-count"
+                    >({{ group.totalComponents }})</span
+                  >
                 </label>
               </div>
 
@@ -48,7 +54,9 @@
                         [style.background-color]="library.color"
                       ></span>
                       <span class="library-name">{{ library.name }}</span>
-                      <span class="library-count">({{ library.componentCount }})</span>
+                      <span class="library-count"
+                        >({{ library.componentCount }})</span
+                      >
                     </label>
                   </div>
                 }

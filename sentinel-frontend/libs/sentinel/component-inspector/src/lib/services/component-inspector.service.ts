@@ -1,24 +1,27 @@
 import {
-  Injectable,
-  inject,
-  signal,
-  effect,
-  isDevMode,
-  ComponentRef,
   ApplicationRef,
+  ComponentRef,
   createComponent,
+  effect,
   EnvironmentInjector,
+  inject,
+  Injectable,
+  isDevMode,
+  signal,
 } from '@angular/core';
 import { fromEvent } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { InspectorConfigPanelComponent } from '../components/inspector-config-panel/inspector-config-panel.component';
+import type { ComponentInfo } from '../models/component-info.interface';
+import type {
+  DeepPartial,
+  InspectorConfig,
+} from '../models/inspector-config.interface';
+import { DEFAULT_INSPECTOR_CONFIG } from '../models/inspector-config.interface';
+import { shouldShowComponent } from '../utils/component-metadata.util';
 import { ComponentDetectorService } from './component-detector.service';
 import { OverlayManagerService } from './overlay-manager.service';
 import { VscodeIntegrationService } from './vscode-integration.service';
-import type { ComponentInfo } from '../models/component-info.interface';
-import type { InspectorConfig, DeepPartial } from '../models/inspector-config.interface';
-import { DEFAULT_INSPECTOR_CONFIG } from '../models/inspector-config.interface';
-import { shouldShowComponent } from '../utils/component-metadata.util';
-import { InspectorConfigPanelComponent } from '../components/inspector-config-panel/inspector-config-panel.component';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +36,8 @@ export class ComponentInspectorService {
   private isActive = signal(false);
   private config = signal<InspectorConfig>(DEFAULT_INSPECTOR_CONFIG);
   private initialized = false;
-  private configPanelRef: ComponentRef<InspectorConfigPanelComponent> | null = null;
+  private configPanelRef: ComponentRef<InspectorConfigPanelComponent> | null =
+    null;
 
   constructor() {
     // Only initialize in development mode
@@ -45,7 +49,7 @@ export class ComponentInspectorService {
     effect(() => {
       if (!this.isActive()) return;
 
-      const components = this.detector.getComponents();
+      const components = this.detector.components();
       this.updateOverlays(components);
     });
   }
@@ -94,7 +98,9 @@ export class ComponentInspectorService {
 
     // Initialize services
     this.vscodeIntegration.initialize(fullConfig);
-    this.overlayManager.initialize(fullConfig, (info) => this.handleComponentClick(info));
+    this.overlayManager.initialize(fullConfig, (info) =>
+      this.handleComponentClick(info),
+    );
 
     // Load component manifest
     await this.detector.loadManifest('/assets/component-manifest.json');
@@ -113,9 +119,11 @@ export class ComponentInspectorService {
 
     console.log('[ComponentInspector] Initialized successfully');
     console.log(
-      `[ComponentInspector] Press ${this.getShortcutDescription()} to toggle inspector mode`
+      `[ComponentInspector] Press ${this.getShortcutDescription()} to toggle inspector mode`,
     );
-    console.log('[ComponentInspector] Press Ctrl+Shift+C to toggle config panel');
+    console.log(
+      '[ComponentInspector] Press Ctrl+Shift+C to toggle config panel',
+    );
   }
 
   /**
@@ -126,7 +134,7 @@ export class ComponentInspectorService {
 
     if (this.isActive()) {
       console.log('[ComponentInspector] Inspector mode ENABLED');
-      const components = this.detector.getComponents();
+      const components = this.detector.components();
       this.updateOverlays(components);
     } else {
       console.log('[ComponentInspector] Inspector mode DISABLED');
@@ -204,11 +212,13 @@ export class ComponentInspectorService {
 
     // Re-initialize services with new config
     this.vscodeIntegration.initialize(updatedConfig);
-    this.overlayManager.initialize(updatedConfig, (info) => this.handleComponentClick(info));
+    this.overlayManager.initialize(updatedConfig, (info) =>
+      this.handleComponentClick(info),
+    );
 
     if (this.isActive()) {
       // Refresh overlays with new config
-      const components = this.detector.getComponents();
+      const components = this.detector.components();
       this.updateOverlays(components);
     }
   }
@@ -293,11 +303,10 @@ export class ComponentInspectorService {
             (!meta || event.metaKey);
 
           // Check key
-          const keyMatches =
-            event.key.toUpperCase() === key.toUpperCase();
+          const keyMatches = event.key.toUpperCase() === key.toUpperCase();
 
           return modifiersMatch && keyMatches;
-        })
+        }),
       )
       .subscribe((event) => {
         event.preventDefault();
@@ -329,11 +338,9 @@ export class ComponentInspectorService {
       .pipe(
         filter((event) => {
           return (
-            event.ctrlKey &&
-            event.shiftKey &&
-            event.key.toUpperCase() === 'C'
+            event.ctrlKey && event.shiftKey && event.key.toUpperCase() === 'C'
           );
-        })
+        }),
       )
       .subscribe((event) => {
         event.preventDefault();
