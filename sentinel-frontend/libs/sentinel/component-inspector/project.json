@@ -7,17 +7,18 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/angular:ng-packagr-lite",
+      "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "options": {
-        "project": "libs/sentinel/component-inspector/ng-package.json",
-        "tsConfig": "libs/sentinel/component-inspector/tsconfig.lib.json"
+        "project": "libs/sentinel/component-inspector/ng-package.json"
       },
       "configurations": {
         "production": {
           "tsConfig": "libs/sentinel/component-inspector/tsconfig.lib.json"
         },
-        "development": {}
+        "development": {
+          "tsConfig": "libs/sentinel/component-inspector/tsconfig.lib.json"
+        }
       },
       "defaultConfiguration": "production"
     },
