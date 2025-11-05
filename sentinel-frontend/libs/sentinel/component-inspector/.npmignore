@@ -1,0 +1,22 @@
+# Source files (only ship compiled dist)
+src/
+
+# Test files
+*.spec.ts
+test-setup.ts
+jest.config.ts
+tsconfig.spec.json
+
+# Build configuration
+project.json
+ng-package.json
+tsconfig.json
+tsconfig.lib.json
+eslint.config.mjs
+
+# IDE
+.vscode/
+.idea/
+
+# Nx
+.nx/

@@ -1,6 +1,9 @@
-# Component Inspector
+# @twygmbh/component-inspector
 
-A zero-config Angular component inspector that overlays visual borders on rendered components with clickable handles to open source files in your editor.
+A zero-config Angular 19+ component inspector that overlays visual borders on rendered components with clickable handles to open source files in your editor.
+
+[![npm version](https://badge.fury.io/js/@twygmbh%2Fcomponent-inspector.svg)](https://www.npmjs.com/package/@twygmbh/component-inspector)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
@@ -11,25 +14,77 @@ A zero-config Angular component inspector that overlays visual borders on render
 - **🔧 Configurable Filtering**: Show only components matching specific patterns
 - **⚡ Performance Optimized**: Lazy rendering, throttling, and intersection observers
 - **🔄 Auto-Discovery**: Automatically detects dynamically added components
+- **🛠️ esbuild Plugin**: Automatic component manifest generation during build
+- **💻 Dev Server**: Built-in VS Code opener server for editor integration
+
+## Installation
+
+```bash
+npm install @twygmbh/component-inspector --save-dev
+```
+
+**Requirements:**
+- Angular 19 or higher
+- RxJS 7 or 8
 
 ## Quick Start
 
-### 1. Start Development Environment
+### 1. Add to Application Config
 
-Simply run:
+```typescript
+// app.config.ts
+import { ApplicationConfig } from '@angular/core';
+import { provideComponentInspector } from '@twygmbh/component-inspector';
 
-```bash
-npm run dev
+export const appConfig: ApplicationConfig = {
+  providers: [
+    // ... other providers
+    provideComponentInspector(), // Zero config setup!
+  ],
+};
 ```
 
-This automatically starts:
-- ✅ **Angular dev server** (port 4200) with hot reload
-- ✅ **Editor opener server** (port 3001) for file opening
-- ✅ **Component manifest** auto-regeneration on every build/hot reload
+### 2. Configure esbuild Plugin
 
-Everything runs in parallel - no manual setup required!
+Add the plugin to your esbuild configuration:
 
-### 2. Toggle Inspector
+```typescript
+// project.json or esbuild config
+import { componentManifestPlugin } from '@twygmbh/component-inspector/plugin';
+
+export default {
+  plugins: [
+    componentManifestPlugin({
+      rootDir: process.cwd(),
+      outputPath: 'apps/your-app/src/assets/component-manifest.json',
+    }),
+  ],
+};
+```
+
+### 3. Start Development Server
+
+Start your Angular dev server and the VS Code opener server:
+
+```bash
+# Terminal 1: Angular dev server
+npm start
+
+# Terminal 2: VS Code opener server
+npx vscode-opener
+```
+
+Or combine them in your `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently \"npm start\" \"npx vscode-opener\""
+  }
+}
+```
+
+### 4. Use Inspector
 
 - Navigate to your app in the browser
 - Press `Ctrl+Shift+I` (Windows/Linux) or `Cmd+Shift+I` (Mac)
@@ -117,7 +172,7 @@ interface InspectorConfig {
 ### Example Custom Configuration
 
 ```typescript
-// apps/sentinel/src/app/app.config.ts
+// app.config.ts
 provideComponentInspector({
   shortcut: {
     key: 'D',
@@ -135,18 +190,45 @@ provideComponentInspector({
 })
 ```
 
+### Plugin Configuration
+
+The esbuild plugin accepts these options:
+
+```typescript
+interface PluginOptions {
+  enabled?: boolean;           // Default: true
+  logToConsole?: boolean;      // Default: true
+  rootDir?: string;            // Default: process.cwd()
+  outputPath?: string;         // Default: apps/sentinel/src/assets/component-manifest.json
+  componentPattern?: string;   // Default: **/*.component.ts
+  ignorePatterns?: string[];   // Default: [**/node_modules/**, **/dist/**, **/tmp/**]
+}
+```
+
+Example:
+
+```typescript
+componentManifestPlugin({
+  rootDir: process.cwd(),
+  outputPath: 'src/assets/component-manifest.json',
+  componentPattern: '**/*.component.ts',
+  ignorePatterns: ['**/node_modules/**', '**/dist/**'],
+  logToConsole: true,
+})
+```
+
 ## How It Works
 
 ### 1. Automatic Manifest Generation
 
-The manifest generation happens automatically via an esbuild plugin (`esbuild-component-manifest-plugin.ts`):
+The manifest generation happens automatically via the included esbuild plugin:
 - **Runs on every build**: Initial build, hot reloads, and full rebuilds
 - **TypeScript AST parsing**: Uses TypeScript Compiler API to parse `*.component.ts` files
 - **Metadata extraction**: Extracts `@Component` decorator metadata (selector, class name, file paths)
-- **JSON output**: Generates manifest at `apps/sentinel/src/assets/component-manifest.json`
+- **JSON output**: Generates manifest at your configured output path
 - **Performance**: Typically completes in 50-150ms for ~100 components
 
-The plugin is configured in [apps/sentinel/project.json](../../apps/sentinel/project.json) and runs seamlessly in the background.
+The plugin integrates seamlessly with your esbuild configuration and runs in the background.
 
 ### 2. Runtime Component Detection
 
@@ -183,57 +265,64 @@ Two methods supported:
 - Works without server (VS Code only)
 - Limited line number support
 
-## Development
+## Package Structure
 
-### Project Structure
+The package includes three main parts:
 
+### 1. Angular Library (Main Export)
+
+```typescript
+import { provideComponentInspector } from '@twygmbh/component-inspector';
 ```
-libs/sentinel/component-inspector/
-├── src/
-│   ├── lib/
-│   │   ├── services/
-│   │   │   ├── component-inspector.service.ts      # Main orchestrator
-│   │   │   ├── component-detector.service.ts       # DOM scanning
-│   │   │   ├── overlay-manager.service.ts          # Visual overlays
-│   │   │   └── vscode-integration.service.ts       # VS Code API
-│   │   ├── models/
-│   │   │   ├── component-info.interface.ts
-│   │   │   └── inspector-config.interface.ts
-│   │   └── utils/
-│   │       ├── component-metadata.util.ts
-│   │       └── throttle.util.ts
-│   └── index.ts
-└── README.md
 
-tools/
-├── generate-component-manifest.ts    # Build-time manifest generator
-└── vscode-opener-server.js          # Node.js backend for editor integration
+Includes:
+- Services: `ComponentInspectorService`, `ComponentDetectorService`, `OverlayManagerService`, `VscodeIntegrationService`
+- Models: `ComponentInfo`, `InspectorConfig`
+- Utilities: Component metadata extraction, throttle/debounce
+- Components: Config panel UI
+
+### 2. esbuild Plugin
+
+```typescript
+import { componentManifestPlugin } from '@twygmbh/component-inspector/plugin';
 ```
+
+Generates component manifests during build by:
+- Parsing TypeScript AST to find `@Component` decorators
+- Extracting metadata (selector, class name, file paths)
+- Writing JSON manifest to assets directory
+
+### 3. CLI Tool
+
+```bash
+npx vscode-opener
+```
+
+Runs a local HTTP server (port 3001) that:
+- Accepts file path requests from the browser
+- Auto-detects your running editor
+- Opens files at specific line numbers
+- Supports 23+ editors
 
 ### Manifest Generation
 
-The manifest is **automatically regenerated** on every build and hot reload. You don't need to manually regenerate it!
+The manifest is **automatically regenerated** by the esbuild plugin on every build and hot reload. You don't need to manually regenerate it!
 
-If you need to manually trigger generation (e.g., in CI/CD):
-
-```bash
-npx nx run sentinel:generate-manifest
-```
-
-For more details, see [tools/README-component-manifest.md](../../../tools/README-component-manifest.md).
+The plugin runs during your build process and:
+- Scans all `*.component.ts` files
+- Extracts `@Component` decorator metadata
+- Generates a JSON manifest in your assets directory
+- Typically completes in 50-150ms for ~100 components
 
 ### Testing
 
 The inspector only works in development mode (`isDevMode() === true`).
 
 To test:
-1. Start the dev environment: `npm run dev`
-2. Open browser DevTools console to see inspector logs
-3. Press `Ctrl+Shift+I` to toggle
-
-**Alternative commands:**
-- `npm start` - Dev server only (without editor opener)
-- `npm run vscode-opener` - Editor opener only (if running separately)
+1. Start your Angular dev server
+2. Start the VS Code opener: `npx vscode-opener`
+3. Open browser DevTools console to see inspector logs
+4. Press `Ctrl+Shift+I` to toggle inspector mode
 
 ## Troubleshooting
 
@@ -241,7 +330,8 @@ To test:
 
 - **Check console**: Look for `[ComponentInspector] Initialized successfully`
 - **Dev mode**: Inspector only works when `isDevMode() === true`
-- **Manifest**: Ensure manifest was generated (check `apps/sentinel/src/assets/component-manifest.json`)
+- **Manifest**: Ensure manifest was generated by the esbuild plugin (check your assets directory for `component-manifest.json`)
+- **Provider**: Verify you added `provideComponentInspector()` to your app config
 
 ### Overlays not appearing
 

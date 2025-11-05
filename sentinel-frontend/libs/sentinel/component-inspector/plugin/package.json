@@ -1,0 +1,14 @@
+{
+  "ngPackage": {
+    "lib": {
+      "entryFile": "../src/plugin/index.ts",
+      "umdModuleIds": {
+        "esbuild": "esbuild",
+        "glob": "glob",
+        "typescript": "typescript",
+        "fs": "fs",
+        "path": "path"
+      }
+    }
+  }
+}

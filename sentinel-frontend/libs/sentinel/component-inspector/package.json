@@ -1,0 +1,50 @@
+{
+  "name": "@twygmbh/component-inspector",
+  "version": "0.1.0",
+  "description": "Angular 19+ component inspector with developer tools for visualizing and debugging components in real-time",
+  "author": "reto@twy.gmbh",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "inspector",
+    "component",
+    "developer-tools",
+    "debugging",
+    "dev-tools",
+    "vscode",
+    "angular19",
+    "esbuild-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/twygmbh/component-inspector.git"
+  },
+  "homepage": "https://github.com/twygmbh/component-inspector#readme",
+  "bugs": {
+    "url": "https://github.com/twygmbh/component-inspector/issues"
+  },
+  "bin": {
+    "vscode-opener": "./bin/vscode-opener-server.js"
+  },
+  "peerDependencies": {
+    "@angular/common": "^19.0.0",
+    "@angular/core": "^19.0.0",
+    "rxjs": "^7.0.0 || ^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "glob": "^11.0.0",
+    "launch-editor": "^2.9.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false
+}

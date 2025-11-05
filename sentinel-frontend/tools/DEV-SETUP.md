@@ -39,16 +39,17 @@ This single command automatically starts:
 
 ### Services Running in Parallel
 
-| Service | Port | Description |
-|---------|------|-------------|
+| Service            | Port | Description          |
+| ------------------ | ---- | -------------------- |
 | Angular Dev Server | 4200 | Frontend application |
-| VS Code Opener | 3001 | File opening API |
+| VS Code Opener     | 3001 | File opening API     |
 
 ## Alternative Commands
 
 If you need to run services individually:
 
 ### Dev Server Only
+
 ```bash
 npm start
 # or
@@ -58,6 +59,7 @@ npx nx serve sentinel
 Runs the Angular dev server without the VS Code opener.
 
 ### VS Code Opener Only
+
 ```bash
 npm run vscode-opener
 # or
@@ -65,13 +67,6 @@ npx nx vscode-opener sentinel
 ```
 
 Runs the VS Code opener server on port 3001.
-
-### Manual Manifest Generation
-```bash
-npx nx generate-manifest sentinel
-```
-
-Manually trigger component manifest generation (rarely needed since it auto-generates).
 
 ## How It Works
 
@@ -84,10 +79,7 @@ The `dev` target in [apps/sentinel/project.json](apps/sentinel/project.json:145-
   "dev": {
     "executor": "nx:run-commands",
     "options": {
-      "commands": [
-        "npx nx serve sentinel",
-        "npx nx vscode-opener sentinel"
-      ],
+      "commands": ["npx nx serve sentinel", "npx nx vscode-opener sentinel"],
       "parallel": true,
       "color": true
     }
@@ -171,7 +163,7 @@ Edit [apps/sentinel/project.json](apps/sentinel/project.json:31-36):
 {
   "path": "tools/esbuild-component-manifest-plugin.ts",
   "options": {
-    "enabled": false  // Disable the plugin
+    "enabled": false // Disable the plugin
   }
 }
 ```
@@ -198,8 +190,8 @@ Edit [apps/sentinel/src/app/app.config.ts](../apps/sentinel/src/app/app.config.t
 provideComponentInspector({
   shortcut: { key: 'D', ctrl: true, shift: true },
   overlay: { borderColor: 'rgb(255, 100, 100)' },
-  filter: { include: ['app-*'], exclude: ['app-test-*'] }
-})
+  filter: { include: ['app-*'], exclude: ['app-test-*'] },
+});
 ```
 
 ## Related Documentation

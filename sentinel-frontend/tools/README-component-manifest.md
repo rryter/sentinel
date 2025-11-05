@@ -9,9 +9,11 @@ The component manifest system automatically tracks all Angular components in the
 ## Files
 
 ### `esbuild-component-manifest-plugin.ts`
+
 An esbuild plugin that automatically regenerates the component manifest on every build, including hot reloads during development.
 
 ### `generate-component-manifest.ts`
+
 A standalone script for manually generating the component manifest. This is useful for CI/CD pipelines or one-off generation.
 
 ## How It Works
@@ -25,18 +27,6 @@ The `esbuild-component-manifest-plugin` is integrated into the build pipeline vi
 - Full rebuilds
 
 This ensures that the component manifest is always up-to-date during development.
-
-### Manual Generation
-
-You can also manually generate the manifest using the Nx target:
-
-```bash
-npx nx generate-manifest sentinel
-```
-
-This runs the standalone `generate-component-manifest.ts` script.
-
-## Configuration
 
 The plugin is configured in [apps/sentinel/project.json](apps/sentinel/project.json):
 
@@ -80,6 +70,7 @@ The manifest is generated at [apps/sentinel/src/assets/component-manifest.json](
 ```
 
 Each component entry includes:
+
 - **`className`**: The TypeScript class name
 - **`selector`**: The Angular component selector
 - **`filePath`**: Absolute path to the component file
@@ -96,7 +87,9 @@ import { inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 const http = inject(HttpClient);
-const manifest$ = http.get<ComponentManifest>('/assets/component-manifest.json');
+const manifest$ = http.get<ComponentManifest>(
+  '/assets/component-manifest.json',
+);
 ```
 
 This is used by the Component Inspector feature to provide real-time component information and navigation.
@@ -104,6 +97,7 @@ This is used by the Component Inspector feature to provide real-time component i
 ## Performance
 
 The manifest generation is highly optimized:
+
 - Uses the TypeScript compiler API for accurate AST parsing
 - Only processes `*.component.ts` files
 - Typically completes in 50-150ms for ~100 components
@@ -112,16 +106,19 @@ The manifest generation is highly optimized:
 ## Troubleshooting
 
 ### Manifest not updating
+
 1. Check that the plugin is enabled in [apps/sentinel/project.json](apps/sentinel/project.json)
 2. Verify the dev server is running with hot reload enabled
 3. Check the console for `[ComponentManifest]` log messages
 
 ### Components missing from manifest
+
 1. Ensure component files match the pattern `**/*.component.ts`
 2. Verify the component has a `@Component` decorator with a `selector` property
 3. Check that the file is not in an ignored directory (node_modules, dist, tmp)
 
 ### Build errors after adding plugin
+
 1. Verify TypeScript and glob dependencies are installed: `npm install --save-dev typescript glob`
 2. Check that the plugin file exists at `tools/esbuild-component-manifest-plugin.ts`
 3. Review the error message for specific configuration issues

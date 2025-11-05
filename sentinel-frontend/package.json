@@ -10,6 +10,9 @@
     "vscode-opener": "node tools/vscode-opener-server.js"
   },
   "private": true,
+  "overrides": {
+    "find-cache-directory": "npm:find-cache-dir@^5.0.0"
+  },
   "dependencies": {
     "@angular/animations": "21.0.0-next.9",
     "@angular/cdk": "21.0.0-next.9",
