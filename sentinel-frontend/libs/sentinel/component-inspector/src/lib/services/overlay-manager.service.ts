@@ -120,21 +120,44 @@ export class OverlayManagerService {
     const borderColor =
       componentInfo.libraryColor || this.config.overlay.borderColor;
 
-    // Container (the border overlay)
+    const baseOpacity = this.config.overlay.opacity ?? 0.15;
+    const borderBadgeOpacity = Math.min(baseOpacity + 0.3, 1.0); // 30% more visible, max 1.0
+
+    // Container (wrapper for all overlay elements)
     const container = document.createElement('div');
     container.className = 'ng-component-inspector-overlay';
     container.style.position = 'absolute';
-    container.style.backgroundColor = this.getBackgroundColorWithOpacity(
-      this.config.overlay.backgroundColor,
-      this.config.overlay.opacity
-    );
-    container.style.border = `${this.config.overlay.borderWidth}px solid ${borderColor}`;
     container.style.zIndex = this.config.overlay.zIndex.toString();
     container.style.pointerEvents = 'none';
     container.style.boxSizing = 'border-box';
     container.style.transition = 'opacity 0.2s ease';
 
-    // Badge (clickable label)
+    // Background layer (with configured opacity)
+    const background = document.createElement('div');
+    background.className = 'ng-component-inspector-background';
+    background.style.position = 'absolute';
+    background.style.top = '0';
+    background.style.left = '0';
+    background.style.width = '100%';
+    background.style.height = '100%';
+    background.style.backgroundColor = this.config.overlay.backgroundColor;
+    background.style.opacity = baseOpacity.toString();
+    background.style.pointerEvents = 'none';
+
+    // Border layer (with increased opacity)
+    const border = document.createElement('div');
+    border.className = 'ng-component-inspector-border';
+    border.style.position = 'absolute';
+    border.style.top = '0';
+    border.style.left = '0';
+    border.style.width = '100%';
+    border.style.height = '100%';
+    border.style.border = `${this.config.overlay.borderWidth}px solid ${borderColor}`;
+    border.style.opacity = borderBadgeOpacity.toString();
+    border.style.pointerEvents = 'none';
+    border.style.boxSizing = 'border-box';
+
+    // Badge (clickable label with increased opacity)
     const badge = document.createElement('div');
     badge.className = 'ng-component-inspector-badge';
     badge.style.position = 'absolute';
@@ -150,31 +173,36 @@ export class OverlayManagerService {
     badge.style.userSelect = 'none';
     badge.style.whiteSpace = 'nowrap';
     badge.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+    badge.style.opacity = borderBadgeOpacity.toString();
     badge.style.transition =
       'transform 0.15s ease, background-color 0.15s ease';
     badge.textContent = componentInfo.selector;
 
-    // Hover effect - highlight both badge and container
+    // Hover effect - highlight badge, background, and border
     badge.addEventListener('mouseenter', () => {
       badge.style.transform = 'scale(1.05)';
       badge.style.backgroundColor = 'rgb(80, 150, 220)';
-      // Highlight the component container with red
-      container.style.backgroundColor = 'rgba(255, 0, 0, 0.15)';
-      container.style.borderColor = 'rgb(255, 0, 0)';
-      container.style.borderWidth = '3px';
+      // Highlight the background and border with red
+      background.style.backgroundColor = 'rgb(255, 0, 0)';
+      background.style.opacity = '0.3';
+      border.style.borderColor = 'rgb(255, 0, 0)';
+      border.style.borderWidth = '3px';
+      border.style.opacity = '0.8';
     });
 
     badge.addEventListener('mouseleave', () => {
       if (!this.config) return;
+      const baseOpacity = this.config.overlay.opacity ?? 0.15;
+      const borderBadgeOpacity = Math.min(baseOpacity + 0.3, 1.0);
+
       badge.style.transform = 'scale(1)';
       badge.style.backgroundColor = borderColor;
-      // Reset the component container
-      container.style.backgroundColor = this.getBackgroundColorWithOpacity(
-        this.config.overlay.backgroundColor,
-        this.config.overlay.opacity
-      );
-      container.style.borderColor = borderColor;
-      container.style.borderWidth = `${this.config.overlay.borderWidth}px`;
+      // Reset the background and border to their layered opacity values
+      background.style.backgroundColor = this.config.overlay.backgroundColor;
+      background.style.opacity = baseOpacity.toString();
+      border.style.borderColor = borderColor;
+      border.style.borderWidth = `${this.config.overlay.borderWidth}px`;
+      border.style.opacity = borderBadgeOpacity.toString();
     });
 
     // Click handler
@@ -186,6 +214,9 @@ export class OverlayManagerService {
       }
     });
 
+    // Append layers to container
+    container.appendChild(background);
+    container.appendChild(border);
     container.appendChild(badge);
 
     // Tooltip (optional, shows on hover)
@@ -316,9 +347,10 @@ export class OverlayManagerService {
           const overlayElements = this.overlays.get(entry.target);
           if (overlayElements) {
             // Show/hide overlay based on visibility
-            overlayElements.container.style.opacity = entry.isIntersecting
-              ? '1'
-              : '0';
+            // Use visibility instead of opacity since we have layered opacity
+            overlayElements.container.style.visibility = entry.isIntersecting
+              ? 'visible'
+              : 'hidden';
           }
         });
       },
@@ -326,33 +358,5 @@ export class OverlayManagerService {
         rootMargin: '50px', // Pre-render slightly off-screen
       },
     );
-  }
-
-  /**
-   * Convert RGB/RGBA color to RGBA with specified opacity
-   */
-  private getBackgroundColorWithOpacity(
-    color: string,
-    opacity?: number
-  ): string {
-    const defaultOpacity = 0.15;
-    const targetOpacity = opacity ?? defaultOpacity;
-
-    // If color is already rgba, extract RGB and apply new opacity
-    const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (rgbaMatch) {
-      const [, r, g, b] = rgbaMatch;
-      return `rgba(${r}, ${g}, ${b}, ${targetOpacity})`;
-    }
-
-    // If it's rgb or hex, convert to rgba
-    const rgb = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (rgb) {
-      const [, r, g, b] = rgb;
-      return `rgba(${r}, ${g}, ${b}, ${targetOpacity})`;
-    }
-
-    // Fallback: assume it's a valid color and wrap in rgba with default
-    return `rgba(104, 182, 255, ${targetOpacity})`;
   }
 }

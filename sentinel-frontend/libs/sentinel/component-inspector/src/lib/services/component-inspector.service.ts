@@ -236,6 +236,12 @@ export class ComponentInspectorService {
     );
 
     if (this.isActive()) {
+      // If overlay config changed, remove all overlays and recreate them
+      const overlayConfigChanged = config?.overlay !== undefined;
+      if (overlayConfigChanged) {
+        this.overlayManager.removeAllOverlays();
+      }
+
       // Refresh overlays with new config
       const components = this.detector.components();
       this.updateOverlays(components);
