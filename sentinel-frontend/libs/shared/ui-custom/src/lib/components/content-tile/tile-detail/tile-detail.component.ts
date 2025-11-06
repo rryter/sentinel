@@ -16,3 +16,4 @@ import { NgIcon } from '@ng-icons/core';
 export class TileDetailComponent {
   @Input() icon: string = 'lucideInfo';
 }
+g;

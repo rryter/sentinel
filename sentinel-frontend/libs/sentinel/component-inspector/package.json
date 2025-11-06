@@ -1,6 +1,6 @@
 {
   "name": "@twygmbh/component-inspector",
-  "version": "0.1.4",
+  "version": "0.1.9",
   "description": "Angular 19+ component inspector with developer tools for visualizing and debugging components in real-time",
   "author": "reto@twy.gmbh",
   "license": "MIT",
@@ -39,6 +39,10 @@
       "optional": true
     }
   },
+  "scripts": {
+    "build-plugin": "tsc --project tsconfig.plugin.json",
+    "prepublishOnly": "npm run build-plugin"
+  },
   "dependencies": {
     "glob": "^11.0.0",
     "launch-editor": "^2.9.1"
@@ -56,7 +60,8 @@
       "default": "./fesm2022/twygmbh-component-inspector.mjs"
     },
     "./plugin": {
-      "default": "./src/plugin/index.ts"
+      "types": "./src/plugin-dist/index.d.ts",
+      "default": "./src/plugin-dist/index.js"
     }
   }
 }
