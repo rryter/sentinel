@@ -1,5 +1,3 @@
-import { BadgeVariants, HlmBadge } from '@spartan-ng/helm/badge';
-import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -24,6 +22,8 @@ import {
   TileDetailComponent,
   TileDividerComponent,
 } from '@shared/ui-custom';
+import { BadgeVariants, HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 
 import { firstValueFrom } from 'rxjs';
 import { LintSummaryItemComponent } from '../lint-summary-item/lint-summary-item.component';
