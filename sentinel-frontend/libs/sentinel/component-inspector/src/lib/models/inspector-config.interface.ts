@@ -24,6 +24,8 @@ export interface InspectorConfig {
     backgroundColor: string;
     borderWidth: number;
     zIndex: number;
+    /** Overlay opacity (0.0 to 1.0) */
+    opacity?: number;
   };
 
   /** Component filtering rules */
@@ -71,9 +73,10 @@ export const DEFAULT_INSPECTOR_CONFIG: InspectorConfig = {
   },
   overlay: {
     borderColor: 'rgb(104, 182, 255)',
-    backgroundColor: 'rgba(104, 182, 255, 0.15)',
+    backgroundColor: 'rgb(104, 182, 255)',
     borderWidth: 2,
     zIndex: 2147483646,
+    opacity: 0.15,
   },
   filter: {
     include: ['@sentinel/**', '@shared/**', 'app-*', 'lib-*', 'saas-*'],

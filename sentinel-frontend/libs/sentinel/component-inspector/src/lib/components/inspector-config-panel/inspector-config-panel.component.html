@@ -8,6 +8,33 @@
     <div class="panel-content">
       <div class="section">
         <div class="section-header">
+          <h4>Overlay Opacity</h4>
+        </div>
+
+        <div class="opacity-control">
+          <div class="opacity-label">
+            <span>Transparency</span>
+            <span class="opacity-value">{{ (opacity() * 100).toFixed(0) }}%</span>
+          </div>
+          <input
+            type="range"
+            class="opacity-slider"
+            min="0"
+            max="100"
+            [value]="opacity() * 100"
+            (input)="updateOpacity($any($event.target).value / 100)"
+            aria-label="Overlay opacity"
+          />
+          <div class="opacity-markers">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
           <h4>Library Filters</h4>
           <div class="bulk-actions">
             <button class="btn-small" (click)="toggleAll(true)">

@@ -124,7 +124,10 @@ export class OverlayManagerService {
     const container = document.createElement('div');
     container.className = 'ng-component-inspector-overlay';
     container.style.position = 'absolute';
-    container.style.backgroundColor = this.config.overlay.backgroundColor;
+    container.style.backgroundColor = this.getBackgroundColorWithOpacity(
+      this.config.overlay.backgroundColor,
+      this.config.overlay.opacity
+    );
     container.style.border = `${this.config.overlay.borderWidth}px solid ${borderColor}`;
     container.style.zIndex = this.config.overlay.zIndex.toString();
     container.style.pointerEvents = 'none';
@@ -166,7 +169,10 @@ export class OverlayManagerService {
       badge.style.transform = 'scale(1)';
       badge.style.backgroundColor = borderColor;
       // Reset the component container
-      container.style.backgroundColor = this.config.overlay.backgroundColor;
+      container.style.backgroundColor = this.getBackgroundColorWithOpacity(
+        this.config.overlay.backgroundColor,
+        this.config.overlay.opacity
+      );
       container.style.borderColor = borderColor;
       container.style.borderWidth = `${this.config.overlay.borderWidth}px`;
     });
@@ -320,5 +326,33 @@ export class OverlayManagerService {
         rootMargin: '50px', // Pre-render slightly off-screen
       },
     );
+  }
+
+  /**
+   * Convert RGB/RGBA color to RGBA with specified opacity
+   */
+  private getBackgroundColorWithOpacity(
+    color: string,
+    opacity?: number
+  ): string {
+    const defaultOpacity = 0.15;
+    const targetOpacity = opacity ?? defaultOpacity;
+
+    // If color is already rgba, extract RGB and apply new opacity
+    const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (rgbaMatch) {
+      const [, r, g, b] = rgbaMatch;
+      return `rgba(${r}, ${g}, ${b}, ${targetOpacity})`;
+    }
+
+    // If it's rgb or hex, convert to rgba
+    const rgb = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (rgb) {
+      const [, r, g, b] = rgb;
+      return `rgba(${r}, ${g}, ${b}, ${targetOpacity})`;
+    }
+
+    // Fallback: assume it's a valid color and wrap in rgba with default
+    return `rgba(104, 182, 255, ${targetOpacity})`;
   }
 }

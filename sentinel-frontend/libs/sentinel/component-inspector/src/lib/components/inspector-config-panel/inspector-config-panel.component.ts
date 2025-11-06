@@ -32,6 +32,12 @@ export class InspectorConfigPanelComponent {
 
   isVisible = signal(false);
 
+  // Get opacity from current config
+  opacity = computed(() => {
+    const config = this.inspectorService.getConfig();
+    return config.overlay.opacity ?? 0.15;
+  });
+
   namespaceGroups = computed<NamespaceGroupInfo[]>(() => {
     const config = this.inspectorService.getConfig();
     const detectedComponents = this.detectorService.components();
@@ -151,6 +157,14 @@ export class InspectorConfigPanelComponent {
     this.inspectorService.updateConfig({
       filter: {
         libraries: libraryMap,
+      },
+    });
+  }
+
+  updateOpacity(value: number): void {
+    this.inspectorService.updateConfig({
+      overlay: {
+        opacity: value,
       },
     });
   }

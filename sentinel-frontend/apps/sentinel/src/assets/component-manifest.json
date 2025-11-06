@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-06T17:40:00.804Z",
+  "generated": "2025-11-06T17:46:37.778Z",
   "components": [
     {
       "className": "BuildListComponent",
@@ -375,7 +375,7 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/build/src/lib/components/build-metrics-chart/build-metrics-chart.component.ts",
       "relativePath": "libs/sentinel/build/src/lib/components/build-metrics-chart/build-metrics-chart.component.ts",
       "library": "sentinel/build",
-      "line": 67
+      "line": 68
     }
   ]
 }

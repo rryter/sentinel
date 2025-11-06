@@ -4,6 +4,7 @@ import {
   Chart,
   ChartConfiguration,
   ChartOptions,
+  Legend,
   LinearScale,
   LineController,
   LineElement,

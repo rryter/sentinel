@@ -419,11 +419,13 @@ export class ComponentInspectorService {
    */
   private saveConfig(config: InspectorConfig): void {
     try {
-      // Only save the filter settings (library toggles)
-      // Don't save shortcuts, overlay settings, etc.
+      // Save filter settings (library toggles) and overlay opacity
       const configToSave: DeepPartial<InspectorConfig> = {
         filter: {
           libraries: config.filter.libraries,
+        },
+        overlay: {
+          opacity: config.overlay.opacity,
         },
       };
       localStorage.setItem(
