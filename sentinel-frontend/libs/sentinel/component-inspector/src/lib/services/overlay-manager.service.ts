@@ -98,6 +98,24 @@ export class OverlayManagerService {
   }
 
   /**
+   * Show all overlays
+   */
+  showAllOverlays(): void {
+    this.overlays.forEach((overlayElements) => {
+      overlayElements.container.style.visibility = 'visible';
+    });
+  }
+
+  /**
+   * Hide all overlays
+   */
+  hideAllOverlays(): void {
+    this.overlays.forEach((overlayElements) => {
+      overlayElements.container.style.visibility = 'hidden';
+    });
+  }
+
+  /**
    * Cleanup and destroy
    */
   destroy(): void {

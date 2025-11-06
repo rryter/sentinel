@@ -40,6 +40,7 @@ export class ComponentInspectorService {
   private initialized = false;
   private configPanelRef: ComponentRef<InspectorConfigPanelComponent> | null =
     null;
+  private isAltKeyPressed = signal(false);
 
   constructor() {
     // Only initialize in development mode
@@ -53,6 +54,19 @@ export class ComponentInspectorService {
 
       const components = this.detector.components();
       this.updateOverlays(components);
+    });
+
+    // Watch for Alt key changes and show/hide overlays
+    effect(() => {
+      if (!this.isActive()) return;
+
+      if (this.isAltKeyPressed()) {
+        // Show all existing overlays
+        this.overlayManager.showAllOverlays();
+      } else {
+        // Hide all overlays
+        this.overlayManager.hideAllOverlays();
+      }
     });
   }
 
@@ -130,6 +144,7 @@ export class ComponentInspectorService {
     // Setup keyboard shortcuts
     this.setupKeyboardShortcut();
     this.setupConfigPanelShortcut();
+    this.setupAltKeyListener();
 
     // Create config panel component
     this.createConfigPanel();
@@ -380,6 +395,36 @@ export class ComponentInspectorService {
         event.preventDefault();
         this.toggleConfigPanel();
       });
+  }
+
+  /**
+   * Setup Alt key listener to show/hide overlays
+   */
+  private setupAltKeyListener(): void {
+    // Listen for Alt key down
+    fromEvent<KeyboardEvent>(window, 'keydown')
+      .pipe(
+        filter((event) => event.key === 'Alt' && !this.isAltKeyPressed()),
+      )
+      .subscribe(() => {
+        this.isAltKeyPressed.set(true);
+      });
+
+    // Listen for Alt key up
+    fromEvent<KeyboardEvent>(window, 'keyup')
+      .pipe(
+        filter((event) => event.key === 'Alt' && this.isAltKeyPressed()),
+      )
+      .subscribe(() => {
+        this.isAltKeyPressed.set(false);
+      });
+
+    // Also listen for blur to reset Alt state (in case user Alt+Tabs away)
+    fromEvent(window, 'blur').subscribe(() => {
+      if (this.isAltKeyPressed()) {
+        this.isAltKeyPressed.set(false);
+      }
+    });
   }
 
   /**
