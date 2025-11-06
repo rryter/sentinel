@@ -1,4 +1,4 @@
-require 'rails_helper'
+require 'swagger_helper'
 
 RSpec.describe "Api::V1::BuildMetrics", type: :request do
   def generate_metrics(count, project_name)
@@ -32,45 +32,110 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     }
   end
 
+  path '/api/v1/projects/{project_id}/build_metrics' do
+    parameter name: :project_id, in: :path, type: :integer, required: true, description: 'Project ID'
+
+    get 'Get build metrics for a project' do
+      tags 'Build Metrics'
+      produces 'application/json'
+      parameter name: :interval, in: :query, type: :string, required: false,
+                description: 'Time interval for grouping metrics',
+                schema: { type: :string, enum: ['1m', '5m', '15m', '30m', '1h', '6h', '12h', '1d'] }
+      parameter name: :environment, in: :query, type: :string, required: false,
+                description: 'Filter by environment'
+      parameter name: :start_time, in: :query, type: :string, required: false,
+                description: 'Start time for filtering (ISO8601 format)'
+      parameter name: :end_time, in: :query, type: :string, required: false,
+                description: 'End time for filtering (ISO8601 format)'
+
+      response '200', 'build metrics found' do
+        schema type: :object,
+          properties: {
+            metrics: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  timestamp: { type: :string, format: 'date-time' },
+                  initial_builds: {
+                    type: :object,
+                    properties: {
+                      avg_duration_sec: { type: [:number, :null] },
+                      min_duration_sec: { type: [:number, :null] },
+                      max_duration_sec: { type: [:number, :null] },
+                      build_count: { type: :integer },
+                      total_errors: { type: :integer },
+                      total_warnings: { type: :integer },
+                      avg_files_count: { type: [:integer, :null] }
+                    }
+                  },
+                  hot_reloads: {
+                    type: :object,
+                    properties: {
+                      avg_duration_sec: { type: [:number, :null] },
+                      min_duration_sec: { type: [:number, :null] },
+                      max_duration_sec: { type: [:number, :null] },
+                      build_count: { type: :integer },
+                      total_errors: { type: :integer },
+                      total_warnings: { type: :integer },
+                      avg_files_count: { type: [:integer, :null] }
+                    }
+                  },
+                  system: {
+                    type: :object,
+                    properties: {
+                      memory_usage_percent: { type: :number }
+                    }
+                  },
+                  git: {
+                    type: :object,
+                    properties: {
+                      branch: { type: [:string, :null] },
+                      commit: { type: [:string, :null] }
+                    }
+                  }
+                }
+              }
+            },
+            filters: {
+              type: :object,
+              properties: {
+                projects: { type: :array, items: { type: :string } },
+                environments: { type: :array, items: { type: :string } },
+                interval: { type: :string }
+              }
+            }
+          },
+          required: ['metrics', 'filters']
+
+        let!(:project) { create(:project) }
+        let!(:build_metric) { create(:build_metric, project: project, workspace_project: project.name, branch_name: "main", commit_hash: "abc123") }
+        let(:project_id) { project.id }
+
+        run_test! do |response|
+          json_response = JSON.parse(response.body)
+          expect(json_response).to include("metrics", "filters")
+          expect(json_response["filters"]).to include("projects", "environments")
+        end
+      end
+
+      response '404', 'project not found' do
+        schema type: :object,
+          properties: {
+            error: { type: :string }
+          },
+          required: ['error']
+
+        let(:project_id) { 99999 }
+
+        run_test!
+      end
+    end
+  end
+
   describe "GET /api/v1/projects/:project_id/build_metrics" do
     let!(:project) { create(:project) }
     let!(:build_metric) { create(:build_metric, project: project, workspace_project: project.name, branch_name: "main", commit_hash: "abc123") }
-
-    context "when project does not exist" do
-      it "returns 404 not found" do
-        get "/api/v1/projects/#{Project.maximum(:id).to_i + 1}/build_metrics", headers: valid_headers
-        
-        expect(response).to have_http_status(:not_found)
-        json_response = JSON.parse(response.body)
-        expect(json_response["error"]).to eq("Project not found")
-      end
-    end
-
-    it "returns build metrics data" do
-      get "/api/v1/projects/#{project.id}/build_metrics", headers: valid_headers
-
-      expect(response).to have_http_status(:success)
-      json_response = JSON.parse(response.body)
-      
-      # Check that the response has the expected structure
-      expect(json_response).to include("metrics", "filters")
-      expect(json_response["filters"]).to include("projects", "environments")
-      
-      # Verify metrics data
-      metric = json_response["metrics"].first
-      expect(metric).to include(
-        "timestamp",
-        "initial_builds",
-        "hot_reloads",
-        "system",
-        "git"
-      )
-      
-      # Verify git information
-      expect(metric["git"]).to include("branch", "commit")
-      expect(metric["git"]["branch"]).to eq("main")
-      expect(metric["git"]["commit"]).to eq("abc123")
-    end
 
     context "with no matching data" do
       let!(:other_project) { create(:project, name: "other-project") }
@@ -240,20 +305,134 @@ RSpec.describe "Api::V1::BuildMetrics", type: :request do
     end
   end
 
-  describe "POST /api/v1/projects/:project_id/build_metrics" do
-    let!(:project) { create(:project) }
+  path '/api/v1/projects/{project_id}/build_metrics' do
+    parameter name: :project_id, in: :path, type: :integer, required: true, description: 'Project ID'
 
-    context "when project does not exist" do
-      it "returns 404 not found" do
-        post "/api/v1/projects/#{Project.maximum(:id).to_i + 1}/build_metrics", 
-             params: { metrics: [] }.to_json, 
-             headers: valid_headers
-        
-        expect(response).to have_http_status(:not_found)
-        json_response = JSON.parse(response.body)
-        expect(json_response["error"]).to eq("Project not found")
+    post 'Create build metrics' do
+      tags 'Build Metrics'
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :metrics, in: :body, schema: {
+        type: :object,
+        properties: {
+          metrics: {
+            type: :array,
+            items: {
+              type: :object,
+              properties: {
+                timestamp: { type: :string, format: 'date-time' },
+                duration_ms: { type: :integer },
+                is_initial_build: { type: :boolean },
+                machine_hostname: { type: :string },
+                machine_platform: { type: :string },
+                machine_cpu_count: { type: :integer },
+                machine_memory_total: { type: :integer },
+                machine_memory_free: { type: :integer },
+                process_node_version: { type: :string },
+                process_memory: { type: :integer },
+                build_files_count: { type: :integer },
+                build_output_dir: { type: :string },
+                build_error_count: { type: :integer },
+                build_warning_count: { type: :integer },
+                workspace_name: { type: :string },
+                workspace_project: { type: :string },
+                workspace_environment: { type: :string },
+                workspace_user: { type: :string },
+                workspace_task: { type: :string },
+                branch_name: { type: :string },
+                commit_hash: { type: :string }
+              },
+              required: ['timestamp', 'duration_ms', 'is_initial_build', 'workspace_project', 'workspace_environment', 'workspace_user']
+            }
+          }
+        },
+        required: ['metrics']
+      }
+
+      response '201', 'build metrics created' do
+        schema type: :object,
+          properties: {
+            results: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id: { type: :integer },
+                  status: { type: :string }
+                }
+              }
+            }
+          },
+          required: ['results']
+
+        let!(:project) { create(:project) }
+        let(:project_id) { project.id }
+        let(:metrics) do
+          {
+            metrics: [
+              {
+                timestamp: Time.current.iso8601,
+                duration_ms: 5781,
+                is_initial_build: true,
+                machine_hostname: "ai-code",
+                machine_platform: "linux",
+                machine_cpu_count: 24,
+                machine_memory_total: 128847286272,
+                machine_memory_free: 118873780224,
+                process_node_version: "v20.18.0",
+                process_memory: 110641208,
+                build_files_count: 163,
+                build_output_dir: ".",
+                build_error_count: 0,
+                build_warning_count: 0,
+                workspace_name: "@sentinel/source",
+                workspace_project: project.name,
+                workspace_environment: "development",
+                workspace_user: "testuser",
+                branch_name: "develop",
+                commit_hash: "abcdef123456"
+              }
+            ]
+          }
+        end
+
+        run_test! do |response|
+          json_response = JSON.parse(response.body)
+          expect(json_response["results"].first["status"]).to eq("success")
+        end
+      end
+
+      response '404', 'project not found' do
+        schema type: :object,
+          properties: {
+            error: { type: :string }
+          },
+          required: ['error']
+
+        let(:project_id) { 99999 }
+        let(:metrics) { { metrics: [] } }
+
+        run_test!
+      end
+
+      response '400', 'bad request' do
+        schema type: :object,
+          properties: {
+            error: { type: :string }
+          },
+          required: ['error']
+
+        let!(:project) { create(:project) }
+        let(:project_id) { project.id }
+        let(:metrics) { {} }
+
+        run_test!
       end
     end
+  end
+
+  describe "POST /api/v1/projects/:project_id/build_metrics" do
+    let!(:project) { create(:project) }
     
     context "with valid parameters" do
       let(:valid_attributes) do

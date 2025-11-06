@@ -868,6 +868,411 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/build_metrics": {
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "description": "Project ID",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Get build metrics for a project",
+        "tags": [
+          "Build Metrics"
+        ],
+        "parameters": [
+          {
+            "name": "interval",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Time interval for grouping metrics",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "6h",
+                "12h",
+                "1d"
+              ]
+            }
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "description": "Filter by environment",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": false,
+            "description": "Start time for filtering (ISO8601 format)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "description": "End time for filtering (ISO8601 format)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "build metrics found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metrics": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "initial_builds": {
+                            "type": "object",
+                            "properties": {
+                              "avg_duration_sec": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "min_duration_sec": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "max_duration_sec": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "build_count": {
+                                "type": "integer"
+                              },
+                              "total_errors": {
+                                "type": "integer"
+                              },
+                              "total_warnings": {
+                                "type": "integer"
+                              },
+                              "avg_files_count": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          "hot_reloads": {
+                            "type": "object",
+                            "properties": {
+                              "avg_duration_sec": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "min_duration_sec": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "max_duration_sec": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "build_count": {
+                                "type": "integer"
+                              },
+                              "total_errors": {
+                                "type": "integer"
+                              },
+                              "total_warnings": {
+                                "type": "integer"
+                              },
+                              "avg_files_count": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          "system": {
+                            "type": "object",
+                            "properties": {
+                              "memory_usage_percent": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "git": {
+                            "type": "object",
+                            "properties": {
+                              "branch": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "commit": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "filters": {
+                      "type": "object",
+                      "properties": {
+                        "projects": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "environments": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "interval": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "metrics",
+                    "filters"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create build metrics",
+        "tags": [
+          "Build Metrics"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "build metrics created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "results"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "project not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "metrics": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "duration_ms": {
+                          "type": "integer"
+                        },
+                        "is_initial_build": {
+                          "type": "boolean"
+                        },
+                        "machine_hostname": {
+                          "type": "string"
+                        },
+                        "machine_platform": {
+                          "type": "string"
+                        },
+                        "machine_cpu_count": {
+                          "type": "integer"
+                        },
+                        "machine_memory_total": {
+                          "type": "integer"
+                        },
+                        "machine_memory_free": {
+                          "type": "integer"
+                        },
+                        "process_node_version": {
+                          "type": "string"
+                        },
+                        "process_memory": {
+                          "type": "integer"
+                        },
+                        "build_files_count": {
+                          "type": "integer"
+                        },
+                        "build_output_dir": {
+                          "type": "string"
+                        },
+                        "build_error_count": {
+                          "type": "integer"
+                        },
+                        "build_warning_count": {
+                          "type": "integer"
+                        },
+                        "workspace_name": {
+                          "type": "string"
+                        },
+                        "workspace_project": {
+                          "type": "string"
+                        },
+                        "workspace_environment": {
+                          "type": "string"
+                        },
+                        "workspace_user": {
+                          "type": "string"
+                        },
+                        "workspace_task": {
+                          "type": "string"
+                        },
+                        "branch_name": {
+                          "type": "string"
+                        },
+                        "commit_hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "timestamp",
+                        "duration_ms",
+                        "is_initial_build",
+                        "workspace_project",
+                        "workspace_environment",
+                        "workspace_user"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "metrics"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/examples": {
       "get": {
         "summary": "Lists all examples",

@@ -1,20 +1,20 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
-import { Chart } from 'chart.js';
+import { Component, effect, input } from '@angular/core';
 import {
-  TimeScale,
+  Chart,
+  ChartConfiguration,
+  ChartOptions,
   LinearScale,
-  PointElement,
+  LineController,
   LineElement,
+  PointElement,
+  TimeScale,
   Title,
   Tooltip,
-  Legend,
-  LineController,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
-import { BuildMetric } from '../../interfaces/build-metrics.interface';
+import { BaseChartDirective } from 'ng2-charts';
+import { ApiV1ProjectsProjectIdBuildMetricsGet200ResponseMetricsInner } from '../../../../../../../libs/shared/api';
 
 // Register the required components
 Chart.register(
@@ -64,8 +64,10 @@ Chart.register(
   `,
   styles: [``],
 })
-export class BuildMetricsChartComponent implements OnChanges {
-  @Input() metrics: BuildMetric[] = [];
+export class BuildMetricsChartComponent {
+  metrics = input<
+    ApiV1ProjectsProjectIdBuildMetricsGet200ResponseMetricsInner[]
+  >([]);
 
   private baseChartOptions: ChartOptions = {
     responsive: true,
@@ -184,33 +186,37 @@ export class BuildMetricsChartComponent implements OnChanges {
     },
   };
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['metrics']) {
+  constructor() {
+    effect(() => {
+      this.metrics();
       this.updateChartData();
-    }
+    });
   }
 
   private updateChartData(): void {
-    const labels = this.metrics.map((m) => new Date(m.timestamp));
+    const metrics = this.metrics();
+    const labels = metrics.map((m) =>
+      m.timestamp ? new Date(m.timestamp) : new Date(),
+    );
 
     // Initial Build Data
-    const initialBuildDuration = this.metrics.map((m) =>
-      m.initial_builds.avg_duration_sec
-        ? parseFloat(m.initial_builds.avg_duration_sec)
+    const initialBuildDuration = metrics.map((m) =>
+      m.initial_builds?.avg_duration_sec != null
+        ? Number(m.initial_builds.avg_duration_sec)
         : null,
     );
-    const initialBuildFiles = this.metrics.map(
-      (m) => m.initial_builds.avg_files_count,
+    const initialBuildFiles = metrics.map(
+      (m) => m.initial_builds?.avg_files_count ?? null,
     );
 
     // Hot Reload Data
-    const hotReloadDuration = this.metrics.map((m) =>
-      m.hot_reloads.avg_duration_sec
-        ? parseFloat(m.hot_reloads.avg_duration_sec)
+    const hotReloadDuration = metrics.map((m) =>
+      m.hot_reloads?.avg_duration_sec != null
+        ? Number(m.hot_reloads.avg_duration_sec)
         : null,
     );
-    const hotReloadFiles = this.metrics.map(
-      (m) => m.hot_reloads.avg_files_count,
+    const hotReloadFiles = metrics.map(
+      (m) => m.hot_reloads?.avg_files_count ?? null,
     );
 
     // Update Initial Build Chart

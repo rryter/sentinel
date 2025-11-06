@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-06T11:43:50.505Z",
+  "generated": "2025-11-06T17:40:00.804Z",
   "components": [
     {
       "className": "BuildListComponent",
@@ -103,7 +103,7 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/content-tile/tile-detail/tile-detail.component.ts",
       "relativePath": "libs/shared/ui-custom/src/lib/components/content-tile/tile-detail/tile-detail.component.ts",
       "library": "shared/ui-custom",
-      "line": 16
+      "line": 15
     },
     {
       "className": "TileDividerComponent",
@@ -367,7 +367,7 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/build/src/lib/containers/build-metrics/build-metrics.component.ts",
       "relativePath": "libs/sentinel/build/src/lib/containers/build-metrics/build-metrics.component.ts",
       "library": "sentinel/build",
-      "line": 79
+      "line": 80
     },
     {
       "className": "BuildMetricsChartComponent",

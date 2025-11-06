@@ -1,7 +1,4 @@
-import { BrnSelectImports } from '@spartan-ng/brain/select';
-import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,15 +9,19 @@ import {
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import { lucideChevronDown } from '@ng-icons/lucide';
+import { PageHeaderComponent } from '@sentinel/layouts';
 import {
   BuildMetricsSelectorComponent,
   RoutingService,
 } from '@shared/ui-custom';
-import { PageHeaderComponent } from '@sentinel/layouts';
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
-import { environment } from '../../../../../../../apps/sentinel/src/environments/environment';
+import {
+  ApiV1ProjectsProjectIdBuildMetricsGet200ResponseMetricsInner,
+  BuildMetricsService,
+} from '../../../../../../../libs/shared/api';
 import { BuildMetricsChartComponent } from '../../components/build-metrics-chart/build-metrics-chart.component';
-import { BuildMetricsResponse } from '../../interfaces/build-metrics.interface';
 
 const AVAILABLE_INTERVALS = [
   '1m',
@@ -78,7 +79,9 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
 })
 export class BuildMetricsComponent implements OnInit {
   projectId = input();
-  metrics$: Observable<BuildMetricsResponse['metrics']> | undefined;
+  metrics$:
+    | Observable<ApiV1ProjectsProjectIdBuildMetricsGet200ResponseMetricsInner[]>
+    | undefined;
   intervalOptions: any[] = AVAILABLE_INTERVALS.map((interval) => ({
     id: interval,
     value: interval,
@@ -86,11 +89,9 @@ export class BuildMetricsComponent implements OnInit {
   }));
   selectedInterval: Interval = '1h';
   interval$ = new BehaviorSubject<Interval>(this.selectedInterval);
-  private readonly baseApiUrl = environment.apiBaseUrl;
 
-  routingService = inject(RoutingService);
-
-  constructor(private http: HttpClient) {}
+  private readonly buildMetricsService = inject(BuildMetricsService);
+  private readonly routingService = inject(RoutingService);
 
   ngOnInit() {
     this.metrics$ = this.interval$.pipe(
@@ -100,12 +101,17 @@ export class BuildMetricsComponent implements OnInit {
 
   private fetchMetrics(interval: Interval) {
     console.log('fetching metrics for interval', interval);
-    return this.http
-      .get<BuildMetricsResponse>(
-        this.baseApiUrl +
-          `/api/v1/projects/${this.routingService.projectId}/build_metrics?interval=${interval}`,
-      )
-      .pipe(map((response) => response.metrics));
+    const projectId = this.routingService.projectId;
+    if (!projectId) {
+      throw new Error('Project ID is required');
+    }
+
+    return this.buildMetricsService
+      .apiV1ProjectsProjectIdBuildMetricsGet({
+        projectId: projectId,
+        interval: interval,
+      })
+      .pipe(map((response) => response.metrics || []));
   }
 
   private formatIntervalLabel(interval: string): string {

@@ -7,6 +7,8 @@ api/analysis-jobs.serviceInterface.ts
 api/api.ts
 api/authentication.service.ts
 api/authentication.serviceInterface.ts
+api/build-metrics.service.ts
+api/build-metrics.serviceInterface.ts
 api/examples.service.ts
 api/examples.serviceInterface.ts
 api/files-with-violations.service.ts
@@ -62,6 +64,16 @@ model/api-v1-projects-post-request-project.ts
 model/api-v1-projects-post-request.ts
 model/api-v1-projects-post201-response-data.ts
 model/api-v1-projects-post201-response.ts
+model/api-v1-projects-project-id-build-metrics-get200-response-filters.ts
+model/api-v1-projects-project-id-build-metrics-get200-response-metrics-inner-git.ts
+model/api-v1-projects-project-id-build-metrics-get200-response-metrics-inner-initial-builds.ts
+model/api-v1-projects-project-id-build-metrics-get200-response-metrics-inner-system.ts
+model/api-v1-projects-project-id-build-metrics-get200-response-metrics-inner.ts
+model/api-v1-projects-project-id-build-metrics-get200-response.ts
+model/api-v1-projects-project-id-build-metrics-post-request-metrics-inner.ts
+model/api-v1-projects-project-id-build-metrics-post-request.ts
+model/api-v1-projects-project-id-build-metrics-post201-response-results-inner.ts
+model/api-v1-projects-project-id-build-metrics-post201-response.ts
 model/api-v1-projects-project-id-rules-get200-response-rules-inner.ts
 model/api-v1-projects-project-id-rules-get200-response.ts
 model/api-v1-projects-project-id-rules-id-patch-request-rule.ts
