@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './page-header.component.html',
   styleUrl: './page-header.component.scss',
 })
+    // Convert kebab-case or snake_case to Title Case
 export class PageHeaderComponent {
   title = input.required<string>();
   description = input<string>();

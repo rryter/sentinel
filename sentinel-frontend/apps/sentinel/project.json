@@ -28,7 +28,7 @@
             }
           },
           {
-            "path": "tools/esbuild-component-manifest-plugin.ts",
+            "path": "@twygmbh/component-inspector/plugin",
             "options": {
               "enabled": true,
               "logToConsole": true
@@ -138,7 +138,7 @@
     "vscode-opener": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node tools/vscode-opener-server.js",
+        "command": "node node_modules/@twygmbh/component-inspector/src/bin/vscode-opener-server.js",
         "color": true
       }
     },

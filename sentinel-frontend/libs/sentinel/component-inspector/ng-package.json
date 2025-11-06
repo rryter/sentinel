@@ -7,5 +7,9 @@
   "allowedNonPeerDependencies": [
     "glob",
     "launch-editor"
+  ],
+  "assets": [
+    "src/plugin/**/*.ts",
+    "src/bin/**/*.js"
   ]
 }
