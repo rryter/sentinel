@@ -65,7 +65,7 @@ export interface InspectorConfig {
 }
 
 export const DEFAULT_INSPECTOR_CONFIG: InspectorConfig = {
-  enabled: true,
+  enabled: false,
   shortcut: {
     key: 'I',
     ctrl: true,

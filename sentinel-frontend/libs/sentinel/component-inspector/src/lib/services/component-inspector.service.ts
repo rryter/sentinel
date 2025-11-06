@@ -112,6 +112,9 @@ export class ComponentInspectorService {
 
     this.config.set(fullConfig);
 
+    // Restore the enabled state from saved config
+    this.isActive.set(fullConfig.enabled);
+
     // Initialize services
     this.vscodeIntegration.initialize(fullConfig);
     this.overlayManager.initialize(fullConfig, (info) =>
@@ -156,6 +159,12 @@ export class ComponentInspectorService {
       console.log('[ComponentInspector] Inspector mode DISABLED');
       this.overlayManager.removeAllOverlays();
     }
+
+    // Update config and persist the enabled state (after handling overlays)
+    const currentConfig = this.config();
+    const updatedConfig = { ...currentConfig, enabled: this.isActive() };
+    this.config.set(updatedConfig);
+    this.saveConfig(updatedConfig);
   }
 
   /**
@@ -425,8 +434,9 @@ export class ComponentInspectorService {
    */
   private saveConfig(config: InspectorConfig): void {
     try {
-      // Save filter settings (library toggles) and overlay opacity
+      // Save enabled state, filter settings (library toggles), and overlay opacity
       const configToSave: DeepPartial<InspectorConfig> = {
+        enabled: config.enabled,
         filter: {
           libraries: config.filter.libraries,
         },
