@@ -1,5 +1,5 @@
 {
-  "generated": "2025-11-06T20:10:47.785Z",
+  "generated": "2025-11-07T16:58:28.631Z",
   "components": [
     {
       "className": "BuildListComponent",
@@ -194,14 +194,6 @@
       "line": 14
     },
     {
-      "className": "PageHeaderComponent",
-      "selector": "lib-page-header",
-      "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/components/page-header/page-header.component.ts",
-      "relativePath": "libs/sentinel/layouts/src/lib/components/page-header/page-header.component.ts",
-      "library": "sentinel/layouts",
-      "line": 11
-    },
-    {
       "className": "RegistrationComponent",
       "selector": "lib-registration",
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/shared/login/src/lib/registration/registration.component.ts",
@@ -319,6 +311,14 @@
       "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/shared/ui-custom/src/lib/components/markdown/markdown-renderer.component.ts",
       "relativePath": "libs/shared/ui-custom/src/lib/components/markdown/markdown-renderer.component.ts",
       "library": "shared/ui-custom",
+      "line": 11
+    },
+    {
+      "className": "PageHeaderComponent",
+      "selector": "sen-page-header",
+      "filePath": "/home/rryter/projects/sentinel/sentinel-frontend/libs/sentinel/layouts/src/lib/components/page-header/page-header.component.ts",
+      "relativePath": "libs/sentinel/layouts/src/lib/components/page-header/page-header.component.ts",
+      "library": "sentinel/layouts",
       "line": 11
     },
     {

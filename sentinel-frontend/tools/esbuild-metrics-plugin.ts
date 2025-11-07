@@ -235,7 +235,7 @@ export const buildMetricsPlugin = (options: PluginOptions): Plugin => {
       }
 
       const response = await fetch(
-        `${backendUrl}/api/v1/projects/1/build_metrics`,
+        `${backendUrl}/api/v1/projects/2/build_metrics`,
         {
           method: 'POST',
           headers: {
@@ -704,49 +704,3 @@ function formatSize(bytes: number): string {
 }
 
 // Removed unused writeReport function
-
-function logSizeReport(report: BundleSizeReportData, threshold?: number) {
-  // Used BundleSizeReportData
-  console.log('\\n📊 Bundle Size Report');
-  console.log('='.repeat(50));
-
-  // console.log(`🕒 Build Time: ${report.buildTime}`); // Removed: buildTime is not in BundleSizeReportData
-  console.log(`📁 Files: ${report.fileCount}`);
-  console.log(
-    `📏 Total JS Size: ${report.totalSize.js.rawFormatted} (${report.totalSize.js.gzippedFormatted} gzipped)`, // Corrected path
-  );
-  console.log(
-    `📏 Total CSS Size: ${report.totalSize.css.rawFormatted} (${report.totalSize.css.gzippedFormatted} gzipped)`, // Added CSS total size
-  );
-
-  if (threshold && report.totalSize.js.raw > threshold) {
-    // Corrected path for JS
-    console.warn(
-      `⚠️  JS Bundle size (${report.totalSize.js.rawFormatted}) exceeds threshold (${formatSize(threshold)})`, // Corrected path
-    );
-  }
-  // Optionally, add a threshold check for CSS or combined size if needed
-
-  console.log('\\n📋 File Breakdown (Top 5):');
-  report.files.slice(0, 5).forEach((file, index) => {
-    const icon =
-      index === 0 ? '🏆' : index === 1 ? '🥈' : index === 2 ? '🥉' : '📄';
-    let output = `${icon} ${file.path}\n`;
-    output += `└─ ${file.rawSizeFormatted} (${file.gzippedSizeFormatted} gzipped)`;
-
-    if (
-      file.sourceMapPath &&
-      file.sourceMapRawSizeFormatted &&
-      file.sourceMapGzippedSizeFormatted
-    ) {
-      output += `\n  Sourcemap: ${file.sourceMapPath}`;
-      output += `\n  └─ ${file.sourceMapRawSizeFormatted} (${file.sourceMapGzippedSizeFormatted} gzipped)`;
-    }
-    console.log(output);
-  });
-
-  // Optionally, add more detailed breakdown for all files or specific groups
-  // report.files.forEach((file) => {
-  //   console.log(`- ${file.path}: ${file.rawSizeFormatted} (${file.gzippedSizeFormatted} gzipped)`);
-  // });
-}

@@ -2,7 +2,7 @@
   "name": "layouts",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/sentinel/layouts/src",
-  "prefix": "lib",
+  "prefix": "sen",
   "projectType": "library",
   "tags": [],
   "targets": {

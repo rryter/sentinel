@@ -47,7 +47,7 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
     PageHeaderComponent,
   ],
   providers: [provideIcons({ lucideChevronDown })],
-  template: `<lib-page-header
+  template: `<sen-page-header
       [title]="'Build Metrics'"
       [description]="
         'Real-time build analytics and performance benchmarks for your codebase'
@@ -64,7 +64,7 @@ type Interval = (typeof AVAILABLE_INTERVALS)[number];
         label="Select Interval"
         placeholder="Choose an interval"
       ></sen-build-metrics-selector
-    ></lib-page-header>
+    ></sen-page-header>
     <div class="p-8">
       @if (metrics$ | async; as metrics) {
         <sentinel-build-metrics-chart

@@ -1,5 +1,5 @@
 <!-- Header Section -->
-<lib-page-header
+<sen-page-header
   [title]="'Linting Performance Analysis'"
   [description]="
     'Monitor scan durations, file processing rates, and efficiency improvements.'
@@ -8,7 +8,7 @@
     { label: 'Projects', route: '/projects' },
     { label: currentProjectName, route: '/projects/' + projectId },
   ]"
-></lib-page-header>
+></sen-page-header>
 
 <!-- Loading State -->
 <div class="flex justify-center py-8" *ngIf="isLoading">

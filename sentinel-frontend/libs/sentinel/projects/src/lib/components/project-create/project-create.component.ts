@@ -1,4 +1,3 @@
-import { HlmButton } from '@spartan-ng/helm/button';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import {
@@ -10,10 +9,11 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ProjectsService } from '@sentinel/api';
+import { HlmButton } from '@spartan-ng/helm/button';
 
+import { PageHeaderComponent } from '@sentinel/layouts';
 import { firstValueFrom } from 'rxjs';
 import { GitHubRepository, GitHubService } from '../../services/github.service';
-import { PageHeaderComponent } from '@sentinel/layouts';
 
 interface GroupedRepositories {
   [owner: string]: GitHubRepository[];
@@ -29,7 +29,7 @@ interface GroupedRepositories {
     PageHeaderComponent,
   ],
   template: `
-    <lib-page-header
+    <sen-page-header
       [title]="'Create New Project'"
       [description]="
         'Select a repository from GitHub or enter details manually.'
@@ -38,7 +38,7 @@ interface GroupedRepositories {
       <button [routerLink]="'/projects'" type="button" hlmBtn variant="outline">
         Back to Projects
       </button>
-    </lib-page-header>
+    </sen-page-header>
     <div class="px-4 sm:px-6 lg:px-8">
       @if (!githubService.isAuthenticated()) {
         <div class="mt-8">
