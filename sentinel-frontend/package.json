@@ -68,7 +68,7 @@
     "@nx/vite": "22.0.1",
     "@nx/web": "22.0.1",
     "@nx/workspace": "22.0.1",
-    "@openapitools/openapi-generator-cli": "^2.25.0",
+    "@openapitools/openapi-generator-cli": "^2.25.1",
     "@schematics/angular": "20.3.7",
     "@spartan-ng/cli": "^0.0.1-alpha.537",
     "@swc-node/register": "1.11.1",
