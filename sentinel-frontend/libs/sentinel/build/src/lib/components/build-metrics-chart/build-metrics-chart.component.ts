@@ -77,9 +77,10 @@ export class BuildMetricsChartComponent {
       x: {
         type: 'time',
         time: {
-          unit: 'minute',
           displayFormats: {
             minute: 'HH:mm',
+            hour: 'MMM d, HH:mm',
+            day: 'MMM d',
           },
         },
         title: {
