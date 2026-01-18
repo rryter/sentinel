@@ -49,6 +49,13 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "nx-release-publish": {
+      "dependsOn": ["build"],
+      "executor": "@nx/js:release-publish",
+      "options": {
+        "packageRoot": "dist/libs/sentinel/component-inspector"
+      }
     }
   }
 }
