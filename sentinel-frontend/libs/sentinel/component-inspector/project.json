@@ -6,7 +6,7 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
+    "build-lib": {
       "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "options": {
@@ -21,6 +21,23 @@
         }
       },
       "defaultConfiguration": "production"
+    },
+    "build-plugin": {
+      "dependsOn": ["build-lib"],
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/sentinel/component-inspector/plugin",
+        "main": "libs/sentinel/component-inspector/src/plugin/index.ts",
+        "tsConfig": "libs/sentinel/component-inspector/tsconfig.plugin.json",
+        "rootDir": "libs/sentinel/component-inspector/src/plugin",
+        "assets": []
+      }
+    },
+    "build": {
+      "dependsOn": ["build-plugin"],
+      "executor": "nx:noop",
+      "outputs": []
     },
     "test": {
       "executor": "@nx/jest:jest",

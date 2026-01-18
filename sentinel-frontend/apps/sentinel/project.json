@@ -7,6 +7,7 @@
   "tags": [],
   "targets": {
     "build": {
+      "dependsOn": ["^build", "component-inspector:build"],
       "executor": "@nx/angular:browser-esbuild",
       "outputs": ["{options.outputPath}"],
       "options": {
@@ -28,7 +29,7 @@
             }
           },
           {
-            "path": "@twygmbh/component-inspector/plugin",
+            "path": "dist/libs/sentinel/component-inspector/plugin",
             "options": {
               "enabled": true,
               "logToConsole": true
@@ -138,7 +139,7 @@
     "vscode-opener": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node node_modules/@twygmbh/component-inspector/src/bin/vscode-opener-server.js",
+        "command": "node libs/sentinel/component-inspector/src/bin/vscode-opener-server.js",
         "color": true
       }
     },

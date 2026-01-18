@@ -9,7 +9,6 @@
     "launch-editor"
   ],
   "assets": [
-    "src/plugin-dist/**/*",
     "src/bin/**/*.js"
   ]
 }

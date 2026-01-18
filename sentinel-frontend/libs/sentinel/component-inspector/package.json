@@ -39,10 +39,6 @@
       "optional": true
     }
   },
-  "scripts": {
-    "build-plugin": "tsc --project tsconfig.plugin.json",
-    "prepublishOnly": "npm run build-plugin"
-  },
   "dependencies": {
     "glob": "^11.0.0",
     "launch-editor": "^2.9.1"
@@ -60,8 +56,8 @@
       "default": "./fesm2022/twygmbh-component-inspector.mjs"
     },
     "./plugin": {
-      "types": "./src/plugin-dist/index.d.ts",
-      "default": "./src/plugin-dist/index.js"
+      "types": "./plugin/index.d.ts",
+      "default": "./plugin/index.js"
     }
   }
 }
