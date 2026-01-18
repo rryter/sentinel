@@ -79,6 +79,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Build component-inspector
+        run: npx nx build component-inspector --verbose
+
       - name: Version and Changelog
         id: version
         run: |

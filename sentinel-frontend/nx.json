@@ -5,7 +5,6 @@
     "projectsRelationship": "independent",
     "releaseTagPattern": "{projectName}@{version}",
     "version": {
-      "preVersionCommand": "npx nx build component-inspector",
       "conventionalCommits": true,
       "fallbackCurrentVersionResolver": "disk",
       "git": {
