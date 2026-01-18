@@ -3,22 +3,25 @@
   "release": {
     "projects": ["component-inspector"],
     "projectsRelationship": "independent",
+    "releaseTagPattern": "{projectName}@{version}",
     "version": {
       "preVersionCommand": "npx nx build component-inspector",
       "conventionalCommits": true,
-      "fallbackCurrentVersionResolver": "disk"
+      "fallbackCurrentVersionResolver": "disk",
+      "git": {
+        "commit": false,
+        "tag": false
+      }
     },
     "changelog": {
       "projectChangelogs": {
         "createRelease": "github",
         "file": "{projectRoot}/CHANGELOG.md"
+      },
+      "git": {
+        "commit": false,
+        "tag": false
       }
-    },
-    "releaseTagPattern": "{projectName}@{version}",
-    "git": {
-      "commit": true,
-      "tag": true,
-      "commitMessage": "chore(release): {projectName}@{version}"
     }
   },
   "namedInputs": {
