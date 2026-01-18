@@ -1,6 +1,6 @@
 {
   "name": "@twygmbh/component-inspector",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Angular 19+ component inspector with developer tools for visualizing and debugging components in real-time",
   "author": "reto@twy.gmbh",
   "license": "MIT",

@@ -1,3 +1,7 @@
+## 0.2.0 (2026-01-18)
+
+This was a version bump only for component-inspector to align it with other projects, there were no code changes.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
