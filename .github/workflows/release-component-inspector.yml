@@ -90,9 +90,9 @@ jobs:
           else
             npx nx release version --projects=component-inspector
           fi
-          npx nx release changelog --projects=component-inspector
           VERSION=$(node -p "require('./libs/sentinel/component-inspector/package.json').version")
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          npx nx release changelog $VERSION --projects=component-inspector
 
       - name: Commit, Tag and Push
         run: |
