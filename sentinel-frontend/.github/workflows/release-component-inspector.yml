@@ -1,0 +1,102 @@
+name: Release Component Inspector
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'libs/sentinel/component-inspector/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump type (or specific version)'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - patch
+          - minor
+          - major
+
+jobs:
+  check-affected:
+    runs-on: ubuntu-latest
+    outputs:
+      affected: ${{ steps.check.outputs.affected }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Check if component-inspector is affected
+        id: check
+        run: |
+          AFFECTED=$(npx nx show projects --affected --base=HEAD~1 --head=HEAD)
+          if echo "$AFFECTED" | grep -q "component-inspector"; then
+            echo "affected=true" >> $GITHUB_OUTPUT
+          else
+            echo "affected=false" >> $GITHUB_OUTPUT
+          fi
+
+  release:
+    needs: check-affected
+    if: needs.check-affected.outputs.affected == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - name: Version and Changelog
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            npx nx release version ${{ github.event.inputs.version }} --projects=component-inspector
+          else
+            npx nx release version --projects=component-inspector
+          fi
+          npx nx release changelog --projects=component-inspector
+
+      - name: Commit, Tag and Push
+        run: |
+          git add .
+          VERSION=$(node -p "require('./libs/sentinel/component-inspector/package.json').version")
+          git commit -m "chore(release): component-inspector@${VERSION}" || echo "No changes to commit"
+          git tag "component-inspector@${VERSION}"
+          git push origin main --follow-tags
+
+      - name: Publish to npm
+        run: npx nx release publish --projects=component-inspector
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: component-inspector@${{ steps.version.outputs.version }}
+          generate_release_notes: true
