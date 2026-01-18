@@ -93,6 +93,8 @@ jobs:
           VERSION=$(node -p "require('./libs/sentinel/component-inspector/package.json').version")
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           npx nx release changelog $VERSION --projects=component-inspector
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit, Tag and Push
         run: |
@@ -107,9 +109,3 @@ jobs:
         run: npx nx release publish --projects=component-inspector
         env:
           NPM_CONFIG_PROVENANCE: true
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: component-inspector@${{ steps.version.outputs.version }}
-          generate_release_notes: true
