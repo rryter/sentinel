@@ -39,7 +39,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: sentinel-frontend/package-lock.json
 
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
 
       - name: Check if component-inspector is affected
         id: check
@@ -77,7 +77,7 @@ jobs:
           cache-dependency-path: sentinel-frontend/package-lock.json
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
 
       - name: Version and Changelog
         id: version
