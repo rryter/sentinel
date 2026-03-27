@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.2"
+gem "rails", "~> 8.0.4"
 # Add specific i18n version
 
 # Use mysql as the database for Active Record
@@ -38,8 +38,8 @@ gem "thruster", require: false
 gem "rack-cors"
 
 # Authentication
-gem "devise", "~> 4.9.3"
-gem "devise-jwt", "~> 0.11.0"
+gem "devise", "~> 5.0.3"
+gem "devise-jwt", "~> 0.13.0"
 gem "webauthn"
 
 # Background job processing
